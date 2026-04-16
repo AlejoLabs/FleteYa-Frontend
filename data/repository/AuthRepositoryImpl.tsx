@@ -5,7 +5,7 @@ import { AuthService } from "../sources/remote/services/AuthService";
 
 export class AuthRespositoryImpl implements AuthRepository{
     private authService: AuthService;
-    constructor(authService: AuthService){
+    constructor({authService}: {authService: AuthService}){
         this.authService = authService;
     }
     async login(email: string, password: string): Promise<AuthResponse | ErrorResponse>{

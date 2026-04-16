@@ -13,6 +13,7 @@ import { LoginUseCase } from '../../../../domain/useCases/auth/LoginUseCase';
 import { AuthService } from '../../../../data/sources/remote/services/AuthService';
 import { AuthRespositoryImpl } from '../../../../data/repository/AuthRepositoryImpl';
 import { LoginViewModel } from './LoginViewModel';
+import { container } from '../../../../di/container';
 
 interface Props extends StackScreenProps<RootStackParamList, 'LoginScreen'> { };
 export default function LoginScreen({ navigation, route }: Props) {
@@ -20,10 +21,8 @@ export default function LoginScreen({ navigation, route }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const authService = new AuthService();
-  const authRepository = new AuthRespositoryImpl(authService);
-  const loginUseCase = new LoginUseCase(authRepository);
-  const loginViewModel = new LoginViewModel(loginUseCase);
+
+  const loginViewModel = container.resolve('loginViewModel');
 
   const handleLogin = async () => {
     if (email === '' || password === '') {
