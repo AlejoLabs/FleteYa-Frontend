@@ -8,6 +8,8 @@ import { useState } from "react";
 import EmailValidator from "../../../utils/EmailValidator";
 import { KeyboardAvoidingView } from "react-native";
 import { ScrollView } from "react-native";
+import { container } from "../../../../di/container";
+import { RegisterViewModel } from "./RegisterViewModel";
 
 
 interface Props extends StackScreenProps<RootStackParamList, 'RegisterScreen'> { };
@@ -19,6 +21,8 @@ export default function RegisterScreen({ navigation, route }: Props) {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+
+    const registerViewModel: RegisterViewModel = container.resolve('registerViewModel');
 
     const handleRegister = () => {
         if (name === "") {
@@ -45,12 +49,15 @@ export default function RegisterScreen({ navigation, route }: Props) {
         if (confirmPassword !== password) {
             Alert.alert("Error", "Las contraseñas no coinciden")
         }
-        console.log('Nombre', name);
-        console.log('Apellido', lastname);
-        console.log('Email', email);
-        console.log('Telefono', phone);
-        console.log('Password', password);
-        console.log('Confirmar password', confirmPassword);
+
+        const response = registerViewModel.register({
+            name: name,
+            lastname: lastname,
+            email: email,
+            phone: phone,
+            password: password
+        });
+        console.log('Register response', response);
 
     }
 

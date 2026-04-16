@@ -6,7 +6,8 @@ export interface User {
     lastname:           string;
     email:              string;
     phone:              string;
+    password?:           string;
     image?:              string;
     notification_token?: null;
-    roles:              Role[];
+    roles?:              Role[];
 }
