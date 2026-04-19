@@ -14,6 +14,7 @@ import { AuthService } from '../../../../data/sources/remote/services/AuthServic
 import { AuthRespositoryImpl } from '../../../../data/repository/AuthRepositoryImpl';
 import { LoginViewModel } from './LoginViewModel';
 import { container } from '../../../../di/container';
+import { useAuth } from '../../../hooks/useAuth';
 
 interface Props extends StackScreenProps<RootStackParamList, 'LoginScreen'> { };
 export default function LoginScreen({ navigation, route }: Props) {
@@ -23,6 +24,7 @@ export default function LoginScreen({ navigation, route }: Props) {
 
 
   const loginViewModel = container.resolve('loginViewModel');
+  const { authResponse, saveAuthSession }= useAuth();
 
   const handleLogin = async () => {
     if (email === '' || password === '') {
@@ -34,6 +36,10 @@ export default function LoginScreen({ navigation, route }: Props) {
       return;
     }
     const response = await loginViewModel.login(email, password);
+    if ('token' in response) { //LOGIN EXITOSO
+        saveAuthSession(response);
+        console.log('Response','Login exitoso');
+    }
     console.log('Login response', response);
 }
 
