@@ -12,8 +12,7 @@ export interface AuthContextProps {
 
 export const AuthContext = createContext ( {} as AuthContextProps );
 
-export const AuthProvider = ({children}: any) => {
-    const localStorage = new LocalStorage();
+export const AuthProvider = ({children, authUseCases}: any) => {
     const  [authResponse, setAuthResponse] = useState<AuthResponse | null>(null);
    
     useEffect(() => {
@@ -22,19 +21,18 @@ export const AuthProvider = ({children}: any) => {
 
 
     const saveAuthSession = async (authResponse: AuthResponse) => {
-        localStorage.save("auth", JSON.stringify(authResponse));
+        await authUseCases.saveAuthSession.execute(authResponse);
         setAuthResponse(authResponse);
     }
 
     const getAuthSession = async () => {
-        const data = await localStorage.getItem("auth");
-        const authData: AuthResponse = JSON.parse(data as any);
+        const authData = await authUseCases.getAuthSession.execute();
         console.log('Session Data: ', authData);
         setAuthResponse(authData);
     }
 
     const removeAuthSession = async () => {
-
+        await authUseCases.removeAuthSession.execute();
     }
 
     return (

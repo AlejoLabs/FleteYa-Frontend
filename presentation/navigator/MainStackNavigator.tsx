@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import LoginScreen from "../screens/auth/login/LoginScreen";
 import RegisterScreen from "../screens/auth/register/RegisterScreen";
 import { AuthProvider } from "../context/AuthContext";
+import { container } from "../../di/container";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -11,8 +12,11 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const MainStackNavigator = () => {
+    
+    const authUseCases = container.resolve("authUseCases");
+    
     return (
-        <AuthState>
+        <AuthProvider authUseCases={authUseCases}>
             <Stack.Navigator>
                 <Stack.Screen
                     options={{
@@ -30,16 +34,6 @@ export const MainStackNavigator = () => {
                     component={RegisterScreen}
                 />
             </Stack.Navigator>
-        </AuthState>
-    )
-}
-
-
-const AuthState = ({ children }: any) => {
-    return (
-        <AuthProvider>
-            {children}
         </AuthProvider>
     )
 }
-
