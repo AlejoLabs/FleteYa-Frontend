@@ -4,11 +4,15 @@ import RegisterScreen from "../screens/auth/register/RegisterScreen";
 import { AuthProvider } from "../context/AuthContext";
 import { container } from "../../di/container";
 import RolesScreen from "../screens/roles/RolesScreen";
+import ClientHomeScreen from "../screens/client/home/ClientHomeScreen";
+import DriverHomeScreen from "../screens/driver/home/DriverHomeScreen";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
     RegisterScreen: undefined,
     RolesScreen: undefined,
+    ClientHomeScreen: undefined,
+    DriverHomeScreen: undefined,
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -43,6 +47,25 @@ export const MainStackNavigator = () => {
                     name="RolesScreen"
                     component={RolesScreen}
                 />
+
+                <Stack.Screen
+                    options={{
+                        headerShown: false,
+                    }}
+                    name="ClientHomeScreen"
+                    component={ClientHomeScreen}
+                />
+
+                <Stack.Screen
+                    options={{
+                        headerShown: false,
+                    }}
+                    name="DriverHomeScreen"
+                    component={DriverHomeScreen}
+                />
+
+
+
             </Stack.Navigator>
         </AuthProvider>
     )

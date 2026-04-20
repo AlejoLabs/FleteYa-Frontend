@@ -4,7 +4,7 @@ import DefaultRoundedButton from '../../../components/DefaultRoundedButton';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../../../navigator/MainStackNavigator';
 import styles from './Styles';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import EmailValidator from '../../../utils/EmailValidator';
 import { ApiRequestHandler } from '../../../../data/sources/remote/api/ApiRequestHandler';
 import { AuthResponse } from '../../../../domain/models/AuthResponse';
@@ -24,7 +24,19 @@ export default function LoginScreen({ navigation, route }: Props) {
 
 
   const loginViewModel = container.resolve('loginViewModel');
-  const { authResponse, saveAuthSession }= useAuth();
+  const { authResponse, saveAuthSession } = useAuth();
+
+  useEffect(() => {
+    if (authResponse !== null && authResponse !== undefined) {
+      if (authResponse.user.roles!.length > 1) {
+        navigation.replace('RolesScreen');
+      }
+      else {
+        navigation.replace('ClientHomeScreen');
+      }
+    }
+
+  }, [authResponse]);
 
   const handleLogin = async () => {
     if (email === '' || password === '') {
@@ -37,12 +49,12 @@ export default function LoginScreen({ navigation, route }: Props) {
     }
     const response = await loginViewModel.login(email, password);
     if ('token' in response) { //LOGIN EXITOSO
-        saveAuthSession(response);
-        navigation.navigate('RolesScreen');
-        console.log('Response','Login exitoso');
+
+      saveAuthSession(response);
+      console.log('Response', 'Login exitoso');
     }
     console.log('Login response', response);
-}
+  }
 
 
   return (

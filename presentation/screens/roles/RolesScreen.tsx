@@ -17,7 +17,7 @@ export default function RolesScreen({ navigation, route }: Props) {
                 contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}
                 data={authResponse?.user.roles}
                 keyExtractor={(item) => item.id}
-                renderItem= {({item}) => <RolesItem role={item} />}
+                renderItem= {({item}) => <RolesItem role={item} navigation={navigation} />}
             />
         </View>
     );
