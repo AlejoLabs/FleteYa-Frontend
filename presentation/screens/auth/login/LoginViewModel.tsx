@@ -1,15 +1,16 @@
 import { AuthResponse } from "../../../../domain/models/AuthResponse";
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
-import { LoginUseCase } from "../../../../domain/useCases/auth/LoginUseCase";
+import { AuthUseCases } from "../../../../domain/useCases/auth/AuthUseCases";
 
 export class LoginViewModel {
-    private loginUseCase: LoginUseCase;
 
-    constructor({loginUseCase}: {loginUseCase: LoginUseCase}){
-        this.loginUseCase = loginUseCase;
+    private authUseCases: AuthUseCases;
+
+    constructor({authUseCases}: {authUseCases: AuthUseCases}){
+        this.authUseCases = authUseCases;
     }
     async login(email: string, password: string): Promise<AuthResponse | ErrorResponse>{
-        return await this.loginUseCase.execute(email, password);
+        return await this.authUseCases.login.execute(email, password);
     }
 
 }

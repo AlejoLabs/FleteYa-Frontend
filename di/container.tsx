@@ -15,8 +15,6 @@ const localStorage = new LocalStorage();
 const authRepository = new AuthRespositoryImpl({ authService, localStorage });
 const loginUseCase = new LoginUseCase({ authRepository });
 const registerUseCase = new RegisterUseCase({ authRepository });
-const loginViewModel = new LoginViewModel({ loginUseCase });
-const registerViewModel = new RegisterViewModel({ registerUseCase });
 const saveAuthSessionUseCase = new SaveAuthSessionUseCase({ authRepository });
 const getAuthSessionUseCase = new GetAuthSessionUseCase({ authRepository });
 const removeAuthSessionUseCase = new RemoveAuthSessionUseCase({ authRepository });
@@ -27,6 +25,8 @@ const authUseCases = new AuthUseCases({
     getAuthSessionUseCase,
     removeAuthSessionUseCase
 });
+const loginViewModel = new LoginViewModel({ authUseCases });
+const registerViewModel = new RegisterViewModel({ authUseCases });
 
 
 type ContainerDeps = {
