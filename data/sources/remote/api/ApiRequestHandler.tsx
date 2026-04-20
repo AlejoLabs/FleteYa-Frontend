@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const ApiRequestHandler = axios.create({
-    baseURL: "http://10.79.134.20:3000",
+    baseURL: "http://192.168.0.39:3000",
     headers: {
         "Content-Type": "application/json"
     },
