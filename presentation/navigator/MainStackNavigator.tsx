@@ -6,6 +6,8 @@ import { container } from "../../di/container";
 import RolesScreen from "../screens/roles/RolesScreen";
 import ClientHomeScreen from "../screens/client/home/ClientHomeScreen";
 import DriverHomeScreen from "../screens/driver/home/DriverHomeScreen";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import ClientSearchMapScreen from "../screens/client/searchMap/ClientSearchMapScreen";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -13,9 +15,11 @@ export type RootStackParamList = {
     RolesScreen: undefined,
     ClientHomeScreen: undefined,
     DriverHomeScreen: undefined,
+    ClientSearchMapScreen: undefined,
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const Drawer = createDrawerNavigator<RootStackParamList>();
 
 export const MainStackNavigator = () => {
     
@@ -53,7 +57,7 @@ export const MainStackNavigator = () => {
                         headerShown: false,
                     }}
                     name="ClientHomeScreen"
-                    component={ClientHomeScreen}
+                    component={ClientDrawerNavigator}
                 />
 
                 <Stack.Screen
@@ -68,5 +72,13 @@ export const MainStackNavigator = () => {
 
             </Stack.Navigator>
         </AuthProvider>
+    )
+}
+
+const ClientDrawerNavigator = () => {
+    return (
+        <Drawer.Navigator initialRouteName="ClientSearchMapScreen">
+            <Drawer.Screen name="ClientSearchMapScreen" component={ClientSearchMapScreen} />
+        </Drawer.Navigator>
     )
 }
