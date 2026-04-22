@@ -1,8 +1,9 @@
 import { View } from "react-native"
 import styles from "./Styles"
-import MapView, { Marker, Region } from "react-native-maps";
+import MapView, { LatLng, Marker, Region } from "react-native-maps";
 import { useEffect, useState } from "react";
 import * as Location from 'expo-location';
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 
 const DEFAULT_REGION: Region = {
     latitude: 19.4326,
@@ -15,6 +16,7 @@ export default function ClientSearchMapScreen() {
 
     const [location, setLocation] = useState<Region>(DEFAULT_REGION);
     const [hasLocation, setHasLocation] = useState(false);
+    const [selectedPlace, setSelectedPlace] = useState<LatLng | undefined>(undefined);
 
     useEffect(() => {
         (async () => {
@@ -41,6 +43,7 @@ export default function ClientSearchMapScreen() {
 
     return(
         <View style={styles.container}>
+            
             <MapView style={styles.map} initialRegion={location} region={location}>
                 {hasLocation && (
                     <Marker coordinate={{
@@ -49,6 +52,19 @@ export default function ClientSearchMapScreen() {
                     }} title="Mi ubicacion" />
                 )}
             </MapView>
+            <GooglePlacesAutocomplete
+                styles={{ container: styles.placeAutocomplete }}
+                placeholder="Recoger en..."
+                onPress={(data, details = null) => {
+                    console.log('Google Place Details:', details);
+                    setSelectedPlace(details?.location);
+                }}
+                query={{
+                    key: "AIzaSyCo2zaq4NDH9Yb5q2GzTSy5rE09Vejs0WI",
+                    language: "es",
+                }}
+                debounce={200}
+            />
         </View>
     )
 }
