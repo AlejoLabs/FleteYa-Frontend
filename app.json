@@ -12,7 +12,13 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Este App utiliza su ubicación para mostrar conductores cercanos y proporcionar información precisa sobre el viaje."
+      },
+      "config":{
+        "googleMapsApiKey": "AIzaSyCo2zaq4NDH9Yb5q2GzTSy5rE09Vejs0WI"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,6 +26,16 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCo2zaq4NDH9Yb5q2GzTSy5rE09Vejs0WI"
+        }
       },
       "predictiveBackGestureEnabled": false
     },
