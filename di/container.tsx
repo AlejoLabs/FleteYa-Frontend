@@ -11,6 +11,7 @@ import { LoginViewModel } from "../presentation/screens/auth/login/LoginViewMode
 import { RegisterViewModel } from "../presentation/screens/auth/register/RegisterViewModel";
 import { GooglePlaceServices } from "../data/sources/remote/services/GooglePlacesService";
 import { GooglePlaceRepositoryImpl } from "../data/repository/GooglePlaceRepositoryImpl";
+import { GetPlaceDetailsByCoordsUseCase } from "../domain/useCases/GooglePlaces/GetPlaceDetailsByCoordsUseCase";
 import { GetPlaceDetailsUseCase } from "../domain/useCases/GooglePlaces/GetPlaceDetailsUseCase";
 import { GooglePlaceUseCases } from "../domain/useCases/GooglePlaces/GooglePlacesUseCases";
 import { ClientSearchMapViewModel } from "../presentation/screens/client/searchMap/ClientSearchMapViewModel";
@@ -36,7 +37,8 @@ const registerViewModel = new RegisterViewModel({ authUseCases });
 const googlePlaceService = new GooglePlaceServices();
 const googlePlaceRepository = new GooglePlaceRepositoryImpl({ googlePlaceService });
 const getPlaceDetailsUseCase = new GetPlaceDetailsUseCase({ googlePlaceRepository });
-const googlePlaceUseCases = new GooglePlaceUseCases({ getPlaceDetailsUseCase });
+const getPlaceDetailsByCoordsUseCase = new GetPlaceDetailsByCoordsUseCase({ googlePlaceRepository });
+const googlePlaceUseCases = new GooglePlaceUseCases({ getPlaceDetailsUseCase, getPlaceDetailsByCoordsUseCase });
 const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases });
 
 
@@ -50,6 +52,7 @@ type ContainerDeps = {
     googlePlaceService: GooglePlaceServices;
     googlePlaceRepository: GooglePlaceRepositoryImpl;
     getPlaceDetailsUseCase: GetPlaceDetailsUseCase;
+    getPlaceDetailsByCoordsUseCase: GetPlaceDetailsByCoordsUseCase;
     googlePlaceUseCases: GooglePlaceUseCases;
     clientSearchMapViewModel: ClientSearchMapViewModel;
 };
@@ -66,6 +69,7 @@ const container = {
             googlePlaceService,
             googlePlaceRepository,
             getPlaceDetailsUseCase,
+            getPlaceDetailsByCoordsUseCase,
             googlePlaceUseCases,
             clientSearchMapViewModel
         };
