@@ -17,6 +17,13 @@ const styles = StyleSheet.create({
         left: 10,
         right: 10,
     },
+    placeDestinationAutocomplete: {
+        position: "absolute",
+        zIndex: 1,
+        top: 100,
+        left: 10,
+        right: 10,
+    },
     pinImage: {
         height: 40,
         width: 40,

@@ -19,15 +19,32 @@ export default function ClientSearchMapScreen() {
 
     const [location, setLocation] = useState<Region>(DEFAULT_REGION);
     const [hasLocation, setHasLocation] = useState(false);
-    const [selectedPlace, setSelectedPlace] = useState<LatLng | undefined>(undefined);
+
+    const [originPlace, setOriginPlace] = useState<{
+        lat: number,
+        lng: number,
+        address?: string
+    } | undefined>(undefined);
+
+    const [destinationPlace, setDestinationPlace] = useState<{
+        lat: number,
+        lng: number,
+        address?: string
+    } | undefined>(undefined);
+
+
     const placeAutocompleteRef = useRef<GooglePlacesAutocompleteRef>(null);
     const mapRef = useRef<MapView>(null);
 
     const viewModel = container.resolve("clientSearchMapViewModel");
 
     useEffect(() => {
-        console.log("Response selectedPlace:", selectedPlace);
-    }, [selectedPlace])
+        if (originPlace != undefined && destinationPlace !== undefined) {
+            console.log("Ya selecciono lo datos de ubicacion");
+            console.log("Origin:", originPlace);
+            console.log("Destination:", destinationPlace);
+        }
+    }, [originPlace, destinationPlace]);
 
     const moveCameraToLocation = (lat: number, lng: number) => {
         const camera: Camera = {
@@ -42,25 +59,40 @@ export default function ClientSearchMapScreen() {
         mapRef.current?.animateCamera(camera, { duration: 1000 });
     }
 
-    const handlegetPlaceDetails = async (placeId: string) => {
+    const handlegetPlaceDetails = async (placeId: string, isOrigin: boolean) => {
         const response: PlaceDetail | null = await viewModel.getPlaceDetails(placeId);
         if (response !== null) {
             const lat = response.result.geometry.location.lat;
             const lng = response.result.geometry.location.lng;
-            setSelectedPlace({
-                latitude: lat,
-                longitude: lng
-            })
-            moveCameraToLocation(lat, lng);
+            const address = response.result.formatted_address;
+            if (isOrigin) {
+                moveCameraToLocation(lat, lng);
+                setOriginPlace({
+                    lat: lat,
+                    lng: lng,
+                    address: address
+                })
+            } else {
+                setDestinationPlace({
+                    lat: lat, 
+                    lng: lng,
+                    address: address
+                })
+            }
+            
         }
     }
 
     const handlegetPlaceDetailsByCoords = async (lat: number, lng: number) => {
         const response: PlaceGeocodeDetail | null = await viewModel.getPlaceDetailsByCoords(lat, lng);
-        console.log("RESPONSE BY COORDS:", response?.results[0]);
         if (response !== null) {
             const address = response.results[0].formatted_address;
             placeAutocompleteRef.current?.setAddressText(address);
+            setOriginPlace({
+                    lat: lat,
+                    lng: lng,
+                    address: address
+                })
         }
     }
 
@@ -96,7 +128,7 @@ export default function ClientSearchMapScreen() {
                 initialRegion={location}
                 region={location}
                 onRegionChangeComplete={(region) => {
-                    console.log("Region:", region);
+
                     handlegetPlaceDetailsByCoords(region.latitude, region.longitude);
                 }}
             >
@@ -113,9 +145,8 @@ export default function ClientSearchMapScreen() {
                 styles={{ container: styles.placeAutocomplete }}
                 placeholder="Recoger en..."
                 onPress={(data, details = null) => {
-                    console.log('Google Place Details:', details);
                     if (details) {
-                        handlegetPlaceDetails(details!.place_id);
+                        handlegetPlaceDetails(details!.place_id, true);
                     }
                 }}
                 query={{
@@ -124,6 +155,23 @@ export default function ClientSearchMapScreen() {
                 }}
                 debounce={200}
             />
+
+            <GooglePlacesAutocomplete
+                styles={{ container: styles.placeDestinationAutocomplete }}
+                placeholder="Destino"
+                onPress={(data, details = null) => {
+                    if (details) {
+                        handlegetPlaceDetails(details!.place_id, false);
+                    }
+                }}
+                query={{
+                    key: "AIzaSyCo2zaq4NDH9Yb5q2GzTSy5rE09Vejs0WI",
+                    language: "es",
+                }}
+                debounce={200}
+            />
+
+
             <Image
                 style={styles.pinImage}
                 source={require("../../../../assets/pin_red.png")}
