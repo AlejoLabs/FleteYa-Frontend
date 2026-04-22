@@ -1,9 +1,9 @@
 import { View, Image } from "react-native"
 import styles from "./Styles"
-import MapView, { LatLng, Marker, Region } from "react-native-maps";
-import { useEffect, useState } from "react";
+import MapView, { Camera, LatLng, Marker, Region } from "react-native-maps";
+import { useEffect, useRef, useState } from "react";
 import * as Location from 'expo-location';
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import { GooglePlacesAutocomplete, GooglePlacesAutocompleteRef } from "react-native-google-places-autocomplete";
 import { container } from "../../../../di/container";
 import { PlaceDetail } from "../../../../domain/models/PlaceDetail";
 import { PlaceGeocodeDetail } from "../../../../domain/models/PlaceGeocodeDetail";
@@ -20,27 +20,47 @@ export default function ClientSearchMapScreen() {
     const [location, setLocation] = useState<Region>(DEFAULT_REGION);
     const [hasLocation, setHasLocation] = useState(false);
     const [selectedPlace, setSelectedPlace] = useState<LatLng | undefined>(undefined);
+    const placeAutocompleteRef = useRef<GooglePlacesAutocompleteRef>(null);
+    const mapRef = useRef<MapView>(null);
+
     const viewModel = container.resolve("clientSearchMapViewModel");
 
     useEffect(() => {
         console.log("Response selectedPlace:", selectedPlace);
     }, [selectedPlace])
 
-    const handlegetPlaceDetails = async (placeId: string) =>{
+    const moveCameraToLocation = (lat: number, lng: number) => {
+        const camera: Camera = {
+            center: {
+                latitude: lat,
+                longitude: lng,
+            },
+            pitch: 0,
+            heading: 0,
+            zoom: 17,
+        };
+        mapRef.current?.animateCamera(camera, { duration: 1000 });
+    }
+
+    const handlegetPlaceDetails = async (placeId: string) => {
         const response: PlaceDetail | null = await viewModel.getPlaceDetails(placeId);
-        if (response !== null){
+        if (response !== null) {
+            const lat = response.result.geometry.location.lat;
+            const lng = response.result.geometry.location.lng;
             setSelectedPlace({
-            latitude: response!.result.geometry.location.lat,
-            longitude: response!.result.geometry.location.lng
-        })
+                latitude: lat,
+                longitude: lng
+            })
+            moveCameraToLocation(lat, lng);
         }
     }
 
-    const handlegetPlaceDetailsByCoords = async (lat: number, lng: number) =>{
+    const handlegetPlaceDetailsByCoords = async (lat: number, lng: number) => {
         const response: PlaceGeocodeDetail | null = await viewModel.getPlaceDetailsByCoords(lat, lng);
         console.log("RESPONSE BY COORDS:", response?.results[0]);
-        if (response !== null){
- 
+        if (response !== null) {
+            const address = response.results[0].formatted_address;
+            placeAutocompleteRef.current?.setAddressText(address);
         }
     }
 
@@ -67,18 +87,19 @@ export default function ClientSearchMapScreen() {
         })();
     }, []);
 
-    return(
+    return (
         <View style={styles.container}>
-            
-            <MapView 
-                style={styles.map} 
-                initialRegion={location} 
+
+            <MapView
+                ref={mapRef}
+                style={styles.map}
+                initialRegion={location}
                 region={location}
-                onRegionChangeComplete={(region) =>{
+                onRegionChangeComplete={(region) => {
                     console.log("Region:", region);
                     handlegetPlaceDetailsByCoords(region.latitude, region.longitude);
                 }}
-                >
+            >
                 {/* hasLocation && (
                     <Marker coordinate={{
                         latitude: location.latitude,
@@ -88,6 +109,7 @@ export default function ClientSearchMapScreen() {
             </MapView>
 
             <GooglePlacesAutocomplete
+                ref={placeAutocompleteRef}
                 styles={{ container: styles.placeAutocomplete }}
                 placeholder="Recoger en..."
                 onPress={(data, details = null) => {
@@ -102,7 +124,7 @@ export default function ClientSearchMapScreen() {
                 }}
                 debounce={200}
             />
-            <Image 
+            <Image
                 style={styles.pinImage}
                 source={require("../../../../assets/pin_red.png")}
             />
