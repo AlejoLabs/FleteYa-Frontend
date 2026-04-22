@@ -9,6 +9,11 @@ import { RegisterUseCase } from "../domain/useCases/auth/RegisterUseCase";
 import { SaveAuthSessionUseCase } from "../domain/useCases/auth/SaveAuthSessionUseCase";
 import { LoginViewModel } from "../presentation/screens/auth/login/LoginViewModel";
 import { RegisterViewModel } from "../presentation/screens/auth/register/RegisterViewModel";
+import { GooglePlaceServices } from "../data/sources/remote/services/GooglePlacesService";
+import { GooglePlaceRepositoryImpl } from "../data/repository/GooglePlaceRepositoryImpl";
+import { GetPlaceDetailsUseCase } from "../domain/useCases/GooglePlaces/GetPlaceDetailsUseCase";
+import { GooglePlaceUseCases } from "../domain/useCases/GooglePlaces/GooglePlacesUseCases";
+import { ClientSearchMapViewModel } from "../presentation/screens/client/searchMap/ClientSearchMapViewModel";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -28,6 +33,12 @@ const authUseCases = new AuthUseCases({
 const loginViewModel = new LoginViewModel({ authUseCases });
 const registerViewModel = new RegisterViewModel({ authUseCases });
 
+const googlePlaceService = new GooglePlaceServices();
+const googlePlaceRepository = new GooglePlaceRepositoryImpl({ googlePlaceService });
+const getPlaceDetailsUseCase = new GetPlaceDetailsUseCase({ googlePlaceRepository });
+const googlePlaceUseCases = new GooglePlaceUseCases({ getPlaceDetailsUseCase });
+const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases });
+
 
 type ContainerDeps = {
     loginViewModel: LoginViewModel;
@@ -36,6 +47,11 @@ type ContainerDeps = {
     getAuthSessionUseCase: GetAuthSessionUseCase;
     removeAuthSessionUseCase: RemoveAuthSessionUseCase;
     authUseCases: AuthUseCases;
+    googlePlaceService: GooglePlaceServices;
+    googlePlaceRepository: GooglePlaceRepositoryImpl;
+    getPlaceDetailsUseCase: GetPlaceDetailsUseCase;
+    googlePlaceUseCases: GooglePlaceUseCases;
+    clientSearchMapViewModel: ClientSearchMapViewModel;
 };
 
 const container = {
@@ -46,7 +62,12 @@ const container = {
             saveAuthSessionUseCase,
             getAuthSessionUseCase,
             removeAuthSessionUseCase,
-            authUseCases
+            authUseCases,
+            googlePlaceService,
+            googlePlaceRepository,
+            getPlaceDetailsUseCase,
+            googlePlaceUseCases,
+            clientSearchMapViewModel
         };
         return deps[name];
     }

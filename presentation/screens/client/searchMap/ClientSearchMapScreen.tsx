@@ -4,6 +4,8 @@ import MapView, { LatLng, Marker, Region } from "react-native-maps";
 import { useEffect, useState } from "react";
 import * as Location from 'expo-location';
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import { container } from "../../../../di/container";
+import { PlaceDetail } from "../../../../domain/models/PlaceDetail";
 
 const DEFAULT_REGION: Region = {
     latitude: 19.4326,
@@ -17,6 +19,21 @@ export default function ClientSearchMapScreen() {
     const [location, setLocation] = useState<Region>(DEFAULT_REGION);
     const [hasLocation, setHasLocation] = useState(false);
     const [selectedPlace, setSelectedPlace] = useState<LatLng | undefined>(undefined);
+    const viewModel = container.resolve("clientSearchMapViewModel");
+
+    useEffect(() => {
+        console.log("Response selectedPlace:", selectedPlace);
+    }, [selectedPlace])
+
+    const handlegetPlaceDetails = async (placeId: string) =>{
+        const response: PlaceDetail | null = await viewModel.getPlaceDetails(placeId);
+        if (response !== null){
+            setSelectedPlace({
+            latitude: response!.result.geometry.location.lat,
+            longitude: response!.result.geometry.location.lng
+        })
+        }
+    }
 
     useEffect(() => {
         (async () => {
@@ -52,12 +69,15 @@ export default function ClientSearchMapScreen() {
                     }} title="Mi ubicacion" />
                 )}
             </MapView>
+
             <GooglePlacesAutocomplete
                 styles={{ container: styles.placeAutocomplete }}
                 placeholder="Recoger en..."
                 onPress={(data, details = null) => {
                     console.log('Google Place Details:', details);
-                    setSelectedPlace(details?.location);
+                    if (details) {
+                        handlegetPlaceDetails(details!.place_id);
+                    }
                 }}
                 query={{
                     key: "AIzaSyCo2zaq4NDH9Yb5q2GzTSy5rE09Vejs0WI",
