@@ -1,12 +1,16 @@
 import { View, Image } from "react-native"
 import styles from "./Styles"
-import MapView, { Camera, LatLng, Marker, Region } from "react-native-maps";
+import MapView, { Camera, LatLng, Marker, Polyline, Region } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
 import * as Location from 'expo-location';
 import { GooglePlacesAutocomplete, GooglePlacesAutocompleteRef } from "react-native-google-places-autocomplete";
 import { container } from "../../../../di/container";
 import { PlaceDetail } from "../../../../domain/models/PlaceDetail";
 import { PlaceGeocodeDetail } from "../../../../domain/models/PlaceGeocodeDetail";
+import { GoogleMapsApiKey } from "../../../../data/sources/remote/api/GoogleMapsApiKey";
+import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
+import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
+import { decode } from "@googlemaps/polyline-codec";
 
 const DEFAULT_REGION: Region = {
     latitude: 19.4326,
@@ -17,7 +21,11 @@ const DEFAULT_REGION: Region = {
 
 export default function ClientSearchMapScreen() {
 
+    const viewModel: ClientSearchMapViewModel = container.resolve("clientSearchMapViewModel");
     const [location, setLocation] = useState<Region>(DEFAULT_REGION);
+    const [directionsRoute, setDirectionsRoute] = useState<LatLng[]>([]);
+    const [shouldDrawRoute, setShouldDrawRoute] = useState<boolean>(false);
+
     const [hasLocation, setHasLocation] = useState(false);
 
     const [originPlace, setOriginPlace] = useState<{
@@ -36,15 +44,15 @@ export default function ClientSearchMapScreen() {
     const placeAutocompleteRef = useRef<GooglePlacesAutocompleteRef>(null);
     const mapRef = useRef<MapView>(null);
 
-    const viewModel = container.resolve("clientSearchMapViewModel");
 
     useEffect(() => {
-        if (originPlace != undefined && destinationPlace !== undefined) {
+        if (originPlace != undefined && destinationPlace !== undefined && shouldDrawRoute) {
             console.log("Ya selecciono lo datos de ubicacion");
             console.log("Origin:", originPlace);
             console.log("Destination:", destinationPlace);
+            handleGetDirections();
         }
-    }, [originPlace, destinationPlace]);
+    }, [originPlace, destinationPlace, shouldDrawRoute]);
 
     const moveCameraToLocation = (lat: number, lng: number) => {
         const camera: Camera = {
@@ -54,9 +62,28 @@ export default function ClientSearchMapScreen() {
             },
             pitch: 0,
             heading: 0,
-            zoom: 17,
+            zoom: 15,
         };
         mapRef.current?.animateCamera(camera, { duration: 1000 });
+    }
+
+    const handleGetDirections = async () => {
+        const response: GoogleDirections | null = await viewModel.getDirections({
+            latitude: originPlace!.lat,
+            longitude: originPlace!.lng,
+        },
+            {
+                latitude: destinationPlace!.lat,
+                longitude: destinationPlace!.lng,
+            }
+        );
+        if (response !== null) {
+            if (response.routes.length > 0) {
+                const points = response.routes[0].overview_polyline.points;
+                const coordinates = decode(points).map(([lat, lng]) => ({ latitude: lat, longitude: lng }));
+                setDirectionsRoute(coordinates);
+            }
+        }
     }
 
     const handlegetPlaceDetails = async (placeId: string, isOrigin: boolean) => {
@@ -74,12 +101,12 @@ export default function ClientSearchMapScreen() {
                 })
             } else {
                 setDestinationPlace({
-                    lat: lat, 
+                    lat: lat,
                     lng: lng,
                     address: address
                 })
             }
-            
+            setShouldDrawRoute(true);
         }
     }
 
@@ -88,11 +115,18 @@ export default function ClientSearchMapScreen() {
         if (response !== null) {
             const address = response.results[0].formatted_address;
             placeAutocompleteRef.current?.setAddressText(address);
-            setOriginPlace({
+            if (originPlace === undefined) {
+                setShouldDrawRoute(true);
+                setOriginPlace({
                     lat: lat,
                     lng: lng,
                     address: address
-                })
+                });
+            }
+            else {
+                setShouldDrawRoute(false);
+            }
+
         }
     }
 
@@ -126,18 +160,49 @@ export default function ClientSearchMapScreen() {
                 ref={mapRef}
                 style={styles.map}
                 initialRegion={location}
+                zoomControlEnabled={true}
                 region={location}
                 onRegionChangeComplete={(region) => {
 
                     handlegetPlaceDetailsByCoords(region.latitude, region.longitude);
                 }}
             >
-                {/* hasLocation && (
-                    <Marker coordinate={{
-                        latitude: location.latitude,
-                        longitude: location.longitude,
-                    }} title="Mi ubicacion" />
-                )*/}
+                {
+                    originPlace && (<Marker coordinate={{
+                        latitude: originPlace!.lat,
+                        longitude: originPlace!.lng
+                    }}
+                        title="Origen"
+                        >
+                        <View style={{ width: 50, height: 50 }}>
+                            <Image
+                                source={require("../../../../assets/pin_map.png")}
+                                style={{ resizeMode: "contain", width: "50%", height: "50%" }}
+                            />
+                        </View>
+                    </Marker>
+                    )
+                }
+                {
+                    destinationPlace && (<Marker coordinate={{
+                        latitude: destinationPlace!.lat,
+                        longitude: destinationPlace!.lng
+                    }}
+                        title="Destino" 
+                        >
+                        <View style={{ width: 50, height: 50 }}>
+                            <Image
+                                source={require("../../../../assets/flag.png")}
+                                style={{ resizeMode: "contain", width: "50%", height: "50%" }}
+                            />
+                        </View>
+                    </Marker>
+                    )
+                }
+                {
+                    directionsRoute.length > 0 && (<Polyline coordinates={directionsRoute} strokeWidth={6} strokeColor="red" />)
+                }
+
             </MapView>
 
             <GooglePlacesAutocomplete
@@ -150,7 +215,7 @@ export default function ClientSearchMapScreen() {
                     }
                 }}
                 query={{
-                    key: "AIzaSyCo2zaq4NDH9Yb5q2GzTSy5rE09Vejs0WI",
+                    key: GoogleMapsApiKey,
                     language: "es",
                 }}
                 debounce={200}
@@ -165,7 +230,7 @@ export default function ClientSearchMapScreen() {
                     }
                 }}
                 query={{
-                    key: "AIzaSyCo2zaq4NDH9Yb5q2GzTSy5rE09Vejs0WI",
+                    key: GoogleMapsApiKey,
                     language: "es",
                 }}
                 debounce={200}

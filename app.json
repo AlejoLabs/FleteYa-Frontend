@@ -6,6 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "extra": {
+      "googleMapsApiKey": "AIzaSyCo2zaq4NDH9Yb5q2GzTSy5rE09Vejs0WI"
+    },
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",

@@ -11,6 +11,7 @@ import { LoginViewModel } from "../presentation/screens/auth/login/LoginViewMode
 import { RegisterViewModel } from "../presentation/screens/auth/register/RegisterViewModel";
 import { GooglePlaceServices } from "../data/sources/remote/services/GooglePlacesService";
 import { GooglePlaceRepositoryImpl } from "../data/repository/GooglePlaceRepositoryImpl";
+import { GetDirectionsUseCase } from "../domain/useCases/GooglePlaces/GetDirectionsUseCase";
 import { GetPlaceDetailsByCoordsUseCase } from "../domain/useCases/GooglePlaces/GetPlaceDetailsByCoordsUseCase";
 import { GetPlaceDetailsUseCase } from "../domain/useCases/GooglePlaces/GetPlaceDetailsUseCase";
 import { GooglePlaceUseCases } from "../domain/useCases/GooglePlaces/GooglePlacesUseCases";
@@ -36,9 +37,10 @@ const registerViewModel = new RegisterViewModel({ authUseCases });
 
 const googlePlaceService = new GooglePlaceServices();
 const googlePlaceRepository = new GooglePlaceRepositoryImpl({ googlePlaceService });
+const getDirectionsUseCase = new GetDirectionsUseCase({ googlePlaceRepository });
 const getPlaceDetailsUseCase = new GetPlaceDetailsUseCase({ googlePlaceRepository });
 const getPlaceDetailsByCoordsUseCase = new GetPlaceDetailsByCoordsUseCase({ googlePlaceRepository });
-const googlePlaceUseCases = new GooglePlaceUseCases({ getPlaceDetailsUseCase, getPlaceDetailsByCoordsUseCase });
+const googlePlaceUseCases = new GooglePlaceUseCases({ getPlaceDetailsUseCase, getPlaceDetailsByCoordsUseCase, getDirectionsUseCase });
 const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases });
 
 
@@ -51,6 +53,7 @@ type ContainerDeps = {
     authUseCases: AuthUseCases;
     googlePlaceService: GooglePlaceServices;
     googlePlaceRepository: GooglePlaceRepositoryImpl;
+    getDirectionsUseCase: GetDirectionsUseCase;
     getPlaceDetailsUseCase: GetPlaceDetailsUseCase;
     getPlaceDetailsByCoordsUseCase: GetPlaceDetailsByCoordsUseCase;
     googlePlaceUseCases: GooglePlaceUseCases;
@@ -68,6 +71,7 @@ const container = {
             authUseCases,
             googlePlaceService,
             googlePlaceRepository,
+            getDirectionsUseCase,
             getPlaceDetailsUseCase,
             getPlaceDetailsByCoordsUseCase,
             googlePlaceUseCases,
