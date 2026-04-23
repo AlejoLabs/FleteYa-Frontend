@@ -1,4 +1,4 @@
-import { View, Image } from "react-native"
+import { View, Image, Animated, Dimensions } from "react-native"
 import styles from "./Styles"
 import MapView, { Camera, LatLng, Marker, Polyline, Region } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
@@ -43,6 +43,8 @@ export default function ClientSearchMapScreen() {
 
     const placeAutocompleteRef = useRef<GooglePlacesAutocompleteRef>(null);
     const mapRef = useRef<MapView>(null);
+    const animatedValue = useRef(new Animated.Value(0)).current;
+    const [isInteractingWithMap, setIsInteractingWithMap] = useState<boolean>(false);
 
 
     useEffect(() => {
@@ -153,92 +155,140 @@ export default function ClientSearchMapScreen() {
         })();
     }, []);
 
+    const toggleView = (isInteractingWithMap: boolean) => {
+        setIsInteractingWithMap(isInteractingWithMap);
+        Animated.timing(animatedValue, {
+            toValue: isInteractingWithMap ? 1 : 0,
+            duration: 200,
+            useNativeDriver: true,
+        }).start();
+    }
+
     return (
         <View style={styles.container}>
-
-            <MapView
-                ref={mapRef}
-                style={styles.map}
-                initialRegion={location}
-                zoomControlEnabled={true}
-                region={location}
-                onRegionChangeComplete={(region) => {
-
-                    handlegetPlaceDetailsByCoords(region.latitude, region.longitude);
+            <Animated.View
+                style={{
+                    transform: [
+                        { scaleY: animatedValue.interpolate({ inputRange: [0, 1], outputRange: [1, 1] }) },
+                        { translateY: animatedValue.interpolate({ inputRange: [0, 1], outputRange: [0, 0] }) }
+                    ],
+                    width: "100%",
+                    position: "absolute",
+                    top: 0
                 }}
             >
-                {
-                    originPlace && (<Marker coordinate={{
-                        latitude: originPlace!.lat,
-                        longitude: originPlace!.lng
+                <MapView
+                    ref={mapRef}
+                    style={{
+                        width: "100%",
+                        height: isInteractingWithMap ? Dimensions.get("window").height * 0.87 : Dimensions.get("window").height * 0.66,
                     }}
-                        title="Origen"
-                        >
-                        <View style={{ width: 50, height: 50 }}>
-                            <Image
-                                source={require("../../../../assets/pin_map.png")}
-                                style={{ resizeMode: "contain", width: "50%", height: "50%" }}
-                            />
-                        </View>
-                    </Marker>
-                    )
-                }
-                {
-                    destinationPlace && (<Marker coordinate={{
-                        latitude: destinationPlace!.lat,
-                        longitude: destinationPlace!.lng
+                    initialRegion={location}
+                    zoomControlEnabled={true}
+                    mapPadding={{ bottom: 80, top: 0, left: 0, right: 0 }}
+                    region={location}
+                    onRegionChangeComplete={(region) => {
+                        toggleView(false);
+                        handlegetPlaceDetailsByCoords(region.latitude, region.longitude);
                     }}
-                        title="Destino" 
+                    onPanDrag={() => toggleView(true)}
+                >
+                    {
+                        originPlace && (<Marker coordinate={{
+                            latitude: originPlace!.lat,
+                            longitude: originPlace!.lng
+                        }}
+                            title="Origen"
                         >
-                        <View style={{ width: 50, height: 50 }}>
-                            <Image
-                                source={require("../../../../assets/flag.png")}
-                                style={{ resizeMode: "contain", width: "50%", height: "50%" }}
-                            />
-                        </View>
-                    </Marker>
-                    )
-                }
-                {
-                    directionsRoute.length > 0 && (<Polyline coordinates={directionsRoute} strokeWidth={6} strokeColor="red" />)
-                }
-
-            </MapView>
-
-            <GooglePlacesAutocomplete
-                ref={placeAutocompleteRef}
-                styles={{ container: styles.placeAutocomplete }}
-                placeholder="Recoger en..."
-                onPress={(data, details = null) => {
-                    if (details) {
-                        handlegetPlaceDetails(details!.place_id, true);
+                            <View style={{ width: 50, height: 50 }}>
+                                <Image
+                                    source={require("../../../../assets/pin_map.png")}
+                                    style={{ resizeMode: "contain", width: "50%", height: "50%" }}
+                                />
+                            </View>
+                        </Marker>
+                        )
                     }
-                }}
-                query={{
-                    key: GoogleMapsApiKey,
-                    language: "es",
-                }}
-                debounce={200}
-            />
-
-            <GooglePlacesAutocomplete
-                styles={{ container: styles.placeDestinationAutocomplete }}
-                placeholder="Destino"
-                onPress={(data, details = null) => {
-                    if (details) {
-                        handlegetPlaceDetails(details!.place_id, false);
+                    {
+                        destinationPlace && (<Marker coordinate={{
+                            latitude: destinationPlace!.lat,
+                            longitude: destinationPlace!.lng
+                        }}
+                            title="Destino"
+                        >
+                            <View style={{ width: 50, height: 50 }}>
+                                <Image
+                                    source={require("../../../../assets/flag.png")}
+                                    style={{ resizeMode: "contain", width: "50%", height: "50%" }}
+                                />
+                            </View>
+                        </Marker>
+                        )
                     }
+                    {
+                        directionsRoute.length > 0 && (<Polyline coordinates={directionsRoute} strokeWidth={6} strokeColor="red" />)
+                    }
+
+                </MapView>
+            </Animated.View>
+
+            <Animated.View
+                style={{
+                    transform: [
+                        { scaleY: animatedValue.interpolate({ inputRange: [0, 1], outputRange: [1, 1] }) },
+                        { translateY: animatedValue.interpolate({ inputRange: [0, 1], outputRange: [0, 200] }) }
+                    ],
+                    width: "100%",
+                    position: "absolute",
+                    height: "30%",
+                    bottom: 0,
+                    backgroundColor: "gray",
+                    padding: 10,
                 }}
-                query={{
-                    key: GoogleMapsApiKey,
-                    language: "es",
-                }}
-                debounce={200}
-            />
+            >
+                <View style={{ width: "100%", height: "100%" }}>
+                    <GooglePlacesAutocomplete
+                        ref={placeAutocompleteRef}
+                        styles={{ container: { width: "100%" } }}
+                        placeholder="Recoger en..."
+                        onPress={(data, details = null) => {
+                            if (details) {
+                                handlegetPlaceDetails(details!.place_id, true);
+                            }
+                        }}
+                        query={{
+                            key: GoogleMapsApiKey,
+                            language: "es",
+                        }}
+                        debounce={200}
+                    />
+
+                    <GooglePlacesAutocomplete
+                        styles={{ container: { width: "100%" } }}
+                        placeholder="Destino"
+                        onPress={(data, details = null) => {
+                            if (details) {
+                                handlegetPlaceDetails(details!.place_id, false);
+                            }
+                        }}
+                        query={{
+                            key: GoogleMapsApiKey,
+                            language: "es",
+                        }}
+                        debounce={200}
+                    />
+
+                </View>
+            </Animated.View>
 
 
             <Image
-                style={styles.pinImage}
+                style={{
+                    height: 40,
+                    width: 40,
+                    position: "absolute",
+                    top: isInteractingWithMap ? "45%" : "35%",
+                }}
                 source={require("../../../../assets/pin_red.png")}
             />
         </View>

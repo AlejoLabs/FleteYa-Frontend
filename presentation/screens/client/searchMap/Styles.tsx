@@ -25,9 +25,6 @@ const styles = StyleSheet.create({
         right: 10,
     },
     pinImage: {
-        height: 40,
-        width: 40,
-        position: "absolute",
     }
 
 });
