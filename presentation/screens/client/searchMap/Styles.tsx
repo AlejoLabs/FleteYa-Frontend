@@ -30,6 +30,18 @@ const styles = StyleSheet.create({
         width: "100%",
         height: 70,
         backgroundColor: "yellow",
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        justifyContent: "flex-end",
+    },
+    modalContent: {
+        height: '90%',
+        backgroundColor: "white",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: 16,
     }
 
 });

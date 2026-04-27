@@ -1,4 +1,4 @@
-import { View, Image, Animated, Dimensions, Text } from "react-native"
+import { View, Image, Animated, Dimensions, Text, TouchableOpacity, Modal, Pressable } from "react-native"
 import styles from "./Styles"
 import MapView, { Camera, LatLng, Marker, Polyline, Region } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
@@ -29,6 +29,8 @@ export default function ClientSearchMapScreen() {
     const [shouldDrawRoute, setShouldDrawRoute] = useState<boolean>(false);
     const [isInteractingWithMap, setIsInteractingWithMap] = useState<boolean>(false);
     const [timeAndDistance, setTimeAndDistance] = useState<TimeAndDistanceValues>();
+    const [isOriginModalVisible, setIsOriginModalVisible] = useState(false);
+    const [isDestinationModalVisible, setIsDestinationModalVisible] = useState(false);
 
     const [hasLocation, setHasLocation] = useState(false);
 
@@ -48,7 +50,7 @@ export default function ClientSearchMapScreen() {
     const placeAutocompleteRef = useRef<GooglePlacesAutocompleteRef>(null);
     const mapRef = useRef<MapView>(null);
     const animatedValue = useRef(new Animated.Value(0)).current;
-    
+
 
 
     useEffect(() => {
@@ -85,7 +87,7 @@ export default function ClientSearchMapScreen() {
                 longitude: destinationPlace!.lng,
             }
         );
-        if('distance' in response) {
+        if ('distance' in response) {
             const result = response as TimeAndDistanceValues;
             setTimeAndDistance(result);
         }
@@ -126,13 +128,15 @@ export default function ClientSearchMapScreen() {
                     lat: lat,
                     lng: lng,
                     address: address
-                })
+                });
+                setIsOriginModalVisible(false);
             } else {
                 setDestinationPlace({
                     lat: lat,
                     lng: lng,
                     address: address
-                })
+                });
+                setIsDestinationModalVisible(false);
             }
             setShouldDrawRoute(true);
         }
@@ -272,37 +276,75 @@ export default function ClientSearchMapScreen() {
                     padding: 10,
                 }}
             >
-                <View style={{ width: "100%", height: "100%" }}>
-                    <GooglePlacesAutocomplete
-                        ref={placeAutocompleteRef}
-                        styles={{ container: { width: "100%" } }}
-                        placeholder="Recoger en..."
-                        onPress={(data, details = null) => {
-                            if (details) {
-                                handlegetPlaceDetails(details!.place_id, true);
-                            }
-                        }}
-                        query={{
-                            key: GoogleMapsApiKey,
-                            language: "es",
-                        }}
-                        debounce={200}
-                    />
 
-                    <GooglePlacesAutocomplete
-                        styles={{ container: { width: "100%" } }}
-                        placeholder="Destino"
-                        onPress={(data, details = null) => {
-                            if (details) {
-                                handlegetPlaceDetails(details!.place_id, false);
-                            }
-                        }}
-                        query={{
-                            key: GoogleMapsApiKey,
-                            language: "es",
-                        }}
-                        debounce={200}
-                    />
+                <View style={{ width: "100%", height: "100%" }}>
+
+                    <TouchableOpacity onPress={() => setIsOriginModalVisible(true)}>
+                        <Text>Recoger en</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => setIsDestinationModalVisible(true)}>
+                        <Text>Destino</Text>
+                    </TouchableOpacity>
+
+                    <Modal
+                        visible={isOriginModalVisible}
+                        animationType="slide"
+                        onRequestClose={() => setIsOriginModalVisible(false)}
+                        transparent={true}
+                    >
+                        <Pressable style={styles.modalOverlay} onPress={() => setIsOriginModalVisible(false)}>
+                            <Pressable style={styles.modalContent} onPress={() => { }}>
+                                <GooglePlacesAutocomplete
+                                    ref={placeAutocompleteRef}
+                                    styles={{ container: { width: "100%" } }}
+                                    placeholder="Recoger en..."
+                                    onPress={(data, details = null) => {
+                                        if (details) {
+                                            handlegetPlaceDetails(details!.place_id, true);
+                                        }
+                                    }}
+                                    query={{
+                                        key: GoogleMapsApiKey,
+                                        language: "es",
+                                    }}
+                                    debounce={200}
+                                />
+
+                            </Pressable>
+                        </Pressable>
+
+                    </Modal>
+
+                    <Modal
+                        visible={isDestinationModalVisible}
+                        animationType="slide"
+                        onRequestClose={() => setIsDestinationModalVisible(false)}
+                        transparent={true}
+                    >
+                        <Pressable style={styles.modalOverlay} onPress={() => setIsDestinationModalVisible(false)}>
+                            <Pressable style={styles.modalContent} onPress={() => { }}>
+                                <GooglePlacesAutocomplete
+                                    styles={{ container: { width: "100%" } }}
+                                    placeholder="Destino"
+                                    onPress={(data, details = null) => {
+                                        if (details) {
+                                            handlegetPlaceDetails(details!.place_id, false);
+                                        }
+                                    }}
+                                    query={{
+                                        key: GoogleMapsApiKey,
+                                        language: "es",
+                                    }}
+                                    debounce={200}
+                                />
+
+                            </Pressable>
+                        </Pressable>
+
+                    </Modal>
+
+
                     <View style={styles.timeAndDistanceView}>
                         <Text>Precio recomendado: ${timeAndDistance?.recommended_value.toFixed(0)}</Text>
                         <Text>Tiempo y distancia: ${timeAndDistance?.duration.text} ${timeAndDistance?.distance.text}</Text>
