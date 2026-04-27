@@ -16,6 +16,10 @@ import { GetPlaceDetailsByCoordsUseCase } from "../domain/useCases/GooglePlaces/
 import { GetPlaceDetailsUseCase } from "../domain/useCases/GooglePlaces/GetPlaceDetailsUseCase";
 import { GooglePlaceUseCases } from "../domain/useCases/GooglePlaces/GooglePlacesUseCases";
 import { ClientSearchMapViewModel } from "../presentation/screens/client/searchMap/ClientSearchMapViewModel";
+import { ClientRequestService } from "../data/sources/remote/services/ClientRequestService";
+import { ClientRequestRepositoryImpl } from "../data/repository/ClientRequestRepositoryImpl";
+import { GetTimeAndDistanceUseCase } from "../domain/useCases/clientRequest/GetTimeAndDistanceUseCase";
+import { ClientRequestUseCases } from "../domain/useCases/clientRequest/ClientRequestUseCases";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -41,7 +45,11 @@ const getDirectionsUseCase = new GetDirectionsUseCase({ googlePlaceRepository })
 const getPlaceDetailsUseCase = new GetPlaceDetailsUseCase({ googlePlaceRepository });
 const getPlaceDetailsByCoordsUseCase = new GetPlaceDetailsByCoordsUseCase({ googlePlaceRepository });
 const googlePlaceUseCases = new GooglePlaceUseCases({ getPlaceDetailsUseCase, getPlaceDetailsByCoordsUseCase, getDirectionsUseCase });
-const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases });
+const clientRequestService = new ClientRequestService();
+const clientRequestRepository = new ClientRequestRepositoryImpl({ clientRequestService });
+const getTimeAndDistanceUseCase = new GetTimeAndDistanceUseCase({ clientRequestRepository });
+const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase });
+const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases });
 
 
 type ContainerDeps = {
@@ -58,6 +66,10 @@ type ContainerDeps = {
     getPlaceDetailsByCoordsUseCase: GetPlaceDetailsByCoordsUseCase;
     googlePlaceUseCases: GooglePlaceUseCases;
     clientSearchMapViewModel: ClientSearchMapViewModel;
+    clientRequestService: ClientRequestService;
+    clientRequestRepository: ClientRequestRepositoryImpl;
+    getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
+    clientRequestUseCases: ClientRequestUseCases;
 };
 
 const container = {
@@ -75,7 +87,11 @@ const container = {
             getPlaceDetailsUseCase,
             getPlaceDetailsByCoordsUseCase,
             googlePlaceUseCases,
-            clientSearchMapViewModel
+            clientSearchMapViewModel,
+            clientRequestService,
+            clientRequestRepository,
+            getTimeAndDistanceUseCase,
+            clientRequestUseCases
         };
         return deps[name];
     }

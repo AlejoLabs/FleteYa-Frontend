@@ -25,6 +25,11 @@ const styles = StyleSheet.create({
         right: 10,
     },
     pinImage: {
+    },
+    timeAndDistanceView: {
+        width: "100%",
+        height: 70,
+        backgroundColor: "yellow",
     }
 
 });

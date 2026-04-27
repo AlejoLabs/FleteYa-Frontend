@@ -1,4 +1,4 @@
-import { View, Image, Animated, Dimensions } from "react-native"
+import { View, Image, Animated, Dimensions, Text } from "react-native"
 import styles from "./Styles"
 import MapView, { Camera, LatLng, Marker, Polyline, Region } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
@@ -11,6 +11,8 @@ import { GoogleMapsApiKey } from "../../../../data/sources/remote/api/GoogleMaps
 import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
 import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { decode } from "@googlemaps/polyline-codec";
+import { TimeAndDistanceValues } from "../../../../domain/models/TimeAndDistanceValues";
+import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 
 const DEFAULT_REGION: Region = {
     latitude: 19.4326,
@@ -25,6 +27,8 @@ export default function ClientSearchMapScreen() {
     const [location, setLocation] = useState<Region>(DEFAULT_REGION);
     const [directionsRoute, setDirectionsRoute] = useState<LatLng[]>([]);
     const [shouldDrawRoute, setShouldDrawRoute] = useState<boolean>(false);
+    const [isInteractingWithMap, setIsInteractingWithMap] = useState<boolean>(false);
+    const [timeAndDistance, setTimeAndDistance] = useState<TimeAndDistanceValues>();
 
     const [hasLocation, setHasLocation] = useState(false);
 
@@ -44,7 +48,7 @@ export default function ClientSearchMapScreen() {
     const placeAutocompleteRef = useRef<GooglePlacesAutocompleteRef>(null);
     const mapRef = useRef<MapView>(null);
     const animatedValue = useRef(new Animated.Value(0)).current;
-    const [isInteractingWithMap, setIsInteractingWithMap] = useState<boolean>(false);
+    
 
 
     useEffect(() => {
@@ -53,6 +57,7 @@ export default function ClientSearchMapScreen() {
             console.log("Origin:", originPlace);
             console.log("Destination:", destinationPlace);
             handleGetDirections();
+            handleGetTimeAndDistance();
         }
     }, [originPlace, destinationPlace, shouldDrawRoute]);
 
@@ -69,11 +74,32 @@ export default function ClientSearchMapScreen() {
         mapRef.current?.animateCamera(camera, { duration: 1000 });
     }
 
+    const handleGetTimeAndDistance = async () => {
+        const response: TimeAndDistanceValues | ErrorResponse = await viewModel.getTimeAndDistance(
+            {
+                latitude: originPlace!.lat,
+                longitude: originPlace!.lng,
+            },
+            {
+                latitude: destinationPlace!.lat,
+                longitude: destinationPlace!.lng,
+            }
+        );
+        if('distance' in response) {
+            const result = response as TimeAndDistanceValues;
+            setTimeAndDistance(result);
+        }
+        else {
+            const error = response as ErrorResponse;
+        }
+    }
+
     const handleGetDirections = async () => {
-        const response: GoogleDirections | null = await viewModel.getDirections({
-            latitude: originPlace!.lat,
-            longitude: originPlace!.lng,
-        },
+        const response: GoogleDirections | null = await viewModel.getDirections(
+            {
+                latitude: originPlace!.lat,
+                longitude: originPlace!.lng,
+            },
             {
                 latitude: destinationPlace!.lat,
                 longitude: destinationPlace!.lng,
@@ -277,7 +303,10 @@ export default function ClientSearchMapScreen() {
                         }}
                         debounce={200}
                     />
-
+                    <View style={styles.timeAndDistanceView}>
+                        <Text>Precio recomendado: ${timeAndDistance?.recommended_value.toFixed(0)}</Text>
+                        <Text>Tiempo y distancia: ${timeAndDistance?.duration.text} ${timeAndDistance?.distance.text}</Text>
+                    </View>
                 </View>
             </Animated.View>
 
