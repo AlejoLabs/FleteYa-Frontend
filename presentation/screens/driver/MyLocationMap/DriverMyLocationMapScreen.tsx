@@ -1,15 +1,18 @@
 import { Platform, View, Image } from "react-native";
 import styles from "./Styles";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MapView, { Marker, Region } from "react-native-maps";
 import * as Location from "expo-location";
 import { DriverMyLocationMapViewModel } from "./DriverMyLocationMapViewModel";
 import { container } from "../../../../di/container";
+import ToggleSwitch from "toggle-switch-react-native";
 
 export default function DriverMyLocationMapScreen() {
-    
+
     const viewModel: DriverMyLocationMapViewModel = container.resolve('driverMyLocationMapViewModel');
     const [location, setLocation] = useState<Region | undefined>(undefined);
+    const [tracking, setTracking] = useState<boolean>(true);
+    const locationSubscription = useRef<Location.LocationSubscription | null>(null);
 
     useEffect(() => {
         (async () => {
@@ -27,25 +30,67 @@ export default function DriverMyLocationMapScreen() {
                     }
                 }
 
-                let location = await Location.getCurrentPositionAsync({});
-                setLocation({
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
-                });
-                viewModel.initSocket();
+                if (tracking) {
+                    startRealTimeLocation();
+                }
+                else {
+                    stopRealTimeLocation();
+                }
+
+
             } catch (error) {
                 console.log('No se pudo obtener la ubicacion actual', error);
             }
         })();
-    }, []);
+    }, [tracking]);
+
+    const startRealTimeLocation = async () => {
+        if (!locationSubscription.current) {
+
+            locationSubscription.current = await Location.watchPositionAsync(
+            {
+                accuracy: Location.Accuracy.BestForNavigation,
+                timeInterval: 1000,
+                distanceInterval: 1
+            },
+            (newLocation) => {
+                console.log('NUEVA UBICACION:', newLocation);
+                setLocation({
+                    latitude: newLocation.coords.latitude,
+                    longitude: newLocation.coords.longitude,
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
+                });
+            }
+
+        );
+        }
+
+        viewModel.initSocket();
+    }
+
+    const stopRealTimeLocation = () => {
+        console.log('Locacion detenida');
+        if (locationSubscription.current) {
+            locationSubscription.current.remove();
+            locationSubscription.current = null;
+        }
+    }
+
 
     if (!location) {
         return <View style={styles.container}></View>
     }
+
     return (
         <View style={styles.container}>
+            <ToggleSwitch
+                isOn={tracking}
+                onColor="red"
+                offColor="gray"
+                label={tracking ? "Desahabilitar" : "Habilitar"}
+                onToggle={(isOn) => setTracking(isOn)}
+            />
             <MapView
                 style={{
                     width: "100%",
@@ -66,7 +111,7 @@ export default function DriverMyLocationMapScreen() {
                         <View style={{ width: 50, height: 50 }}>
                             <Image
                                 source={require("../../../../assets/pin_map.png")}
-                                style={{ resizeMode: "contain", width: "50%", height: "50%" }}
+                                style={{ resizeMode: "contain", width: 50, height: 50 }}
                             />
                         </View>
                     </Marker>
