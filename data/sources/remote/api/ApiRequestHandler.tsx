@@ -26,4 +26,4 @@ const GoogleApiRequestHandler = axios.create({
 });
 
 
-export  {ApiRequestHandler, GoogleApiRequestHandler}
+export  {ApiRequestHandler, GoogleApiRequestHandler, BASE_URL}

@@ -1,12 +1,13 @@
 import { Socket } from "socket.io-client";
 import io from "socket.io-client";
+import { BASE_URL } from "../api/ApiRequestHandler";
 
 export class SocketService {
 
     private socket: Socket;
 
     constructor(socket: Socket) {
-        this.socket = io('BASE_URL',{
+        this.socket = io(BASE_URL,{
             transports: ['websocket'],
             reconnection: true,
             reconnectionAttempts: 5,

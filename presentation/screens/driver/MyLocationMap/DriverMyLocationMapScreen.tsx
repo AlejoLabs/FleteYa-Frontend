@@ -6,12 +6,14 @@ import * as Location from "expo-location";
 import { DriverMyLocationMapViewModel } from "./DriverMyLocationMapViewModel";
 import { container } from "../../../../di/container";
 import ToggleSwitch from "toggle-switch-react-native";
+import { useAuth } from "../../../hooks/useAuth";
 
 export default function DriverMyLocationMapScreen() {
 
     const viewModel: DriverMyLocationMapViewModel = container.resolve('driverMyLocationMapViewModel');
     const [location, setLocation] = useState<Region | undefined>(undefined);
     const [tracking, setTracking] = useState<boolean>(true);
+    const {authResponse} = useAuth();
     const locationSubscription = useRef<Location.LocationSubscription | null>(null);
 
     useEffect(() => {
@@ -44,6 +46,12 @@ export default function DriverMyLocationMapScreen() {
         })();
     }, [tracking]);
 
+    useEffect(() => {
+        if(location != undefined){
+            emitPosition();
+        }
+    }, [location]);
+
     const startRealTimeLocation = async () => {
         if (!locationSubscription.current) {
 
@@ -55,18 +63,26 @@ export default function DriverMyLocationMapScreen() {
             },
             (newLocation) => {
                 console.log('NUEVA UBICACION:', newLocation);
+
                 setLocation({
                     latitude: newLocation.coords.latitude,
                     longitude: newLocation.coords.longitude,
                     latitudeDelta: 0.0922,
                     longitudeDelta: 0.0421,
                 });
+                
             }
 
         );
         }
 
         viewModel.initSocket();
+    }
+
+    const emitPosition = () => {
+        if(authResponse?.user != null && location != undefined){
+            viewModel.emitDriverPosition(authResponse?.user.id!, location!.latitude, location!.longitude);
+        }
     }
 
     const stopRealTimeLocation = () => {

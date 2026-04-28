@@ -24,12 +24,19 @@ export class DriverMyLocationMapViewModel {
     }
 
     initSocket(){
-        const socket = this.socketService.getSocket();
-        socket.connect();
-        socket.on('connect', () => {
+        this.socketService.getSocket().connect();
+        this.socketService.onMessage('connect', () => {
             console.log('Conectado a SOCKET IO');
         });
-    }   
+    } 
+    
+    emitDriverPosition(id: number, lat: number, lng: number){
+        this.socketService.sendMessage('change_driver_position', {
+            'id': id,
+            'lat': lat,
+            'lng': lng
+        });
+    }
 
 
 }
