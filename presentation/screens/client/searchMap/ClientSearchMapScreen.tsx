@@ -232,9 +232,11 @@ export default function ClientSearchMapScreen() {
                     onPanDrag={() => toggleView(true)}
                 >
                     {
-                        originPlace && (<Marker coordinate={{
-                            latitude: originPlace!.lat,
-                            longitude: originPlace!.lng
+                        originMarker && 
+                        (<Marker 
+                            coordinate={{
+                            latitude: originMarker!.latitude,
+                            longitude: originMarker!.longitude
                         }}
                             title="Origen"
                         >
