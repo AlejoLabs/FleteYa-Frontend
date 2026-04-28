@@ -6,7 +6,7 @@ export class SocketService {
     private socket: Socket;
 
     constructor(socket: Socket) {
-        this.socket = io('http://192.168.0.39:3000',{
+        this.socket = io('BASE_URL',{
             transports: ['websocket'],
             reconnection: true,
             reconnectionAttempts: 5,

@@ -8,6 +8,7 @@ import ClientHomeScreen from "../screens/client/home/ClientHomeScreen";
 import DriverHomeScreen from "../screens/driver/home/DriverHomeScreen";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import ClientSearchMapScreen from "../screens/client/searchMap/ClientSearchMapScreen";
+import DriverMyLocationMapScreen from "../screens/driver/MyLocationMap/DriverMyLocationMapScreen";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -15,6 +16,7 @@ export type RootStackParamList = {
     RolesScreen: undefined,
     ClientHomeScreen: undefined,
     DriverHomeScreen: undefined,
+    DriverMyLocationMapScreen: undefined,
     ClientSearchMapScreen: undefined,
 }
 
@@ -65,7 +67,7 @@ export const MainStackNavigator = () => {
                         headerShown: false,
                     }}
                     name="DriverHomeScreen"
-                    component={DriverHomeScreen}
+                    component={DriverDrawerNavigator}
                 />
 
 
@@ -79,6 +81,14 @@ const ClientDrawerNavigator = () => {
     return (
         <Drawer.Navigator initialRouteName="ClientSearchMapScreen">
             <Drawer.Screen name="ClientSearchMapScreen" component={ClientSearchMapScreen} />
+        </Drawer.Navigator>
+    )
+}
+
+const DriverDrawerNavigator = () => {
+    return (
+        <Drawer.Navigator initialRouteName="DriverMyLocationMapScreen">
+            <Drawer.Screen name="DriverMyLocationMapScreen" component={DriverMyLocationMapScreen} />
         </Drawer.Navigator>
     )
 }

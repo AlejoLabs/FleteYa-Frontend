@@ -9,6 +9,7 @@ import { TimeAndDistanceValues } from "../../../../domain/models/TimeAndDistance
 import { SocketService } from "../../../../data/sources/remote/services/SocketService";
 
 export class ClientSearchMapViewModel {
+    
     private googlePlaceUseCases: GooglePlaceUseCases;
     private clientRequestUseCases: ClientRequestUseCases;
     private socketService: SocketService;

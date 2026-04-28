@@ -21,6 +21,7 @@ import { ClientRequestRepositoryImpl } from "../data/repository/ClientRequestRep
 import { GetTimeAndDistanceUseCase } from "../domain/useCases/clientRequest/GetTimeAndDistanceUseCase";
 import { ClientRequestUseCases } from "../domain/useCases/clientRequest/ClientRequestUseCases";
 import { SocketService } from "../data/sources/remote/services/SocketService";
+import { DriverMyLocationMapViewModel } from "../presentation/screens/driver/MyLocationMap/DriverMyLocationMapViewModel";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -52,6 +53,7 @@ const getTimeAndDistanceUseCase = new GetTimeAndDistanceUseCase({ clientRequestR
 const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase });
 const socketService = new SocketService({} as any);
 const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService });
+const driverMyLocationMapViewModel = new DriverMyLocationMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService });
 
 
 type ContainerDeps = {
@@ -73,6 +75,7 @@ type ContainerDeps = {
     getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
     clientRequestUseCases: ClientRequestUseCases;
     socketService: SocketService;
+    driverMyLocationMapViewModel: DriverMyLocationMapViewModel;
 };
 
 const container = {
@@ -95,7 +98,8 @@ const container = {
             clientRequestRepository,
             getTimeAndDistanceUseCase,
             clientRequestUseCases,
-            socketService
+            socketService,
+            driverMyLocationMapViewModel
         };
         return deps[name];
     }
