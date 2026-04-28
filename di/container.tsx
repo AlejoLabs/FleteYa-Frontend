@@ -20,6 +20,7 @@ import { ClientRequestService } from "../data/sources/remote/services/ClientRequ
 import { ClientRequestRepositoryImpl } from "../data/repository/ClientRequestRepositoryImpl";
 import { GetTimeAndDistanceUseCase } from "../domain/useCases/clientRequest/GetTimeAndDistanceUseCase";
 import { ClientRequestUseCases } from "../domain/useCases/clientRequest/ClientRequestUseCases";
+import { SocketService } from "../data/sources/remote/services/SocketService";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -49,7 +50,8 @@ const clientRequestService = new ClientRequestService();
 const clientRequestRepository = new ClientRequestRepositoryImpl({ clientRequestService });
 const getTimeAndDistanceUseCase = new GetTimeAndDistanceUseCase({ clientRequestRepository });
 const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase });
-const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases });
+const socketService = new SocketService({} as any);
+const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService });
 
 
 type ContainerDeps = {
@@ -70,6 +72,7 @@ type ContainerDeps = {
     clientRequestRepository: ClientRequestRepositoryImpl;
     getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
     clientRequestUseCases: ClientRequestUseCases;
+    socketService: SocketService;
 };
 
 const container = {
@@ -91,7 +94,8 @@ const container = {
             clientRequestService,
             clientRequestRepository,
             getTimeAndDistanceUseCase,
-            clientRequestUseCases
+            clientRequestUseCases,
+            socketService
         };
         return deps[name];
     }
