@@ -40,6 +40,8 @@ export default function ClientSearchMapScreen() {
         address?: string
     } | undefined>(undefined);
 
+    const [originMarker, setOriginMarker] = useState<LatLng>();
+
     const [destinationPlace, setDestinationPlace] = useState<{
         lat: number,
         lng: number,
@@ -48,6 +50,7 @@ export default function ClientSearchMapScreen() {
 
 
     const placeAutocompleteRef = useRef<GooglePlacesAutocompleteRef>(null);
+    const placeAutocompleteDestinationRef = useRef<GooglePlacesAutocompleteRef>(null);
     const mapRef = useRef<MapView>(null);
     const animatedValue = useRef(new Animated.Value(0)).current;
 
@@ -112,6 +115,10 @@ export default function ClientSearchMapScreen() {
                 const points = response.routes[0].overview_polyline.points;
                 const coordinates = decode(points).map(([lat, lng]) => ({ latitude: lat, longitude: lng }));
                 setDirectionsRoute(coordinates);
+                setOriginMarker({
+                    latitude: originPlace!.lat,
+                    longitude: originPlace!.lng,
+                });
             }
         }
     }
@@ -149,15 +156,16 @@ export default function ClientSearchMapScreen() {
             placeAutocompleteRef.current?.setAddressText(address);
             if (originPlace === undefined) {
                 setShouldDrawRoute(true);
-                setOriginPlace({
-                    lat: lat,
-                    lng: lng,
-                    address: address
-                });
+                
             }
             else {
                 setShouldDrawRoute(false);
             }
+            setOriginPlace({
+                    lat: lat,
+                    lng: lng,
+                    address: address
+                });
 
         }
     }
@@ -272,19 +280,21 @@ export default function ClientSearchMapScreen() {
                     position: "absolute",
                     height: "30%",
                     bottom: 0,
-                    backgroundColor: "gray",
+                    backgroundColor: "white",
                     padding: 10,
+                    borderTopLeftRadius: 25,
+                    borderTopRightRadius: 25,
                 }}
             >
 
                 <View style={{ width: "100%", height: "100%" }}>
 
-                    <TouchableOpacity onPress={() => setIsOriginModalVisible(true)}>
-                        <Text>Recoger en</Text>
+                    <TouchableOpacity style={styles.infoContainer} onPress={() => setIsOriginModalVisible(true)}>
+                        <Text>{originPlace?.address ?? "Recoger en..."}</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => setIsDestinationModalVisible(true)}>
-                        <Text>Destino</Text>
+                    <TouchableOpacity style={styles.infoContainer} onPress={() => setIsDestinationModalVisible(true)}>
+                        <Text>{destinationPlace?.address ?? "Destino..."}</Text>
                     </TouchableOpacity>
 
                     <Modal
@@ -292,9 +302,18 @@ export default function ClientSearchMapScreen() {
                         animationType="slide"
                         onRequestClose={() => setIsOriginModalVisible(false)}
                         transparent={true}
+                        onShow={() =>{
+                            placeAutocompleteRef.current?.setAddressText("");
+                            setTimeout(() => {
+                                placeAutocompleteRef.current?.focus();
+                            }, 200);
+                        }}
                     >
                         <Pressable style={styles.modalOverlay} onPress={() => setIsOriginModalVisible(false)}>
                             <Pressable style={styles.modalContent} onPress={() => { }}>
+                                <View style={styles.viewDecoration}>
+                                    <Text style={styles.textDecoration}>Selecciona tu origen</Text>
+                                </View>
                                 <GooglePlacesAutocomplete
                                     ref={placeAutocompleteRef}
                                     styles={{ container: { width: "100%" } }}
@@ -321,10 +340,20 @@ export default function ClientSearchMapScreen() {
                         animationType="slide"
                         onRequestClose={() => setIsDestinationModalVisible(false)}
                         transparent={true}
+                        onShow={() =>{
+                            placeAutocompleteDestinationRef.current?.setAddressText("");
+                            setTimeout(() => {
+                                placeAutocompleteDestinationRef.current?.focus();
+                            }, 200);
+                        }}
                     >
                         <Pressable style={styles.modalOverlay} onPress={() => setIsDestinationModalVisible(false)}>
                             <Pressable style={styles.modalContent} onPress={() => { }}>
+                                 <View style={styles.viewDecoration}>
+                                    <Text style={styles.textDecoration}>Selecciona tu destino</Text>
+                                </View>
                                 <GooglePlacesAutocomplete
+                                    ref={placeAutocompleteDestinationRef}
                                     styles={{ container: { width: "100%" } }}
                                     placeholder="Destino"
                                     onPress={(data, details = null) => {
@@ -346,8 +375,8 @@ export default function ClientSearchMapScreen() {
 
 
                     <View style={styles.timeAndDistanceView}>
-                        <Text>Precio recomendado: ${timeAndDistance?.recommended_value.toFixed(0)}</Text>
-                        <Text>Tiempo y distancia: ${timeAndDistance?.duration.text} ${timeAndDistance?.distance.text}</Text>
+                        <Text style={styles.timeAndDistanceText}>Precio recomendado: ${Math.round((timeAndDistance?.recommended_value ?? 0) / 100) * 100}</Text>
+                        <Text style={styles.timeAndDistanceText}>Tiempo y distancia: {timeAndDistance?.duration.text} {timeAndDistance?.distance.text}</Text>
                     </View>
                 </View>
             </Animated.View>
@@ -358,7 +387,7 @@ export default function ClientSearchMapScreen() {
                     height: 40,
                     width: 40,
                     position: "absolute",
-                    top: isInteractingWithMap ? "45%" : "35%",
+                    top: isInteractingWithMap ? "40%" : "28%",
                 }}
                 source={require("../../../../assets/pin_red.png")}
             />

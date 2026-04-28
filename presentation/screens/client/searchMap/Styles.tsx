@@ -29,7 +29,14 @@ const styles = StyleSheet.create({
     timeAndDistanceView: {
         width: "100%",
         height: 70,
-        backgroundColor: "yellow",
+        backgroundColor: "#EA4C4C",
+        borderRadius: 10,
+        justifyContent: "center",
+        paddingLeft: 20,
+    },
+    timeAndDistanceText: {
+        color: "white",
+        fontSize: 15,
     },
     modalOverlay: {
         flex: 1,
@@ -41,7 +48,27 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        padding: 16,
+        paddingBottom: 16,
+    },
+    viewDecoration: {
+        backgroundColor: "black",
+        width: "100%",
+        height: 50,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        justifyContent: "center",
+        paddingLeft: 20,
+    },
+    textDecoration: {
+        color: "white",
+    },
+    infoContainer: {
+        backgroundColor: "rgba(240, 240, 240)",
+        height: 40,
+        justifyContent: "center",
+        paddingLeft: 20,
+        marginBottom: 10,
+        borderRadius: 10,
     }
 
 });
