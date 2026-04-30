@@ -33,6 +33,7 @@ export const AuthProvider = ({children, authUseCases}: any) => {
 
     const removeAuthSession = async () => {
         await authUseCases.removeAuthSession.execute();
+        setAuthResponse(null);
     }
 
     return (
