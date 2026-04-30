@@ -191,6 +191,7 @@ export default function ClientSearchMapScreen() {
                     longitudeDelta: 0.0421,
                 });
                 viewModel.initSocket();
+                viewModel.listenerDriverPositionSocket();
                 setHasLocation(true);
             } catch (error) {
                 console.log('No se pudo obtener la ubicacion actual', error);

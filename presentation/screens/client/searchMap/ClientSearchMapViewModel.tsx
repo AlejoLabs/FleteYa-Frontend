@@ -31,9 +31,8 @@ export class ClientSearchMapViewModel {
     }
 
     initSocket(){
-        const socket = this.socketService.getSocket();
-        socket.connect();
-        socket.on('connect', () => {
+        this.socketService.getSocket();
+        this.socketService.onMessage('connect', () => {
             console.log('Conectado a SOCKET IO');
         });
     }   
@@ -52,5 +51,11 @@ export class ClientSearchMapViewModel {
 
     async getTimeAndDistance(origin: LatLng, destination: LatLng): Promise<TimeAndDistanceValues | ErrorResponse> {
         return await this.clientRequestUseCases.getTimeAndDistanceUseCase.execute(origin, destination);
+    }
+
+    listenerDriverPositionSocket(){
+        this.socketService.onMessage('new_driver_position', (data: any) => {
+            console.log('NUEVO CONDUCTOR', data);
+        });
     }
 }
