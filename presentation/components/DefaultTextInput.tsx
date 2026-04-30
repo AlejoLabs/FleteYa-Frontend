@@ -10,6 +10,7 @@ interface Props {
   secureTextEntry?: boolean;
   textColor?: string;
   placeholderTextColor?: string;
+  borderBottomColor?: string;
 }
 
 const DefaultTextInput = ({
@@ -21,6 +22,7 @@ const DefaultTextInput = ({
   secureTextEntry = false,
   textColor = 'white',
   placeholderTextColor = 'white',
+  borderBottomColor = 'white',
 }: Props) => {
   return (
     <View style={styles.containerTextInput}>
@@ -30,7 +32,7 @@ const DefaultTextInput = ({
       />
 
       <TextInput
-        style={{ ...styles.textInput, color: textColor }}
+        style={{ ...styles.textInput, color: textColor, borderBottomColor: borderBottomColor }}
         placeholder={placeholder}
         placeholderTextColor={placeholderTextColor}
         value={value}

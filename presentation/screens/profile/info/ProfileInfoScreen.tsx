@@ -3,11 +3,14 @@ import styles from "./Styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../hooks/useAuth";
 import { RootStackParamList } from "../../../navigator/MainStackNavigator";
-import { StackScreenProps } from "@react-navigation/stack";
+import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
+import { ProfileStackParamList } from "../../../navigator/ProfileStackNavigator";
+import { useNavigation } from "@react-navigation/native";
 
-interface Props extends StackScreenProps<RootStackParamList, 'ProfileInfoScreen'> {}
+interface Props extends StackScreenProps<ProfileStackParamList, 'ProfileInfoScreen'> {}
 export default function ProfileInfoScreen({navigation, route}: Props) {
 
+    const rootNavigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     const {authResponse, removeAuthSession} = useAuth();
 
     return (
@@ -39,15 +42,17 @@ export default function ProfileInfoScreen({navigation, route}: Props) {
                 
             </View>
             <View style={styles.viewActions}>
-                <View style={styles.iconContainer}>
+                <TouchableOpacity style={styles.iconContainer} onPress={() => {
+                    navigation.navigate('ProfileUpdateScreen');
+                }}>
                     <View style={styles.iconBox}>
                         <Ionicons name='pencil' size={25} color='white' />
                     </View>
                     <Text style={styles.textAction}>EDITAR PERFIL</Text>
-                </View>
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.iconContainer} onPress={async () => {
                     await removeAuthSession();
-                    navigation.replace('LoginScreen');
+                    rootNavigation.replace('LoginScreen');
                 }}>
                     <View style={styles.iconBox}>
                         <Ionicons name='exit-outline' size={25} color='white' />

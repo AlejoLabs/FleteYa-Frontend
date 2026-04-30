@@ -10,6 +10,7 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import ClientSearchMapScreen from "../screens/client/searchMap/ClientSearchMapScreen";
 import DriverMyLocationMapScreen from "../screens/driver/MyLocationMap/DriverMyLocationMapScreen";
 import ProfileInfoScreen from "../screens/profile/info/ProfileInfoScreen";
+import { ProfileStackNavigator } from "./ProfileStackNavigator";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -19,7 +20,7 @@ export type RootStackParamList = {
     DriverHomeScreen: undefined,
     DriverMyLocationMapScreen: undefined,
     ClientSearchMapScreen: undefined,
-    ProfileInfoScreen: undefined,
+    ProfileStackNavigator: undefined,
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -83,7 +84,7 @@ const ClientDrawerNavigator = () => {
     return (
         <Drawer.Navigator initialRouteName="ClientSearchMapScreen">
             <Drawer.Screen name="ClientSearchMapScreen" component={ClientSearchMapScreen} />
-            <Drawer.Screen name="ProfileInfoScreen" component={ProfileInfoScreen} />
+            <Drawer.Screen name="ProfileStackNavigator" component={ProfileStackNavigator} />
         </Drawer.Navigator>
     )
 }
