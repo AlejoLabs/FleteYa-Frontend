@@ -5,13 +5,16 @@ import { useAuth } from "../../../hooks/useAuth";
 import { RootStackParamList } from "../../../navigator/MainStackNavigator";
 import { StackScreenProps } from "@react-navigation/stack";
 import DefaultTextInput from "../../../components/DefaultTextInput";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProfileStackParamList } from "../../../navigator/ProfileStackNavigator";
 import * as ImagePicker from 'expo-image-picker';
+import { container } from "../../../../di/container";
+import { ProfileUpdateViewModel } from "./ProfileUpdateViewModel";
 
 interface Props extends StackScreenProps<ProfileStackParamList, 'ProfileUpdateScreen'> { }
 export default function ProfileUpdateScreen({ navigation, route }: Props) {
 
+    const viewModel: ProfileUpdateViewModel = container.resolve('profileUpdateViewModel');
     const [name, setName] = useState('');
     const [lastname, setLastname] = useState('');
     const [phone, setPhone] = useState('');
@@ -62,6 +65,13 @@ export default function ProfileUpdateScreen({ navigation, route }: Props) {
         }
     };
 
+    useEffect(() => {
+        if (authResponse != null) {
+            setName(authResponse.user.name);
+            setLastname(authResponse.user.lastname);
+            setPhone(authResponse.user.phone);
+        }
+    }, [authResponse]);
 
     return (
         <View style={styles.container}>
@@ -133,12 +143,21 @@ export default function ProfileUpdateScreen({ navigation, route }: Props) {
 
             </View>
             <View style={styles.viewActions}>
-                <View style={styles.iconContainer}>
+                <TouchableOpacity style={styles.iconContainer} onPress={() => {
+                    viewModel.update({
+                        id: authResponse?.user.id!,
+                        name: name,
+                        lastname: lastname,
+                        phone: phone,
+                        email: authResponse?.user.email!,
+                        image: image ? image : authResponse?.user?.image
+                    });
+                }}>
                     <View style={styles.iconBox}>
                         <Ionicons name='pencil' size={25} color='white' />
                     </View>
                     <Text style={styles.textAction}>EDITAR PERFIL</Text>
-                </View>
+                </TouchableOpacity>
             </View>
         </View>
     )

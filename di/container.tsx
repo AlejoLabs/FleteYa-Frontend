@@ -22,6 +22,12 @@ import { GetTimeAndDistanceUseCase } from "../domain/useCases/clientRequest/GetT
 import { ClientRequestUseCases } from "../domain/useCases/clientRequest/ClientRequestUseCases";
 import { SocketService } from "../data/sources/remote/services/SocketService";
 import { DriverMyLocationMapViewModel } from "../presentation/screens/driver/MyLocationMap/DriverMyLocationMapViewModel";
+import { ProfileUpdateViewModel } from "../presentation/screens/profile/update/ProfileUpdateViewModel";
+import { UserService } from "../data/sources/remote/services/UserService";
+import { UserRepositoryImpl } from "../data/repository/UserRepositoryImpl";
+import { UpdateUserUseCase } from "../domain/useCases/user/UpdateUserUseCase";
+import { UpdateImageUserUseCase } from "../domain/useCases/user/UpdateImageUserUseCase";
+import { UserUseCases } from "../domain/useCases/user/UserUseCases";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -54,6 +60,12 @@ const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseC
 const socketService = new SocketService({} as any);
 const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService });
 const driverMyLocationMapViewModel = new DriverMyLocationMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService });
+const userService = new UserService();
+const userRepository = new UserRepositoryImpl(userService);
+const updateUserUseCase = new UpdateUserUseCase(userRepository);
+const updateImageUserUseCase = new UpdateImageUserUseCase(userRepository);
+const userUseCases = new UserUseCases({ updateUserUseCase, updateImageUserUseCase });
+const profileUpdateViewModel = new ProfileUpdateViewModel(userUseCases);
 
 
 type ContainerDeps = {
@@ -76,6 +88,12 @@ type ContainerDeps = {
     clientRequestUseCases: ClientRequestUseCases;
     socketService: SocketService;
     driverMyLocationMapViewModel: DriverMyLocationMapViewModel;
+    profileUpdateViewModel: ProfileUpdateViewModel;
+    userService: UserService;
+    userRepository: UserRepositoryImpl;
+    updateUserUseCase: UpdateUserUseCase;
+    updateImageUserUseCase: UpdateImageUserUseCase;
+    userUseCases: UserUseCases;
 };
 
 const container = {
@@ -99,7 +117,13 @@ const container = {
             getTimeAndDistanceUseCase,
             clientRequestUseCases,
             socketService,
-            driverMyLocationMapViewModel
+            driverMyLocationMapViewModel,
+            userService,
+            userRepository,
+            updateUserUseCase,
+            updateImageUserUseCase,
+            userUseCases,
+            profileUpdateViewModel
         };
         return deps[name];
     }
