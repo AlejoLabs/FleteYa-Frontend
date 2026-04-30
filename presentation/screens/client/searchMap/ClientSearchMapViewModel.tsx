@@ -31,10 +31,13 @@ export class ClientSearchMapViewModel {
     }
 
     initSocket(){
-        this.socketService.getSocket();
-        this.socketService.onMessage('connect', () => {
-            console.log('Conectado a SOCKET IO');
-        });
+        if(!this.socketService.getSocket().connected){
+            this.socketService.getSocket();
+        }
+        
+       // this.socketService.onMessage('connect', () => {
+        //    console.log('Conectado a SOCKET IO');
+        //});
     }   
 
     async getPlaceDetails(placeId: string): Promise<PlaceDetail | null> {
@@ -53,9 +56,21 @@ export class ClientSearchMapViewModel {
         return await this.clientRequestUseCases.getTimeAndDistanceUseCase.execute(origin, destination);
     }
 
-    listenerDriverPositionSocket(){
+    listenerDriverPositionSocket(callback: (data: any) => void){
         this.socketService.onMessage('new_driver_position', (data: any) => {
             console.log('NUEVO CONDUCTOR', data);
+            
+            callback(data);
         });
     }
+
+    listenerDriverDisconnectSocket(callback: (idSocket: string) => void){
+        this.socketService.onMessage('driver_disconnected', (data: any) => {
+            console.log('CONDUCTOR DESCONECTADO', data);
+            const idSocket = data.id_socket;
+            callback(idSocket);
+        });
+    }
+
+
 }

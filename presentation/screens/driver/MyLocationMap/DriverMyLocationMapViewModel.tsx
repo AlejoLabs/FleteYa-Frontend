@@ -24,10 +24,13 @@ export class DriverMyLocationMapViewModel {
     }
 
     initSocket(){
-        this.socketService.getSocket().connect();
-        this.socketService.onMessage('connect', () => {
-            console.log('Conectado a SOCKET IO');
-        });
+        if(!this.socketService.getSocket().connected){
+            this.socketService.getSocket().connect();
+        }
+        
+        //this.socketService.onMessage('connect', () => {
+          //  console.log('Conectado a SOCKET IO');
+        //});
     } 
     
     emitDriverPosition(id: number, lat: number, lng: number){
@@ -38,5 +41,7 @@ export class DriverMyLocationMapViewModel {
         });
     }
 
-
+    discconectSocket(){
+        this.socketService.disconnect();
+    }
 }

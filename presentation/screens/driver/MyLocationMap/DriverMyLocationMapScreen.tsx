@@ -88,6 +88,7 @@ export default function DriverMyLocationMapScreen() {
     const stopRealTimeLocation = () => {
         console.log('Locacion detenida');
         if (locationSubscription.current) {
+            viewModel.discconectSocket();
             locationSubscription.current.remove();
             locationSubscription.current = null;
         }
@@ -114,6 +115,7 @@ export default function DriverMyLocationMapScreen() {
                 }}
                 initialRegion={location}
                 zoomControlEnabled={true}
+                mapPadding={{ bottom: 50, top: 0, left: 0, right: 0 }}
             >
                 {
                     location &&

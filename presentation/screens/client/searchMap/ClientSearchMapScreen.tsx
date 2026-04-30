@@ -35,6 +35,7 @@ export default function ClientSearchMapScreen() {
     const [isDestinationModalVisible, setIsDestinationModalVisible] = useState(false);
     const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
     const [offer, setOffer] = useState<string>("");
+    const [driverMarkers, setDriverMarkers] = useState<{ id: number, idSocket: string, lat: number, lng: number }[]>([]);
 
     const [hasLocation, setHasLocation] = useState(false);
 
@@ -191,7 +192,26 @@ export default function ClientSearchMapScreen() {
                     longitudeDelta: 0.0421,
                 });
                 viewModel.initSocket();
-                viewModel.listenerDriverPositionSocket();
+                viewModel.listenerDriverPositionSocket((data: any) => {
+                    const newMarker = {
+                        id: data.id,
+                        lat: data.lat,
+                        lng: data.lng,
+                        idSocket: data.id_socket
+                    }
+                    setDriverMarkers((prevMarkers) => {
+                        const markerExists = prevMarkers.some(marker => marker.idSocket === newMarker.idSocket); //MARCADOR AGREGADO
+                        if (!markerExists) {
+                            return [...prevMarkers, newMarker];
+                        }
+                        else {
+                            return prevMarkers.map(marker => marker.idSocket === newMarker.idSocket ? newMarker : marker);
+                        }
+                    });
+                });
+                viewModel.listenerDriverDisconnectSocket((idSocket: string) => {
+                    setDriverMarkers((prevMarkers) => prevMarkers.filter(marker => marker.idSocket !== idSocket));
+                });
                 setHasLocation(true);
             } catch (error) {
                 console.log('No se pudo obtener la ubicacion actual', error);
@@ -229,7 +249,7 @@ export default function ClientSearchMapScreen() {
                     }}
                     initialRegion={location}
                     zoomControlEnabled={true}
-                    mapPadding={{ bottom: 80, top: 0, left: 0, right: 0 }}
+                    mapPadding={{ bottom: 120, top: 0, left: 0, right: 0 }}
                     region={location}
                     onRegionChangeComplete={(region) => {
                         toggleView(false);
@@ -237,6 +257,25 @@ export default function ClientSearchMapScreen() {
                     }}
                     onPanDrag={() => toggleView(true)}
                 >
+                    {
+                        driverMarkers.map((driver) => (
+                            <Marker
+                                key={driver.idSocket}
+                                coordinate={{
+                                    latitude: driver.lat,
+                                    longitude: driver.lng
+                                }}
+                                title={` ID Conductor ${driver.id}`}
+                            >
+                                <View style={{ width: 50, height: 50 }}>
+                                    <Image
+                                        source={require("../../../../assets/pin_map.png")}
+                                        style={{ resizeMode: "contain", width: "50%", height: "50%" }}
+                                    />
+                                </View>
+                            </Marker>
+                        ))
+                    }
                     {
                         originMarker &&
                         (<Marker
@@ -423,8 +462,8 @@ export default function ClientSearchMapScreen() {
                         <Text style={styles.timeAndDistanceText}>Tiempo y distancia: {timeAndDistance?.duration.text} {timeAndDistance?.distance.text}</Text>
                     </View>
 
-                    <DefaultRoundedButton 
-                        onPress={() => {}}
+                    <DefaultRoundedButton
+                        onPress={() => { }}
                         text="Solicitar conductor"
                         backgroundColor="black"
                     />
