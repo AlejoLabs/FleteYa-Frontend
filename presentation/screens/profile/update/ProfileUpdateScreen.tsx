@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
 import styles from "./Styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../hooks/useAuth";
@@ -7,6 +7,7 @@ import { StackScreenProps } from "@react-navigation/stack";
 import DefaultTextInput from "../../../components/DefaultTextInput";
 import { useState } from "react";
 import { ProfileStackParamList } from "../../../navigator/ProfileStackNavigator";
+import * as ImagePicker from 'expo-image-picker';
 
 interface Props extends StackScreenProps<ProfileStackParamList, 'ProfileUpdateScreen'> { }
 export default function ProfileUpdateScreen({ navigation, route }: Props) {
@@ -15,6 +16,52 @@ export default function ProfileUpdateScreen({ navigation, route }: Props) {
     const [lastname, setLastname] = useState('');
     const [phone, setPhone] = useState('');
     const { authResponse, removeAuthSession } = useAuth();
+    const [image, setImage] = useState<string | null>(null);
+
+    const pickImage = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (!permissionResult.granted) {
+            Alert.alert('Permission required', 'Permission to access the media library is required.');
+            return;
+        }
+
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        console.log(result);
+
+        if (!result.canceled) {
+            setImage(result.assets[0].uri);
+        }
+    };
+
+    const takePhoto = async () => {
+        const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+        if (!permissionResult.granted) {
+            Alert.alert('Permission required', 'Permission to access the camera is required.');
+            return;
+        }
+
+        let result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        console.log(result);
+
+        if (!result.canceled) {
+            setImage(result.assets[0].uri);
+        }
+    };
+
 
     return (
         <View style={styles.container}>
@@ -22,23 +69,30 @@ export default function ProfileUpdateScreen({ navigation, route }: Props) {
                 <Text style={styles.textBox}>ACTUALIZAR DATOS</Text>
             </View>
             <View style={styles.cardUserInfo}>
-                {
-                    authResponse?.user?.image !== null
-                    &&
-                    <Image
-                        style={styles.imageUser}
-                        source={{ uri: authResponse?.user?.image }}
-                    />
-                }
-                {
-                    authResponse?.user?.image === null
-                    &&
-                    <Image
-                        style={styles.imageUser}
-                        source={require('../../../../assets/user_image.png')}
+                <TouchableOpacity onPress={() => {takePhoto();}}>
+                    {
+                        (authResponse?.user?.image === null && image !== null) ?
+                            <Image
+                                style={styles.imageUser}
+                                source={{ uri: image }}
+                            />
+                            : <Image
+                                style={styles.imageUser}
+                                source={require('../../../../assets/user_image.png')}
 
-                    />
-                }
+                            />
+                    }
+                    {
+                        authResponse?.user?.image !== null
+                        &&
+                        <Image
+                            style={styles.imageUser}
+                            source={{ uri: authResponse?.user?.image }}
+                        />
+                    }
+                </TouchableOpacity>
+
+
                 <View style={{ marginLeft: 20, marginRight: 30 }}>
                     <DefaultTextInput
                         placeholder="Nombre"
