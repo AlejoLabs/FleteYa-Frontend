@@ -19,6 +19,7 @@ import { ClientSearchMapViewModel } from "../presentation/screens/client/searchM
 import { ClientRequestService } from "../data/sources/remote/services/ClientRequestService";
 import { ClientRequestRepositoryImpl } from "../data/repository/ClientRequestRepositoryImpl";
 import { GetTimeAndDistanceUseCase } from "../domain/useCases/clientRequest/GetTimeAndDistanceUseCase";
+import { CreateClientRequestUseCase } from "../domain/useCases/clientRequest/CreateClientRequestUseCase";
 import { ClientRequestUseCases } from "../domain/useCases/clientRequest/ClientRequestUseCases";
 import { SocketService } from "../data/sources/remote/services/SocketService";
 import { DriverMyLocationMapViewModel } from "../presentation/screens/driver/MyLocationMap/DriverMyLocationMapViewModel";
@@ -56,7 +57,8 @@ const googlePlaceUseCases = new GooglePlaceUseCases({ getPlaceDetailsUseCase, ge
 const clientRequestService = new ClientRequestService();
 const clientRequestRepository = new ClientRequestRepositoryImpl({ clientRequestService });
 const getTimeAndDistanceUseCase = new GetTimeAndDistanceUseCase({ clientRequestRepository });
-const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase });
+const createClientRequestUseCase = new CreateClientRequestUseCase({ clientRequestRepository });
+const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, createClientRequestUseCase });
 const socketService = new SocketService({} as any);
 const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService });
 const driverMyLocationMapViewModel = new DriverMyLocationMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService });
@@ -85,6 +87,7 @@ type ContainerDeps = {
     clientRequestService: ClientRequestService;
     clientRequestRepository: ClientRequestRepositoryImpl;
     getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
+    createClientRequestUseCase: CreateClientRequestUseCase;
     clientRequestUseCases: ClientRequestUseCases;
     socketService: SocketService;
     driverMyLocationMapViewModel: DriverMyLocationMapViewModel;
@@ -115,6 +118,7 @@ const container = {
             clientRequestService,
             clientRequestRepository,
             getTimeAndDistanceUseCase,
+            createClientRequestUseCase,
             clientRequestUseCases,
             socketService,
             driverMyLocationMapViewModel,

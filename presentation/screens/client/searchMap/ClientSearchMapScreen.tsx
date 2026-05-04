@@ -1,4 +1,4 @@
-import { View, Image, Animated, Dimensions, Text, TouchableOpacity, Modal, Pressable } from "react-native"
+import { View, Image, Animated, Dimensions, Text, TouchableOpacity, Modal, Pressable, ToastAndroid } from "react-native"
 import styles from "./Styles"
 import MapView, { Camera, LatLng, Marker, Polyline, Region } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
@@ -15,6 +15,7 @@ import { TimeAndDistanceValues } from "../../../../domain/models/TimeAndDistance
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import DefaultTextInput from "../../../components/DefaultTextInput";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
+import { useAuth } from "../../../hooks/useAuth";
 
 const DEFAULT_REGION: Region = {
     latitude: 19.4326,
@@ -26,6 +27,7 @@ const DEFAULT_REGION: Region = {
 export default function ClientSearchMapScreen() {
 
     const viewModel: ClientSearchMapViewModel = container.resolve("clientSearchMapViewModel");
+    const {authResponse} = useAuth();
     const [location, setLocation] = useState<Region>(DEFAULT_REGION);
     const [directionsRoute, setDirectionsRoute] = useState<LatLng[]>([]);
     const [shouldDrawRoute, setShouldDrawRoute] = useState<boolean>(false);
@@ -82,6 +84,22 @@ export default function ClientSearchMapScreen() {
             zoom: 15,
         };
         mapRef.current?.animateCamera(camera, { duration: 1000 });
+    }
+
+    const handleCreateClientRequest = async () => {
+        const response: number | ErrorResponse = await viewModel.createClientRequest({
+            id_client: authResponse?.user.id!,
+            pickup_lat: originPlace?.lat!,
+            pickup_lng: originPlace?.lng!,
+            pickup_description: originPlace?.address!,
+            destination_lat: destinationPlace?.lat!,
+            destination_lng: destinationPlace?.lng!,
+            destination_description: destinationPlace?.address!,
+            fare_offered: Number(offer)
+        });
+        if (typeof response === "number") {
+            ToastAndroid.show("Solicitud enviada", ToastAndroid.LONG);
+        }
     }
 
     const handleGetTimeAndDistance = async () => {
@@ -463,7 +481,9 @@ export default function ClientSearchMapScreen() {
                     </View>
 
                     <DefaultRoundedButton
-                        onPress={() => { }}
+                        onPress={() => { 
+                            handleCreateClientRequest();
+                        }}
                         text="Solicitar conductor"
                         backgroundColor="black"
                     />

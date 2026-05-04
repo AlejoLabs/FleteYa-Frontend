@@ -7,6 +7,7 @@ import { ClientRequestUseCases } from "../../../../domain/useCases/clientRequest
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { TimeAndDistanceValues } from "../../../../domain/models/TimeAndDistanceValues";
 import { SocketService } from "../../../../data/sources/remote/services/SocketService";
+import { ClientRequest } from "../../../../domain/models/ClientRequest";
 
 export class ClientSearchMapViewModel {
     
@@ -38,7 +39,11 @@ export class ClientSearchMapViewModel {
        // this.socketService.onMessage('connect', () => {
         //    console.log('Conectado a SOCKET IO');
         //});
-    }   
+    } 
+    
+    async createClientRequest(clientRequest: ClientRequest): Promise<number | ErrorResponse> {
+        return await this.clientRequestUseCases.create.execute(clientRequest);
+    }
 
     async getPlaceDetails(placeId: string): Promise<PlaceDetail | null> {
         return await this.googlePlaceUseCases.getPlaceDetails.execute(placeId);
