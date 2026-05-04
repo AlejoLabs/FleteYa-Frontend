@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, Alert, ToastAndroid } from "react-native";
 import styles from "./Styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../hooks/useAuth";
@@ -18,7 +18,7 @@ export default function ProfileUpdateScreen({ navigation, route }: Props) {
     const [name, setName] = useState('');
     const [lastname, setLastname] = useState('');
     const [phone, setPhone] = useState('');
-    const { authResponse, removeAuthSession } = useAuth();
+    const { authResponse, removeAuthSession, saveAuthSession } = useAuth();
     const [image, setImage] = useState<string | null>(null);
 
     const pickImage = async () => {
@@ -73,33 +73,65 @@ export default function ProfileUpdateScreen({ navigation, route }: Props) {
         }
     }, [authResponse]);
 
+    const handleUpdateUser = async () => {
+        let response = null;
+        if (image !== null) {
+            response = await viewModel.updateWithImage({
+                id: authResponse?.user.id!,
+                name: name,
+                lastname: lastname,
+                phone: phone,
+                email: authResponse?.user.email!,
+                image: image ? image : authResponse?.user?.image
+            }, image);
+        }
+        else {
+            response = await viewModel.update({
+                id: authResponse?.user.id!,
+                name: name,
+                lastname: lastname,
+                phone: phone,
+                email: authResponse?.user.email!,
+                image: image ? image : authResponse?.user?.image
+            });
+        }
+
+
+        if ('id' in response) {
+            ToastAndroid.show('Datos actualizados correctamente', ToastAndroid.LONG);
+            saveAuthSession({
+                user: {...response, roles: authResponse?.user.roles},
+                token: authResponse?.token!
+            });
+        }
+
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.boxBackground}>
                 <Text style={styles.textBox}>ACTUALIZAR DATOS</Text>
             </View>
             <View style={styles.cardUserInfo}>
-                <TouchableOpacity onPress={() => {takePhoto();}}>
+                <TouchableOpacity onPress={() => { pickImage(); }}>
                     {
                         (authResponse?.user?.image === null && image !== null) ?
                             <Image
                                 style={styles.imageUser}
                                 source={{ uri: image }}
                             />
-                            : <Image
+                            : authResponse?.user?.image !== null ?
+                            <Image
+                            style={styles.imageUser}
+                            source={{ uri: authResponse?.user?.image }}
+                        /> :
+                            <Image
                                 style={styles.imageUser}
                                 source={require('../../../../assets/user_image.png')}
 
                             />
                     }
-                    {
-                        authResponse?.user?.image !== null
-                        &&
-                        <Image
-                            style={styles.imageUser}
-                            source={{ uri: authResponse?.user?.image }}
-                        />
-                    }
+
                 </TouchableOpacity>
 
 
@@ -144,14 +176,7 @@ export default function ProfileUpdateScreen({ navigation, route }: Props) {
             </View>
             <View style={styles.viewActions}>
                 <TouchableOpacity style={styles.iconContainer} onPress={() => {
-                    viewModel.update({
-                        id: authResponse?.user.id!,
-                        name: name,
-                        lastname: lastname,
-                        phone: phone,
-                        email: authResponse?.user.email!,
-                        image: image ? image : authResponse?.user?.image
-                    });
+                    handleUpdateUser();
                 }}>
                     <View style={styles.iconBox}>
                         <Ionicons name='pencil' size={25} color='white' />
