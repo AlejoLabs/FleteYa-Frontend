@@ -115,7 +115,7 @@ export default function ProfileUpdateScreen({ navigation, route }: Props) {
             <View style={styles.cardUserInfo}>
                 <TouchableOpacity onPress={() => { pickImage(); }}>
                     {
-                        (authResponse?.user?.image === null && image !== null) ?
+                            image !== null ?
                             <Image
                                 style={styles.imageUser}
                                 source={{ uri: image }}
@@ -123,12 +123,11 @@ export default function ProfileUpdateScreen({ navigation, route }: Props) {
                             : authResponse?.user?.image !== null ?
                             <Image
                             style={styles.imageUser}
-                            source={{ uri: authResponse?.user?.image }}
-                        /> :
+                                source={{ uri: `${authResponse?.user?.image}?t=${authResponse?.user?.update_at}` }}
+                                /> :
                             <Image
                                 style={styles.imageUser}
                                 source={require('../../../../assets/user_image.png')}
-
                             />
                     }
 

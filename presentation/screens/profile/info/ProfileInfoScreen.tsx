@@ -24,7 +24,7 @@ export default function ProfileInfoScreen({navigation, route}: Props) {
                     &&
                     <Image 
                     style={styles.imageUser}
-                    source={{ uri: authResponse?.user?.image }}
+                    source={{ uri: `${authResponse?.user?.image}?t=${authResponse?.user?.update_at}` }}
                 />
                 }
                 {

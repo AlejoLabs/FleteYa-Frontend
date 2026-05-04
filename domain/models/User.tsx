@@ -9,5 +9,6 @@ export interface User {
     password?:           string;
     image?:              string;
     notification_token?: null;
+    update_at?:          string;
     roles?:              Role[];
 }
