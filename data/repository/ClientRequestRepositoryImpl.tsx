@@ -4,6 +4,7 @@ import { ClientRequestRepository } from "../../domain/repository/ClientRequestRe
 import { ClientRequestService } from "../sources/remote/services/ClientRequestService";
 import { ErrorResponse } from "../../domain/models/ErrorResponse";
 import { ClientRequest } from "../../domain/models/ClientRequest";
+import { ClientRequestResponse } from "../../domain/models/ClientRequestResponse";
 
 export class ClientRequestRepositoryImpl implements ClientRequestRepository {
 
@@ -19,8 +20,11 @@ export class ClientRequestRepositoryImpl implements ClientRequestRepository {
     ) {
         this.clientRequestService = clientRequestService;
     }
-    create(clientRequest: ClientRequest): Promise<number | ErrorResponse> {
-        return this.clientRequestService.create(clientRequest);
+    async getNearbyTripRequest(driverPosition: LatLng): Promise<ClientRequestResponse[] | ErrorResponse> {
+        return await this.clientRequestService.getNearbyTripRequest(driverPosition);
+    }
+    async create(clientRequest: ClientRequest): Promise<number | ErrorResponse> {
+        return await this.clientRequestService.create(clientRequest);
     }
 
     async getTimeAndDistance(origin: LatLng, destination: LatLng): Promise<TimeAndDistanceValues | ErrorResponse> {

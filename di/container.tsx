@@ -20,9 +20,11 @@ import { ClientRequestService } from "../data/sources/remote/services/ClientRequ
 import { ClientRequestRepositoryImpl } from "../data/repository/ClientRequestRepositoryImpl";
 import { GetTimeAndDistanceUseCase } from "../domain/useCases/clientRequest/GetTimeAndDistanceUseCase";
 import { CreateClientRequestUseCase } from "../domain/useCases/clientRequest/CreateClientRequestUseCase";
+import { GetNearbyTripRequestUseCase } from "../domain/useCases/clientRequest/GetNearbyTripRequestUseCase";
 import { ClientRequestUseCases } from "../domain/useCases/clientRequest/ClientRequestUseCases";
 import { SocketService } from "../data/sources/remote/services/SocketService";
 import { DriverMyLocationMapViewModel } from "../presentation/screens/driver/MyLocationMap/DriverMyLocationMapViewModel";
+import { DriverClientRequestViewModel } from "../presentation/screens/driver/clientRequest/DriverClientRequestViewModel";
 import { ProfileUpdateViewModel } from "../presentation/screens/profile/update/ProfileUpdateViewModel";
 import { UserService } from "../data/sources/remote/services/UserService";
 import { UserRepositoryImpl } from "../data/repository/UserRepositoryImpl";
@@ -58,10 +60,12 @@ const clientRequestService = new ClientRequestService();
 const clientRequestRepository = new ClientRequestRepositoryImpl({ clientRequestService });
 const getTimeAndDistanceUseCase = new GetTimeAndDistanceUseCase({ clientRequestRepository });
 const createClientRequestUseCase = new CreateClientRequestUseCase({ clientRequestRepository });
-const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, createClientRequestUseCase });
+const getNearbyTripRequestUseCase = new GetNearbyTripRequestUseCase({ clientRequestRepository });
+const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, createClientRequestUseCase });
 const socketService = new SocketService({} as any);
 const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService });
 const driverMyLocationMapViewModel = new DriverMyLocationMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService });
+const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases });
 const userService = new UserService();
 const userRepository = new UserRepositoryImpl(userService);
 const updateUserUseCase = new UpdateUserUseCase(userRepository);
@@ -87,10 +91,12 @@ type ContainerDeps = {
     clientRequestService: ClientRequestService;
     clientRequestRepository: ClientRequestRepositoryImpl;
     getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
+    getNearbyTripRequestUseCase: GetNearbyTripRequestUseCase;
     createClientRequestUseCase: CreateClientRequestUseCase;
     clientRequestUseCases: ClientRequestUseCases;
     socketService: SocketService;
     driverMyLocationMapViewModel: DriverMyLocationMapViewModel;
+    driverClientRequestViewModel: DriverClientRequestViewModel;
     profileUpdateViewModel: ProfileUpdateViewModel;
     userService: UserService;
     userRepository: UserRepositoryImpl;
@@ -118,10 +124,12 @@ const container = {
             clientRequestService,
             clientRequestRepository,
             getTimeAndDistanceUseCase,
+            getNearbyTripRequestUseCase,
             createClientRequestUseCase,
             clientRequestUseCases,
             socketService,
             driverMyLocationMapViewModel,
+            driverClientRequestViewModel,
             userService,
             userRepository,
             updateUserUseCase,
