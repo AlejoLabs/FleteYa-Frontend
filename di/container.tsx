@@ -30,6 +30,7 @@ import { UserService } from "../data/sources/remote/services/UserService";
 import { DriverPositionService } from "../data/sources/remote/services/DriverPositionService";
 import { DriverPositionRepositoryImpl } from "../data/repository/DriverPositionRepositoryImpl";
 import { CreateDriverPositionUseCase } from "../domain/useCases/driverPosition/CreateDriverPositionUseCase";
+import { GetDriverPositionUseCase } from "../domain/useCases/driverPosition/GetDriverPositionUseCase";
 import { DriverPositionUseCases } from "../domain/useCases/driverPosition/DriverPositionUseCases";
 import { UserRepositoryImpl } from "../data/repository/UserRepositoryImpl";
 import { UpdateUserUseCase } from "../domain/useCases/user/UpdateUserUseCase";
@@ -68,12 +69,13 @@ const getNearbyTripRequestUseCase = new GetNearbyTripRequestUseCase({ clientRequ
 const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, createClientRequestUseCase });
 const socketService = new SocketService({} as any);
 const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService });
-const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases });
-const userService = new UserService();
 const driverPositionService = new DriverPositionService();
 const driverPositionRepository = new DriverPositionRepositoryImpl({ driverPositionService });
 const createDriverPositionUseCase = new CreateDriverPositionUseCase({ driverPositionRepository });
-const driverPositionUseCases = new DriverPositionUseCases({ createDriverPositionUseCase });
+const getDriverPositionUseCase = new GetDriverPositionUseCase({ driverPositionRepository });
+const driverPositionUseCases = new DriverPositionUseCases({ createDriverPositionUseCase, getDriverPositionUseCase });
+const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases, driverPositionUseCases });
+const userService = new UserService();
 const driverMyLocationMapViewModel = new DriverMyLocationMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverPositionUseCases });
 const userRepository = new UserRepositoryImpl(userService);
 const updateUserUseCase = new UpdateUserUseCase(userRepository);
@@ -111,6 +113,7 @@ type ContainerDeps = {
     driverPositionRepository: DriverPositionRepositoryImpl;
     driverPositionRespository: DriverPositionRepositoryImpl;
     createDriverPositionUseCase: CreateDriverPositionUseCase;
+    getDriverPositionUseCase: GetDriverPositionUseCase;
     driverPositionUseCases: DriverPositionUseCases;
     userRepository: UserRepositoryImpl;
     updateUserUseCase: UpdateUserUseCase;
@@ -148,6 +151,7 @@ const container = {
             driverPositionRepository,
             driverPositionRespository: driverPositionRepository,
             createDriverPositionUseCase,
+            getDriverPositionUseCase,
             driverPositionUseCases,
             userRepository,
             updateUserUseCase,

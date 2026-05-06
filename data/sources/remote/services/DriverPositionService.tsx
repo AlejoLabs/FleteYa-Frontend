@@ -31,9 +31,9 @@ export class DriverPositionService {
         }
     }
 
-    /* async getTimeAndDistance(origin: LatLng, destination: LatLng): Promise<TimeAndDistanceValues | ErrorResponse> {
+    async getDriverPosition(idDriver: number): Promise<DriverPosition | ErrorResponse> {
         try {
-            const response = await ApiRequestHandler.get<TimeAndDistanceValues>(`/client-requests/${origin.latitude}/${origin.longitude}/${destination.latitude}/${destination.longitude}`);
+            const response = await ApiRequestHandler.get<DriverPosition>(`/drivers-position/${idDriver}`);
             console.log('Response', response.data);
 
             return response.data;
@@ -53,6 +53,6 @@ export class DriverPositionService {
             }
 
         }
-    }*/
+    }
 
 }
