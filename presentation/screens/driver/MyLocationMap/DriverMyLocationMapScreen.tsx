@@ -52,6 +52,18 @@ export default function DriverMyLocationMapScreen() {
         }
     }, [location]);
 
+    const handleCreateDriverPosition = async (coords: { latitude: number; longitude: number }) => {
+        if (authResponse?.user && coords) {
+            const response = await viewModel.createDriverPosition({
+                id_driver: authResponse.user.id!,
+                lat: coords.latitude,
+                lng: coords.longitude
+            });
+
+            console.log('Response Driver Position:', response);
+        }
+    }
+
     const startRealTimeLocation = async () => {
         if (!locationSubscription.current) {
 
@@ -63,13 +75,18 @@ export default function DriverMyLocationMapScreen() {
             },
             (newLocation) => {
                 console.log('NUEVA UBICACION:', newLocation);
-
-                setLocation({
+                const currentCoords = {
                     latitude: newLocation.coords.latitude,
                     longitude: newLocation.coords.longitude,
+                };
+                
+                setLocation({
+                    latitude: currentCoords.latitude,
+                    longitude: currentCoords.longitude,
                     latitudeDelta: 0.0922,
                     longitudeDelta: 0.0421,
                 });
+                handleCreateDriverPosition(currentCoords);
                 
             }
 
