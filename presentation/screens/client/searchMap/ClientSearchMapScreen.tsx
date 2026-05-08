@@ -1,4 +1,4 @@
-import { View, Image, Animated, Dimensions, Text, TouchableOpacity, Modal, Pressable, ToastAndroid } from "react-native"
+import { View, Image, Animated, Dimensions, Text, TouchableOpacity, Modal, Pressable, ToastAndroid, FlatList } from "react-native"
 import styles from "./Styles"
 import MapView, { Camera, LatLng, Marker, Polyline, Region } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
@@ -16,6 +16,8 @@ import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import DefaultTextInput from "../../../components/DefaultTextInput";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
 import { useAuth } from "../../../hooks/useAuth";
+import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
+import { DriverOfferItem } from "./DriverOfferItem";
 
 const DEFAULT_REGION: Region = {
     latitude: 19.4326,
@@ -36,6 +38,8 @@ export default function ClientSearchMapScreen() {
     const [isOriginModalVisible, setIsOriginModalVisible] = useState(false);
     const [isDestinationModalVisible, setIsDestinationModalVisible] = useState(false);
     const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
+    const [isDriverOfferModalVisible, setIsDriverOfferModalVisible] = useState(false);
+    const [driverTripOffers, setDriverTripOffers] = useState<DriverTripOffer[]>([]);
     const [offer, setOffer] = useState<string>("");
     const [driverMarkers, setDriverMarkers] = useState<{ id: number, idSocket: string, lat: number, lng: number }[]>([]);
 
@@ -88,6 +92,8 @@ export default function ClientSearchMapScreen() {
 
     const handleGetDriverTripOffers = async () => {
         const response = await viewModel.getDriverTripOffers(6);
+        setIsDriverOfferModalVisible(true);
+        setDriverTripOffers(response as DriverTripOffer[]);
         console.log("Response DriverTripOffers", response);
     }
 
@@ -507,6 +513,19 @@ export default function ClientSearchMapScreen() {
                 }}
                 source={require("../../../../assets/pin_red.png")}
             />
+            <Modal 
+                visible={isDriverOfferModalVisible}
+                animationType="fade"
+                onRequestClose={() => setIsDriverOfferModalVisible(false)}
+                transparent={true}
+            >
+                <FlatList 
+                    data={driverTripOffers}
+                    keyExtractor={(item) => item.id!.toString()}
+                    renderItem={({item}) => <DriverOfferItem driverTripOffer={item}/>}
+                    contentContainerStyle={{ paddingTop: 50 }}
+                />
+            </Modal>
         </View>
     )
 }

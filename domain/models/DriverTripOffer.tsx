@@ -5,4 +5,12 @@ export interface DriverTripOffer {
     fare_offered: number;
     time: number;
     distance: number;
+    driver?: Driver;
+}
+
+export interface Driver {
+    name: string;
+    lastname: string;
+    image: string;
+    phone: string;
 }

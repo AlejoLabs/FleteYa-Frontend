@@ -3,13 +3,15 @@ import {StyleSheet, Text, TouchableOpacity} from "react-native"
 interface Props {
     text: string,
     onPress: () => void,
-    backgroundColor?: string
+    backgroundColor?: string,
+    width?: any,
+    height?: any
 }
 
-const DefaultRoundedButton = ({ text, onPress, backgroundColor}: Props) => {
+const DefaultRoundedButton = ({ text, onPress, backgroundColor, width='100%', height=55}: Props) => {
     return (
         <TouchableOpacity 
-            style={[styles.roundedButton,{backgroundColor: backgroundColor || 'red'}]}
+            style={[styles.roundedButton,{backgroundColor: backgroundColor || 'red', width: width, height: height}]}
             onPress={()=> onPress()}
         >
             <Text style={styles.textButton}>{text}</Text>
@@ -19,8 +21,6 @@ const DefaultRoundedButton = ({ text, onPress, backgroundColor}: Props) => {
 
 const styles = StyleSheet.create({
     roundedButton:{
-        width: '100%',
-        height: 55,
         backgroundColor: 'red',
         alignItems: 'center',
         justifyContent: 'center',
