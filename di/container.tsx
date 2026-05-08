@@ -40,6 +40,7 @@ import { DriverTripOfferService } from "../data/sources/remote/services/DriverTr
 import { DriverTripOfferRepositoryImpl } from "../data/repository/DriverTripOfferRepositoryImpl";
 import { CreateDriverTripOfferUseCase } from "../domain/useCases/driverTripOffer/CreateDriverTripOfferUseCase";
 import { DriverTripOfferUseCases } from "../domain/useCases/driverTripOffer/DriverTripOfferUseCases";
+import { GetDriverTripOfferUseCase } from "../domain/useCases/driverTripOffer/GetDriverTripOfferUseCase";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -72,7 +73,6 @@ const createClientRequestUseCase = new CreateClientRequestUseCase({ clientReques
 const getNearbyTripRequestUseCase = new GetNearbyTripRequestUseCase({ clientRequestRepository });
 const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, createClientRequestUseCase });
 const socketService = new SocketService({} as any);
-const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService });
 const driverPositionService = new DriverPositionService();
 const driverPositionRepository = new DriverPositionRepositoryImpl({ driverPositionService });
 const createDriverPositionUseCase = new CreateDriverPositionUseCase({ driverPositionRepository });
@@ -88,7 +88,9 @@ const profileUpdateViewModel = new ProfileUpdateViewModel(userUseCases);
 const driverTripOfferService = new DriverTripOfferService();
 const driverTripOfferRepository = new DriverTripOfferRepositoryImpl({ driverTripOfferService });
 const createDriverTripOfferUseCase = new CreateDriverTripOfferUseCase({ driverTripOfferRepository });
-const driverTripOfferUseCases = new DriverTripOfferUseCases({createDriverTripOfferUseCase});
+const getDriverTripOfferUseCase = new GetDriverTripOfferUseCase({ driverTripOfferRepository });
+const driverTripOfferUseCases = new DriverTripOfferUseCases({ createDriverTripOfferUseCase, getDriverTripOfferUseCase });
+const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverTripOfferUseCases });
 const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases, driverPositionUseCases, driverTripOfferUseCases });
 
 
@@ -130,6 +132,7 @@ type ContainerDeps = {
     driverTripOfferService: DriverTripOfferService;
     driverTripOfferRepository: DriverTripOfferRepositoryImpl;
     createDriverTripOfferUseCase: CreateDriverTripOfferUseCase;
+    getDriverTripOfferUseCase: GetDriverTripOfferUseCase;
     driverTripOfferUseCases: DriverTripOfferUseCases;
 };
 
@@ -173,6 +176,7 @@ const container = {
             driverTripOfferService,
             driverTripOfferRepository,
             createDriverTripOfferUseCase,
+            getDriverTripOfferUseCase,
             driverTripOfferUseCases
         };
         return deps[name];

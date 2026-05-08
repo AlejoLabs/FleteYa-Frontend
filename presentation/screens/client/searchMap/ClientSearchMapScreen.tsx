@@ -86,6 +86,11 @@ export default function ClientSearchMapScreen() {
         mapRef.current?.animateCamera(camera, { duration: 1000 });
     }
 
+    const handleGetDriverTripOffers = async () => {
+        const response = await viewModel.getDriverTripOffers(6);
+        console.log("Response DriverTripOffers", response);
+    }
+
     const handleCreateClientRequest = async () => {
         const response: number | ErrorResponse = await viewModel.createClientRequest({
             id_client: authResponse?.user.id!,
@@ -230,6 +235,7 @@ export default function ClientSearchMapScreen() {
                 viewModel.listenerDriverDisconnectSocket((idSocket: string) => {
                     setDriverMarkers((prevMarkers) => prevMarkers.filter(marker => marker.idSocket !== idSocket));
                 });
+                handleGetDriverTripOffers();
                 setHasLocation(true);
             } catch (error) {
                 console.log('No se pudo obtener la ubicacion actual', error);

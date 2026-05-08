@@ -32,9 +32,9 @@ export class DriverTripOfferService {
         }
     }
 
-    /*async getDriverPosition(idDriver: number): Promise<DriverPosition | ErrorResponse> {
+    async getDriverTripOffers(idClientRequest: number): Promise<DriverTripOffer[] | ErrorResponse> {
         try {
-            const response = await ApiRequestHandler.get<DriverPosition>(`/drivers-position/${idDriver}`);
+            const response = await ApiRequestHandler.get<DriverTripOffer[]>(`/driver-trip-offers/findByClientRequest/${idClientRequest}`);
             console.log('Response', response.data);
 
             return response.data;
@@ -54,6 +54,6 @@ export class DriverTripOfferService {
             }
 
         }
-    }*/
+    }
 
 }

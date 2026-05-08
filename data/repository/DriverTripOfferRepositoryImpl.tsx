@@ -16,6 +16,9 @@ export class DriverTripOfferRepositoryImpl implements DriverTripOfferRepository 
     ) {
         this.driverTripOfferService = driverTripOfferService;
     }
+    async getDriverTripOffers(idClientRequest: number): Promise<DriverTripOffer[] | ErrorResponse> {
+        return await this.driverTripOfferService.getDriverTripOffers(idClientRequest);
+    }
     
     async create(driverTripOffer: DriverTripOffer): Promise<DriverTripOffer | ErrorResponse> {
         return await this.driverTripOfferService.create(driverTripOffer);

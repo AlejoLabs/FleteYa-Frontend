@@ -8,27 +8,33 @@ import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { TimeAndDistanceValues } from "../../../../domain/models/TimeAndDistanceValues";
 import { SocketService } from "../../../../data/sources/remote/services/SocketService";
 import { ClientRequest } from "../../../../domain/models/ClientRequest";
+import { DriverTripOfferUseCases } from "../../../../domain/useCases/driverTripOffer/DriverTripOfferUseCases";
+import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 
 export class ClientSearchMapViewModel {
     
     private googlePlaceUseCases: GooglePlaceUseCases;
     private clientRequestUseCases: ClientRequestUseCases;
     private socketService: SocketService;
+    private driverTripOfferUseCases: DriverTripOfferUseCases;
 
     constructor(
         {
             googlePlaceUseCases,
             clientRequestUseCases,
-            socketService
+            socketService,
+            driverTripOfferUseCases
         }: {
             googlePlaceUseCases: GooglePlaceUseCases,
             clientRequestUseCases: ClientRequestUseCases,
-            socketService: SocketService
+            socketService: SocketService,
+            driverTripOfferUseCases: DriverTripOfferUseCases
         }
     ) {
         this.googlePlaceUseCases = googlePlaceUseCases;
         this.clientRequestUseCases = clientRequestUseCases;
         this.socketService = socketService;
+        this.driverTripOfferUseCases = driverTripOfferUseCases;
     }
 
     initSocket(){
@@ -47,6 +53,10 @@ export class ClientSearchMapViewModel {
 
     async getPlaceDetails(placeId: string): Promise<PlaceDetail | null> {
         return await this.googlePlaceUseCases.getPlaceDetails.execute(placeId);
+    }
+
+    async getDriverTripOffers(idClientRequest: number): Promise<DriverTripOffer[] | ErrorResponse> {
+        return await this.driverTripOfferUseCases.getDriverTripOffers.execute(idClientRequest);
     }
 
     async getPlaceDetailsByCoords(lat: number, lng: number): Promise<PlaceGeocodeDetail | null> {
