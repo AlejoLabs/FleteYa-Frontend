@@ -36,6 +36,10 @@ import { UserRepositoryImpl } from "../data/repository/UserRepositoryImpl";
 import { UpdateUserUseCase } from "../domain/useCases/user/UpdateUserUseCase";
 import { UpdateImageUserUseCase } from "../domain/useCases/user/UpdateImageUserUseCase";
 import { UserUseCases } from "../domain/useCases/user/UserUseCases";
+import { DriverTripOfferService } from "../data/sources/remote/services/DriverTripOfferService";
+import { DriverTripOfferRepositoryImpl } from "../data/repository/DriverTripOfferRepositoryImpl";
+import { CreateDriverTripOfferUseCase } from "../domain/useCases/driverTripOffer/CreateDriverTripOfferUseCase";
+import { DriverTripOfferUseCases } from "../domain/useCases/driverTripOffer/DriverTripOfferUseCases";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -74,7 +78,6 @@ const driverPositionRepository = new DriverPositionRepositoryImpl({ driverPositi
 const createDriverPositionUseCase = new CreateDriverPositionUseCase({ driverPositionRepository });
 const getDriverPositionUseCase = new GetDriverPositionUseCase({ driverPositionRepository });
 const driverPositionUseCases = new DriverPositionUseCases({ createDriverPositionUseCase, getDriverPositionUseCase });
-const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases, driverPositionUseCases });
 const userService = new UserService();
 const driverMyLocationMapViewModel = new DriverMyLocationMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverPositionUseCases });
 const userRepository = new UserRepositoryImpl(userService);
@@ -82,6 +85,11 @@ const updateUserUseCase = new UpdateUserUseCase(userRepository);
 const updateImageUserUseCase = new UpdateImageUserUseCase(userRepository);
 const userUseCases = new UserUseCases({ updateUserUseCase, updateImageUserUseCase });
 const profileUpdateViewModel = new ProfileUpdateViewModel(userUseCases);
+const driverTripOfferService = new DriverTripOfferService();
+const driverTripOfferRepository = new DriverTripOfferRepositoryImpl({ driverTripOfferService });
+const createDriverTripOfferUseCase = new CreateDriverTripOfferUseCase({ driverTripOfferRepository });
+const driverTripOfferUseCases = new DriverTripOfferUseCases({createDriverTripOfferUseCase});
+const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases, driverPositionUseCases, driverTripOfferUseCases });
 
 
 type ContainerDeps = {
@@ -119,6 +127,10 @@ type ContainerDeps = {
     updateUserUseCase: UpdateUserUseCase;
     updateImageUserUseCase: UpdateImageUserUseCase;
     userUseCases: UserUseCases;
+    driverTripOfferService: DriverTripOfferService;
+    driverTripOfferRepository: DriverTripOfferRepositoryImpl;
+    createDriverTripOfferUseCase: CreateDriverTripOfferUseCase;
+    driverTripOfferUseCases: DriverTripOfferUseCases;
 };
 
 const container = {
@@ -157,7 +169,11 @@ const container = {
             updateUserUseCase,
             updateImageUserUseCase,
             userUseCases,
-            profileUpdateViewModel
+            profileUpdateViewModel,
+            driverTripOfferService,
+            driverTripOfferRepository,
+            createDriverTripOfferUseCase,
+            driverTripOfferUseCases
         };
         return deps[name];
     }

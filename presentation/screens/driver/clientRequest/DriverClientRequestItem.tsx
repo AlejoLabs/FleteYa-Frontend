@@ -4,15 +4,30 @@ import styles from "./Styles";
 import DefaultTextInput from "../../../components/DefaultTextInput";
 import { useState } from "react";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
+import { DriverClientRequestViewModel } from "./DriverClientRequestViewModel";
+import { AuthResponse } from "../../../../domain/models/AuthResponse";
 
 interface Props {
     clientRequestResponse: ClientRequestResponse;
+    viewModel: DriverClientRequestViewModel,
+    authResponse: AuthResponse | null;
 }
 
-export function DriverClientRequestItem({ clientRequestResponse }: Props) {
+export function DriverClientRequestItem({ clientRequestResponse, viewModel, authResponse }: Props) {
 
     const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
     const [offer, setOffer] = useState<string>("");
+
+    const handleCreateDriverTripOffer = async () => {
+        const response = await viewModel.createDriverTripOffer({
+            id_driver: authResponse?.user.id!,
+            id_client_request: clientRequestResponse.id,
+            fare_offered: Number(offer),
+            distance: clientRequestResponse.google_distance_matrix.distance.value / 1000, // Convertir a kilómetros
+            time: clientRequestResponse.google_distance_matrix.duration.value / 60 // Convertir a minutos
+        });
+        console.log('Response Driver Trip Offer', response);
+    }
 
     return (
         <TouchableOpacity style={styles.itemContainer} onPress={() => setIsOfferModalVisible(true)}>
@@ -61,12 +76,14 @@ export function DriverClientRequestItem({ clientRequestResponse }: Props) {
                                 placeholderTextColor="gray"
                             />
                         </View>
-                        <View style={{marginRight: 30, marginLeft: 30}}>
+                        <View style={{ marginRight: 30, marginLeft: 30 }}>
                             <DefaultRoundedButton
                                 onPress={() => {
                                     console.log('Oferta enviada', offer);
                                     setIsOfferModalVisible(false);
-                                 }}
+                                    handleCreateDriverTripOffer();
+
+                                }}
                                 text="Enviar oferta"
                                 backgroundColor="black"
                             />

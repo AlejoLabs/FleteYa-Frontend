@@ -38,7 +38,7 @@ export function DriverClientRequestScreen() {
             <FlatList
                 data={clientRequestResponse}
                 keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => <DriverClientRequestItem clientRequestResponse={item} />}
+                renderItem={({ item }) => <DriverClientRequestItem clientRequestResponse={item} viewModel={viewModel} authResponse={authResponse} />}
 
             />
         </View>
