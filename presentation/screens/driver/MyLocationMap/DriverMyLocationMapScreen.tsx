@@ -1,4 +1,4 @@
-import { Platform, View, Image } from "react-native";
+import { Platform, View } from "react-native";
 import styles from "./Styles";
 import { useEffect, useRef, useState } from "react";
 import MapView, { Marker, Region } from "react-native-maps";
@@ -74,7 +74,6 @@ export default function DriverMyLocationMapScreen() {
                 distanceInterval: 1
             },
             (newLocation) => {
-                console.log('NUEVA UBICACION:', newLocation);
                 const currentCoords = {
                     latitude: newLocation.coords.latitude,
                     longitude: newLocation.coords.longitude,
@@ -142,14 +141,8 @@ export default function DriverMyLocationMapScreen() {
                             longitude: location!.longitude
                         }}
                         title="Mi Localizacion"
-                    >
-                        <View style={{ width: 50, height: 50 }}>
-                            <Image
-                                source={require("../../../../assets/pin_map.png")}
-                                style={{ resizeMode: "contain", width: 50, height: 50 }}
-                            />
-                        </View>
-                    </Marker>
+                        image={require("../../../../assets/pin_map_64.png")}
+                    />
                     )
                 }
 

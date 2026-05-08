@@ -3,28 +3,33 @@ import { ClientRequestUseCases } from "../../../../domain/useCases/clientRequest
 import { DriverPositionUseCases } from "../../../../domain/useCases/driverPosition/DriverPositionUseCases";
 import { DriverTripOfferUseCases } from "../../../../domain/useCases/driverTripOffer/DriverTripOfferUseCases";
 import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
+import { SocketService } from "../../../../data/sources/remote/services/SocketService";
 
 export class DriverClientRequestViewModel {
 
     private clientRequestUseCases: ClientRequestUseCases;
     private driverPositionUseCases: DriverPositionUseCases;
     private driverTripOfferUseCases: DriverTripOfferUseCases;
+    private socketService: SocketService;
 
     constructor(
         {
             clientRequestUseCases,
             driverPositionUseCases,
-            driverTripOfferUseCases
+            driverTripOfferUseCases,
+            socketService
         }: 
         {
             clientRequestUseCases: ClientRequestUseCases,
             driverPositionUseCases: DriverPositionUseCases,
-            driverTripOfferUseCases: DriverTripOfferUseCases
+            driverTripOfferUseCases: DriverTripOfferUseCases,
+            socketService: SocketService
         }
     ) {
         this.clientRequestUseCases = clientRequestUseCases;
         this.driverPositionUseCases = driverPositionUseCases;
         this.driverTripOfferUseCases = driverTripOfferUseCases;
+        this.socketService = socketService;
     }
 
     async getNearbyTripRequest(driverPosition: LatLng) {
@@ -37,5 +42,11 @@ export class DriverClientRequestViewModel {
 
     async createDriverTripOffer(driverTripOffer: DriverTripOffer) {
         return await this.driverTripOfferUseCases.create.execute(driverTripOffer);
+    }
+
+    listenerNewClientRequestSocket(callback: (data: any) => void){
+        this.socketService.onMessage('created_client_request', (data: any) => {
+            callback(data);
+        });
     }
 }

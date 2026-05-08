@@ -71,6 +71,12 @@ export class ClientSearchMapViewModel {
         return await this.clientRequestUseCases.getTimeAndDistanceUseCase.execute(origin, destination);
     }
 
+    emitNewClientRequest(idClientRequest: number) {
+        this.socketService.sendMessage('new_client_request', { 
+            id_client_request: idClientRequest 
+        });
+    }
+
     listenerDriverPositionSocket(callback: (data: any) => void){
         this.socketService.onMessage('new_driver_position', (data: any) => {
             console.log('NUEVO CONDUCTOR', data);

@@ -92,7 +92,7 @@ export default function ClientSearchMapScreen() {
 
     const handleGetDriverTripOffers = async () => {
         const response = await viewModel.getDriverTripOffers(6);
-        setIsDriverOfferModalVisible(true);
+        setIsDriverOfferModalVisible(false);
         setDriverTripOffers(response as DriverTripOffer[]);
         console.log("Response DriverTripOffers", response);
     }
@@ -109,6 +109,7 @@ export default function ClientSearchMapScreen() {
             fare_offered: Number(offer)
         });
         if (typeof response === "number") {
+            viewModel.emitNewClientRequest(response);
             ToastAndroid.show("Solicitud enviada", ToastAndroid.LONG);
         }
     }

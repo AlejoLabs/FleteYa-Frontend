@@ -6,6 +6,7 @@ import styles from "./Styles";
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { DriverClientRequestItem } from "./DriverClientRequestItem";
 import { useAuth } from "../../../hooks/useAuth";
+import { DriverPosition } from "../../../../domain/models/DriverPosition";
 
 export function DriverClientRequestScreen() {
 
@@ -17,6 +18,17 @@ export function DriverClientRequestScreen() {
         handleGetNearbyTripRequest();
     }, []);
 
+    const handleListenerNewClientRequest = async (driverPosition: DriverPosition) => {
+        viewModel.listenerNewClientRequestSocket(async (data: any) => {
+                    console.log('ENTRO NUEVA SOLICITUD DE VIAJE');
+                    const response = await viewModel.getNearbyTripRequest({
+                        latitude: driverPosition.lat,
+                        longitude: driverPosition.lng
+                    });
+                    setClientRequestResponse(response as ClientRequestResponse[]);
+                });
+    }
+
     const handleGetNearbyTripRequest = async () => {
         if (authResponse?.user.id! !== null) {
             const driverPosition = await viewModel.getDriverPosition(authResponse?.user.id!);
@@ -27,6 +39,7 @@ export function DriverClientRequestScreen() {
                     longitude: driverPosition.lng
                 });
                 setClientRequestResponse(response as ClientRequestResponse[]);
+                handleListenerNewClientRequest(driverPosition);
                 console.log('Response', response);
             }
 
