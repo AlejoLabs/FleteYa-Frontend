@@ -49,4 +49,10 @@ export class DriverClientRequestViewModel {
             callback(data);
         });
     }
+
+    emitNewDriverOffer(idClientRequest: number) {
+        this.socketService.sendMessage('new_driver_offer', {
+            'id_client_request': idClientRequest
+        });
+    }
 }

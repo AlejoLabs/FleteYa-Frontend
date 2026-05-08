@@ -93,5 +93,12 @@ export class ClientSearchMapViewModel {
         });
     }
 
+    listenerNewDriverOffer(idClientRequest: number, callback: (data: any) => void){
+        this.socketService.onMessage(`created_driver_offer/${idClientRequest}`, (data: any) => {
+            //console.log('NUEVO CONDUCTOR', data);
+            callback(idClientRequest);
+        });
+    }
+
 
 }

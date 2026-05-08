@@ -29,7 +29,7 @@ const DEFAULT_REGION: Region = {
 export default function ClientSearchMapScreen() {
 
     const viewModel: ClientSearchMapViewModel = container.resolve("clientSearchMapViewModel");
-    const {authResponse} = useAuth();
+    const { authResponse } = useAuth();
     const [location, setLocation] = useState<Region>(DEFAULT_REGION);
     const [directionsRoute, setDirectionsRoute] = useState<LatLng[]>([]);
     const [shouldDrawRoute, setShouldDrawRoute] = useState<boolean>(false);
@@ -90,11 +90,14 @@ export default function ClientSearchMapScreen() {
         mapRef.current?.animateCamera(camera, { duration: 1000 });
     }
 
-    const handleGetDriverTripOffers = async () => {
-        const response = await viewModel.getDriverTripOffers(6);
-        setIsDriverOfferModalVisible(false);
-        setDriverTripOffers(response as DriverTripOffer[]);
-        console.log("Response DriverTripOffers", response);
+    const handleGetDriverTripOffers = async (idClientRequest: number) => {
+        viewModel.listenerNewDriverOffer(idClientRequest, async (data:number) => {
+            const response = await viewModel.getDriverTripOffers(data);
+            setIsDriverOfferModalVisible(true);
+            setDriverTripOffers(response as DriverTripOffer[]);
+            console.log("Response DriverTripOffers", response);
+        });
+
     }
 
     const handleCreateClientRequest = async () => {
@@ -110,6 +113,7 @@ export default function ClientSearchMapScreen() {
         });
         if (typeof response === "number") {
             viewModel.emitNewClientRequest(response);
+            handleGetDriverTripOffers(response);
             ToastAndroid.show("Solicitud enviada", ToastAndroid.LONG);
         }
     }
@@ -242,7 +246,7 @@ export default function ClientSearchMapScreen() {
                 viewModel.listenerDriverDisconnectSocket((idSocket: string) => {
                     setDriverMarkers((prevMarkers) => prevMarkers.filter(marker => marker.idSocket !== idSocket));
                 });
-                handleGetDriverTripOffers();
+                
                 setHasLocation(true);
             } catch (error) {
                 console.log('No se pudo obtener la ubicacion actual', error);
@@ -494,7 +498,7 @@ export default function ClientSearchMapScreen() {
                     </View>
 
                     <DefaultRoundedButton
-                        onPress={() => { 
+                        onPress={() => {
                             handleCreateClientRequest();
                         }}
                         text="Solicitar conductor"
@@ -514,16 +518,16 @@ export default function ClientSearchMapScreen() {
                 }}
                 source={require("../../../../assets/pin_red.png")}
             />
-            <Modal 
+            <Modal
                 visible={isDriverOfferModalVisible}
                 animationType="fade"
                 onRequestClose={() => setIsDriverOfferModalVisible(false)}
                 transparent={true}
             >
-                <FlatList 
+                <FlatList
                     data={driverTripOffers}
                     keyExtractor={(item) => item.id!.toString()}
-                    renderItem={({item}) => <DriverOfferItem driverTripOffer={item}/>}
+                    renderItem={({ item }) => <DriverOfferItem driverTripOffer={item} />}
                     contentContainerStyle={{ paddingTop: 50 }}
                 />
             </Modal>

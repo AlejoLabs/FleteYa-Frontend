@@ -26,6 +26,9 @@ export function DriverClientRequestItem({ clientRequestResponse, viewModel, auth
             distance: clientRequestResponse.google_distance_matrix.distance.value / 1000, // Convertir a kilómetros
             time: clientRequestResponse.google_distance_matrix.duration.value / 60 // Convertir a minutos
         });
+        if ('id_client_request' in response) {
+            viewModel.emitNewDriverOffer(clientRequestResponse.id);
+        }
         console.log('Response Driver Trip Offer', response);
     }
 
