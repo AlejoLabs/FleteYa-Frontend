@@ -18,6 +18,7 @@ export function DriverOfferItem({ viewModel, driverTripOffer }: Props) {
                 driverTripOffer.fare_offered
             );
             if (response === true || (response as any)?.id_driver_assigned === driverTripOffer.id_driver) {
+                viewModel.emitNewDriverAssigned(driverTripOffer.id_client_request, driverTripOffer.id_driver);
                 console.log('CONDUCTOR ASIGNADO CORRECTAMENTE');
             }
     }

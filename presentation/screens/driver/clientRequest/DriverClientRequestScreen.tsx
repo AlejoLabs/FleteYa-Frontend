@@ -16,6 +16,7 @@ export function DriverClientRequestScreen() {
 
     useEffect(() => {
         handleGetNearbyTripRequest();
+        handleListenerNewDriverAssigned();
     }, []);
 
     const handleListenerNewClientRequest = async (driverPosition: DriverPosition) => {
@@ -26,6 +27,12 @@ export function DriverClientRequestScreen() {
                         longitude: driverPosition.lng
                     });
                     setClientRequestResponse(response as ClientRequestResponse[]);
+                });
+    }
+
+    const handleListenerNewDriverAssigned = async () => {
+        viewModel.listenerNewDriverAssignedSocket(authResponse?.user.id!, async (data: any) => {
+                    console.log('TE HAN ASIGNADO UN VIAJE');
                 });
     }
 

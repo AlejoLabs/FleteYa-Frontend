@@ -50,6 +50,12 @@ export class DriverClientRequestViewModel {
         });
     }
 
+    listenerNewDriverAssignedSocket(idDriver: number, callback: (data: any) => void){
+        this.socketService.onMessage(`driver_assigned/${idDriver}`, (data: any) => {
+            callback(data);
+        });
+    }
+
     emitNewDriverOffer(idClientRequest: number) {
         this.socketService.sendMessage('new_driver_offer', {
             'id_client_request': idClientRequest

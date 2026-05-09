@@ -81,6 +81,13 @@ export class ClientSearchMapViewModel {
         });
     }
 
+    emitNewDriverAssigned(idClientRequest: number, idDriver: number) {
+        this.socketService.sendMessage('new_driver_assigned', { 
+            id_client_request: idClientRequest,
+            id_driver: idDriver
+        });
+    }
+
     listenerDriverPositionSocket(callback: (data: any) => void){
         this.socketService.onMessage('new_driver_position', (data: any) => {
             console.log('NUEVO CONDUCTOR', data);
