@@ -41,6 +41,7 @@ import { DriverTripOfferRepositoryImpl } from "../data/repository/DriverTripOffe
 import { CreateDriverTripOfferUseCase } from "../domain/useCases/driverTripOffer/CreateDriverTripOfferUseCase";
 import { DriverTripOfferUseCases } from "../domain/useCases/driverTripOffer/DriverTripOfferUseCases";
 import { GetDriverTripOfferUseCase } from "../domain/useCases/driverTripOffer/GetDriverTripOfferUseCase";
+import { UpdateDriverAssignedUseCase } from "../domain/useCases/clientRequest/UpdateDriverAssignedUseCase";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -71,7 +72,8 @@ const clientRequestRepository = new ClientRequestRepositoryImpl({ clientRequestS
 const getTimeAndDistanceUseCase = new GetTimeAndDistanceUseCase({ clientRequestRepository });
 const createClientRequestUseCase = new CreateClientRequestUseCase({ clientRequestRepository });
 const getNearbyTripRequestUseCase = new GetNearbyTripRequestUseCase({ clientRequestRepository });
-const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, createClientRequestUseCase });
+const updateDriverAssignedUseCase = new UpdateDriverAssignedUseCase({ clientRequestRepository });
+const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, createClientRequestUseCase, updateDriverAssignedUseCase });
 const socketService = new SocketService({} as any);
 const driverPositionService = new DriverPositionService();
 const driverPositionRepository = new DriverPositionRepositoryImpl({ driverPositionService });
@@ -114,6 +116,7 @@ type ContainerDeps = {
     getNearbyTripRequestUseCase: GetNearbyTripRequestUseCase;
     createClientRequestUseCase: CreateClientRequestUseCase;
     clientRequestUseCases: ClientRequestUseCases;
+    updateDriverAssignedUseCase: UpdateDriverAssignedUseCase;
     socketService: SocketService;
     driverMyLocationMapViewModel: DriverMyLocationMapViewModel;
     driverClientRequestViewModel: DriverClientRequestViewModel;
@@ -157,6 +160,7 @@ const container = {
             getTimeAndDistanceUseCase,
             getNearbyTripRequestUseCase,
             createClientRequestUseCase,
+            updateDriverAssignedUseCase,
             clientRequestUseCases,
             socketService,
             driverMyLocationMapViewModel,

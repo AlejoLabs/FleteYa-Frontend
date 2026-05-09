@@ -20,6 +20,9 @@ export class ClientRequestRepositoryImpl implements ClientRequestRepository {
     ) {
         this.clientRequestService = clientRequestService;
     }
+    async updateDriverAssigned(idClientRequest: number, idDriver: number, fareAssigned: number): Promise<boolean | ErrorResponse> {
+       return await this.clientRequestService.updateDriverAssigned(idClientRequest, idDriver, fareAssigned);
+    }
     async getNearbyTripRequest(driverPosition: LatLng): Promise<ClientRequestResponse[] | ErrorResponse> {
         return await this.clientRequestService.getNearbyTripRequest(driverPosition);
     }

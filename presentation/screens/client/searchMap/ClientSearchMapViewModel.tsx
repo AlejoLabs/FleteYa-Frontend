@@ -51,6 +51,10 @@ export class ClientSearchMapViewModel {
         return await this.clientRequestUseCases.create.execute(clientRequest);
     }
 
+    async updateDriverAssigned(idClientRequest: number, idDriver: number, fareAssigned: number) {
+        return await this.clientRequestUseCases.updateDriverAssigned.execute(idClientRequest, idDriver, fareAssigned);
+    }
+
     async getPlaceDetails(placeId: string): Promise<PlaceDetail | null> {
         return await this.googlePlaceUseCases.getPlaceDetails.execute(placeId);
     }

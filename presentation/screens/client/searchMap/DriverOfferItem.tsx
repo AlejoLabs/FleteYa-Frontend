@@ -1,12 +1,27 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
+import { Client } from "../../../../domain/models/ClientRequestResponse";
+import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
 
 interface Props {
+    viewModel: ClientSearchMapViewModel;
     driverTripOffer: DriverTripOffer;
 }
 
-export function DriverOfferItem({ driverTripOffer }: Props) {
+export function DriverOfferItem({ viewModel, driverTripOffer }: Props) {
+
+    const handleUpdateDriverAssigned = async () => {
+            const response = await viewModel.updateDriverAssigned(
+                driverTripOffer.id_client_request, 
+                driverTripOffer.id_driver, 
+                driverTripOffer.fare_offered
+            );
+            if (response === true || (response as any)?.id_driver_assigned === driverTripOffer.id_driver) {
+                console.log('CONDUCTOR ASIGNADO CORRECTAMENTE');
+            }
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.row}>
@@ -35,7 +50,9 @@ export function DriverOfferItem({ driverTripOffer }: Props) {
                 />
                 <DefaultRoundedButton
                     text="Aceptar"
-                    onPress={() => {}}
+                    onPress={() => {
+                        handleUpdateDriverAssigned();
+                    }}
                     backgroundColor="green"
                     width={'50%'}
                     height={45}

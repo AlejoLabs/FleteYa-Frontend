@@ -527,7 +527,7 @@ export default function ClientSearchMapScreen() {
                 <FlatList
                     data={driverTripOffers}
                     keyExtractor={(item) => item.id!.toString()}
-                    renderItem={({ item }) => <DriverOfferItem driverTripOffer={item} />}
+                    renderItem={({ item }) => <DriverOfferItem viewModel={viewModel} driverTripOffer={item} />}
                     contentContainerStyle={{ paddingTop: 50 }}
                 />
             </Modal>

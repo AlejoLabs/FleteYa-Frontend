@@ -9,4 +9,5 @@ export interface ClientRequestRepository {
     create(clientRequest: ClientRequest): Promise<number | ErrorResponse>;
     getTimeAndDistance(origin:LatLng, destination: LatLng): Promise<TimeAndDistanceValues | ErrorResponse>;
     getNearbyTripRequest(driverPosition: LatLng): Promise<ClientRequestResponse[] | ErrorResponse>;
+    updateDriverAssigned(idClientRequest: number, idDriver: number, fareAssigned: number): Promise<boolean | ErrorResponse>;
 }
