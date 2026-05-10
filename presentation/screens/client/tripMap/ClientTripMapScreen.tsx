@@ -63,6 +63,9 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                 }
             );
         }
+        else if(currentStatus === Status.FINISHED){
+            navigation.replace('ClientTripRatingScreen', { clientRequest: clientRequest! });
+        }
     }, [currentStatus]);
 
     useEffect(() => {
@@ -92,9 +95,13 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
 
             viewModel.listenerUpdateStatusSocket(idClientRequest, (data: any) => {
                 console.log('NUEVO ESTADO DEL VIAJE: ', data);
-                if (data.status === Status.ARRIVED) {
+                if(data.status === Status.ARRIVED){
                     setCurrentStatus(Status.ARRIVED);
                 }
+                else if(data.status === Status.FINISHED){
+                    setCurrentStatus(Status.FINISHED);
+                }
+                    
             });
 
         }

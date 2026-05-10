@@ -57,6 +57,18 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
         }
     }
 
+    const handleUpdateStatusToFinished = async (status: Status) => {
+        const response = await viewModel.updateStatus(idClientRequest, Status.FINISHED);
+        if (typeof response === 'boolean') {
+            console.log('ESTADO ACTUALIZADO CORRECTAMENTE');
+            setCurrentStatus(Status.FINISHED);
+            viewModel.emitUpdateStatus(idClientRequest, Status.FINISHED);
+            navigation.replace('DriverTripRatingScreen', { 
+                clientRequest: clientRequest! 
+            });
+        }
+    }
+
     const moveCameraToLocation = (lat: number, lng: number) => {
         const camera: Camera = {
             center: {
@@ -352,13 +364,20 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                     </View>
 
                     <TouchableOpacity style={styles.iconContainer} onPress={() => {
-                        // navigation.navigate('ProfileUpdateScreen');
-                        handleUpdateStatusToArrived(Status.ARRIVED);
+                        if(currentStatus === Status.ACCEPTED){
+                            handleUpdateStatusToArrived(Status.ARRIVED);
+                        }
+                        else if(currentStatus === Status.ARRIVED){
+                            handleUpdateStatusToFinished(Status.FINISHED);
+                        }
+                        
                     }}>
                         <View style={styles.iconBox}>
                             <Ionicons name='checkmark' size={25} color='white' />
                         </View>
-                        <Text style={styles.textAction}>NOTIFICAR LLEGADA</Text>
+                        <Text style={styles.textAction}>
+                            {currentStatus === Status.ACCEPTED ? 'NOTIFICAR LLEGADA' : 'FINALIZAR VIAJE'}
+                        </Text>
                     </TouchableOpacity>
 
                 </View>

@@ -2,11 +2,13 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import DriverMyLocationMapScreen from "../screens/driver/MyLocationMap/DriverMyLocationMapScreen";
 import { DriverTripMapScreen } from "../screens/driver/tripMap/DriverTripMapScreen";
 import { DriverClientRequestScreen } from "../screens/driver/clientRequest/DriverClientRequestScreen";
+import { ClientRequestResponse } from "../../domain/models/ClientRequestResponse";
+import { DriverTripRatingScreen } from "../screens/driver/tripRating/DriverTripRating";
 
 export type DriverMapStackParamList = {
     DriverClientRequestScreen: undefined,
-    DriverTripMapScreen: { idClientRequest: number }
-    
+    DriverTripMapScreen: { idClientRequest: number },
+    DriverTripRatingScreen: { clientRequest: ClientRequestResponse },
 }
 
 const Stack = createNativeStackNavigator<DriverMapStackParamList>();
@@ -29,6 +31,14 @@ export const DriverMapStackNavigator = () => {
                 }}
                 name="DriverTripMapScreen"
                 component={DriverTripMapScreen}
+            />
+
+            <Stack.Screen
+                options={{
+                    headerShown: false,
+                }}
+                name="DriverTripRatingScreen"
+                component={DriverTripRatingScreen}
             />
 
 
