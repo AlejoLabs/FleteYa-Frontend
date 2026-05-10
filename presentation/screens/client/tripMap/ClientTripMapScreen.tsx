@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../hooks/useAuth";
 import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { decode } from "@googlemaps/polyline-codec";
+import { Status } from "../../../../domain/repository/ClientRequestRepository";
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientTripMapScreen'> { };
 export function ClientTripMapScreen({ navigation, route }: Props) {
@@ -26,8 +27,9 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     const [directionsRoute, setDirectionsRoute] = useState<LatLng[]>([]);
     const [driverPosition, setDriverPosition] = useState<LatLng | null>(null);
     const [isDriverPositionSet, setIsDriverPositionSet] = useState(false);
+    const [currentStatus, setCurrentStatus] = useState(Status.ACCEPTED);
 
-     useEffect(() => {
+    useEffect(() => {
         viewModel.initSocket();
         handleGetClientRequestById();
     }, []);
@@ -35,18 +37,33 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     useEffect(() => {
         if (isDriverPositionSet === true) {
             console.log('SOLO SE EJECUTO UNA VEZ');
-                handleGetDirections(
-                    {
-                        latitude: driverPosition!.latitude,
-                        longitude: driverPosition!.longitude
-                    },
-                    {
-                        latitude: clientRequest?.pickup_position.y!,
-                        longitude: clientRequest?.pickup_position.x!
-                    }
-                );
-            }
+            handleGetDirections(
+                {
+                    latitude: driverPosition!.latitude,
+                    longitude: driverPosition!.longitude
+                },
+                {
+                    latitude: clientRequest?.pickup_position.y!,
+                    longitude: clientRequest?.pickup_position.x!
+                }
+            );
+        }
     }, [isDriverPositionSet]);
+
+    useEffect(() => {
+        if(currentStatus === Status.ARRIVED && driverPosition !== null && clientRequest){
+            handleGetDirections(
+                {
+                    latitude: driverPosition!.latitude,
+                    longitude: driverPosition!.longitude
+                },
+                {
+                    latitude: clientRequest?.destination_position.y!,
+                    longitude: clientRequest?.destination_position.x!
+                }
+            );
+        }
+    }, [currentStatus]);
 
     useEffect(() => {
         if (driverPosition !== null) {
@@ -75,22 +92,16 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
 
             viewModel.listenerUpdateStatusSocket(idClientRequest, (data: any) => {
                 console.log('NUEVO ESTADO DEL VIAJE: ', data);
+                if (data.status === Status.ARRIVED) {
+                    setCurrentStatus(Status.ARRIVED);
+                }
             });
 
         }
     }
 
     const handleGetDirections = async (origin: LatLng, destination: LatLng) => {
-        const response: GoogleDirections | null = await viewModel.getDirections(
-            {
-                latitude: origin.latitude,
-                longitude: origin.longitude
-            },
-            {
-                latitude: destination.latitude,
-                longitude: destination.longitude,
-            }
-        );
+        const response: GoogleDirections | null = await viewModel.getDirections(origin, destination);
         if (response !== null) {
             if (response.routes.length > 0) {
                 const points = response.routes[0].overview_polyline.points;
@@ -100,7 +111,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
         }
     }
 
-   
+
 
     const toggleView = (isInteractingWithMap: boolean) => {
         setIsInteractingWithMap(isInteractingWithMap);
@@ -162,7 +173,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                         )
                     }
                     {
-                        clientRequest !== null && (
+                        (clientRequest !== null && currentStatus === Status.ACCEPTED) && (
                             <Marker
                                 coordinate={{
                                     latitude: clientRequest!.pickup_position.y,
@@ -173,6 +184,24 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                                 <View style={{ width: 50, height: 50 }}>
                                     <Image
                                         source={require("../../../../assets/pin_map.png")}
+                                        style={{ resizeMode: "contain", width: "50%", height: "50%" }}
+                                    />
+                                </View>
+                            </Marker>
+                        )
+                    }
+                    {
+                        (clientRequest !== null && currentStatus === Status.ARRIVED) && (
+                            <Marker
+                                coordinate={{
+                                    latitude: clientRequest!.destination_position.y,
+                                    longitude: clientRequest!.destination_position.x
+                                }}
+                                title="Destino"
+                            >
+                                <View style={{ width: 50, height: 50 }}>
+                                    <Image
+                                        source={require("../../../../assets/flag.png")}
                                         style={{ resizeMode: "contain", width: "50%", height: "50%" }}
                                     />
                                 </View>
