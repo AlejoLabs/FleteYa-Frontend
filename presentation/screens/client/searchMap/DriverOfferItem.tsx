@@ -3,13 +3,17 @@ import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
 import { Client } from "../../../../domain/models/ClientRequestResponse";
 import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
+import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
+import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
 
 interface Props {
     viewModel: ClientSearchMapViewModel;
     driverTripOffer: DriverTripOffer;
+    navigation: StackNavigationProp<ClientMapStackParamList, 'ClientSearchMapScreen', undefined>;
+
 }
 
-export function DriverOfferItem({ viewModel, driverTripOffer }: Props) {
+export function DriverOfferItem({ viewModel, driverTripOffer, navigation }: Props) {
 
     const handleUpdateDriverAssigned = async () => {
             const response = await viewModel.updateDriverAssigned(
@@ -20,6 +24,9 @@ export function DriverOfferItem({ viewModel, driverTripOffer }: Props) {
             if (response === true || (response as any)?.id_driver_assigned === driverTripOffer.id_driver) {
                 viewModel.emitNewDriverAssigned(driverTripOffer.id_client_request, driverTripOffer.id_driver);
                 console.log('CONDUCTOR ASIGNADO CORRECTAMENTE');
+                navigation.navigate('ClientTripMapScreen', {
+                    idClientRequest: driverTripOffer.id_client_request,      
+                });
             }
     }
 

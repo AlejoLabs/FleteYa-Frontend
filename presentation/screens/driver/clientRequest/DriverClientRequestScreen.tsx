@@ -7,8 +7,12 @@ import { ClientRequestResponse } from "../../../../domain/models/ClientRequestRe
 import { DriverClientRequestItem } from "./DriverClientRequestItem";
 import { useAuth } from "../../../hooks/useAuth";
 import { DriverPosition } from "../../../../domain/models/DriverPosition";
+import { StackScreenProps } from "@react-navigation/stack";
+import { DriverMapStackParamList } from "../../../navigator/DriverMapStackNavigator";
 
-export function DriverClientRequestScreen() {
+interface Props extends StackScreenProps<DriverMapStackParamList, 'DriverClientRequestScreen'> { };
+
+export function DriverClientRequestScreen({navigation, route}: Props) {
 
     const viewModel = container.resolve('driverClientRequestViewModel');
     const [clientRequestResponse, setClientRequestResponse] = useState<ClientRequestResponse[]>([]);
@@ -32,7 +36,11 @@ export function DriverClientRequestScreen() {
 
     const handleListenerNewDriverAssigned = async () => {
         viewModel.listenerNewDriverAssignedSocket(authResponse?.user.id!, async (data: any) => {
+                    const idClientRequest = data.id_client_request;
                     console.log('TE HAN ASIGNADO UN VIAJE');
+                    navigation.navigate('DriverTripMapScreen', {
+                        idClientRequest: idClientRequest
+                    });
                 });
     }
 

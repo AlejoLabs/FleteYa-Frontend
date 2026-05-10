@@ -18,6 +18,8 @@ import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
 import { useAuth } from "../../../hooks/useAuth";
 import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import { DriverOfferItem } from "./DriverOfferItem";
+import { StackScreenProps } from "@react-navigation/stack";
+import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
 
 const DEFAULT_REGION: Region = {
     latitude: 19.4326,
@@ -26,7 +28,9 @@ const DEFAULT_REGION: Region = {
     longitudeDelta: 0.0421,
 };
 
-export default function ClientSearchMapScreen() {
+interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientSearchMapScreen'> { };
+
+export default function ClientSearchMapScreen({navigation, route}: Props) {
 
     const viewModel: ClientSearchMapViewModel = container.resolve("clientSearchMapViewModel");
     const { authResponse } = useAuth();
@@ -527,7 +531,7 @@ export default function ClientSearchMapScreen() {
                 <FlatList
                     data={driverTripOffers}
                     keyExtractor={(item) => item.id!.toString()}
-                    renderItem={({ item }) => <DriverOfferItem viewModel={viewModel} driverTripOffer={item} />}
+                    renderItem={({ item }) => <DriverOfferItem viewModel={viewModel} driverTripOffer={item} navigation={navigation}/>}
                     contentContainerStyle={{ paddingTop: 50 }}
                 />
             </Modal>
