@@ -4,16 +4,18 @@ import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNaviga
 import { container } from "../../../../di/container";
 import { ClientTripMapViewModel } from "./ClientTripMapViewModel";
 import { use, useEffect, useRef, useState } from "react";
-import MapView, { Region } from "react-native-maps";
+import MapView, { LatLng, Marker, Polyline, Region } from "react-native-maps";
 import styles from './Styles'
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../hooks/useAuth";
+import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
+import { decode } from "@googlemaps/polyline-codec";
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientTripMapScreen'> { };
 export function ClientTripMapScreen({ navigation, route }: Props) {
 
-    const {authResponse} = useAuth();
+    const { authResponse } = useAuth();
     const { idClientRequest } = route.params;
     const viewModel: ClientTripMapViewModel = container.resolve("clientTripMapViewModel");
     const animatedValue = useRef(new Animated.Value(0)).current;
@@ -21,6 +23,31 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     const [isInteractingWithMap, setIsInteractingWithMap] = useState<boolean>(false);
     const [location, setLocation] = useState<Region | undefined>(undefined);
     const [clientRequest, setClientRequest] = useState<ClientRequestResponse>();
+    const [directionsRoute, setDirectionsRoute] = useState<LatLng[]>([]);
+    const [driverPosition, setDriverPosition] = useState<LatLng | null>(null);
+    const [isDriverPositionSet, setIsDriverPositionSet] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (isDriverPositionSet === true) {
+            console.log('SOLO SE EJECUTO UNA VEZ');
+                handleGetDirections(
+                    {
+                        latitude: driverPosition!.latitude,
+                        longitude: driverPosition!.longitude
+                    },
+                    {
+                        latitude: clientRequest?.pickup_position.y!,
+                        longitude: clientRequest?.pickup_position.x!
+                    }
+                );
+            }
+    }, [isDriverPositionSet])
+
+    useEffect(() => {
+        if (driverPosition !== null) {
+            setIsDriverPositionSet(true);
+        }
+    }, [driverPosition])
 
     const handleGetClientRequestById = async () => {
         const response = await viewModel.getClientRequestById(idClientRequest);
@@ -35,12 +62,36 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
             });
             viewModel.listenerDriverPositionSocket(authResponse?.user.id!, (data: any) => {
                 console.log('Conductor Asignado: ', data);
+                setDriverPosition({
+                    latitude: data.lat,
+                    longitude: data.lng
+                });
             });
 
             viewModel.listenerUpdateStatusSocket(idClientRequest, (data: any) => {
                 console.log('NUEVO ESTADO DEL VIAJE: ', data);
             });
 
+        }
+    }
+
+    const handleGetDirections = async (origin: LatLng, destination: LatLng) => {
+        const response: GoogleDirections | null = await viewModel.getDirections(
+            {
+                latitude: origin.latitude,
+                longitude: origin.longitude
+            },
+            {
+                latitude: destination.latitude,
+                longitude: destination.longitude,
+            }
+        );
+        if (response !== null) {
+            if (response.routes.length > 0) {
+                const points = response.routes[0].overview_polyline.points;
+                const coordinates = decode(points).map(([lat, lng]) => ({ latitude: lat, longitude: lng }));
+                setDirectionsRoute(coordinates);
+            }
         }
     }
 
@@ -58,7 +109,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
         }).start();
     }
 
-    if(!location){
+    if (!location) {
         return <View style={styles.container} />
     }
 
@@ -89,44 +140,46 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                         toggleView(false);
                     }}
                     onPanDrag={() => toggleView(true)}
-                >                  
-                    {/*
-                        originMarker &&
-                        (<Marker
-                            coordinate={{
-                                latitude: originMarker!.latitude,
-                                longitude: originMarker!.longitude
-                            }}
-                            title="Origen"
-                        >
-                            <View style={{ width: 50, height: 50 }}>
-                                <Image
-                                    source={require("../../../../assets/pin_map.png")}
-                                    style={{ resizeMode: "contain", width: "50%", height: "50%" }}
-                                />
-                            </View>
-                        </Marker>
+                >
+                    {
+                        driverPosition !== null && (
+                            <Marker
+                                coordinate={{
+                                    latitude: driverPosition.latitude,
+                                    longitude: driverPosition.longitude,
+                                }}
+                                title="Tu conductor"
+                            >
+                                <View style={{ width: 50, height: 50 }}>
+                                    <Image
+                                        source={require("../../../../assets/icon_taxi.png")}
+                                        style={{ resizeMode: "contain", width: "50%", height: "50%" }}
+                                    />
+                                </View>
+                            </Marker>
                         )
                     }
                     {
-                        destinationPlace && (<Marker coordinate={{
-                            latitude: destinationPlace!.lat,
-                            longitude: destinationPlace!.lng
-                        }}
-                            title="Destino"
-                        >
-                            <View style={{ width: 50, height: 50 }}>
-                                <Image
-                                    source={require("../../../../assets/flag.png")}
-                                    style={{ resizeMode: "contain", width: "50%", height: "50%" }}
-                                />
-                            </View>
-                        </Marker>
+                        clientRequest !== null && (
+                            <Marker
+                                coordinate={{
+                                    latitude: clientRequest!.pickup_position.y,
+                                    longitude: clientRequest!.pickup_position.x
+                                }}
+                                title="Origen"
+                            >
+                                <View style={{ width: 50, height: 50 }}>
+                                    <Image
+                                        source={require("../../../../assets/pin_map.png")}
+                                        style={{ resizeMode: "contain", width: "50%", height: "50%" }}
+                                    />
+                                </View>
+                            </Marker>
                         )
                     }
                     {
                         directionsRoute.length > 0 && (<Polyline coordinates={directionsRoute} strokeWidth={6} strokeColor="red" />)
-                    */}
+                    }
 
                 </MapView>
             </Animated.View>
@@ -156,7 +209,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                             <Text>{clientRequest?.driver.name} {clientRequest?.driver.lastname}</Text>
                             <Text>Cel: {clientRequest?.driver.phone}</Text>
                         </View>
-                        <Image 
+                        <Image
                             source={{ uri: clientRequest?.driver.image }}
                             style={styles.userImage}
                         />
@@ -167,15 +220,15 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                             <Text>Placa del vehiculo</Text>
                             <Text>Llega en 00 Mins Aproximadamente</Text>
                         </View>
-                        <Image 
+                        <Image
                             style={styles.userImage}
-                            source={require("../../../../assets/suv.png")} 
+                            source={require("../../../../assets/suv.png")}
                         />
                     </View>
 
                     <Text style={styles.textTitle}>DATOS DEL VIAJE</Text>
                     <View style={styles.rowContainer}>
-                        <Ionicons 
+                        <Ionicons
                             name="location"
                             size={20}
                             color="black"
@@ -187,7 +240,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                     </View>
 
                     <View style={styles.rowContainer}>
-                        <Ionicons 
+                        <Ionicons
                             name="pricetag"
                             size={20}
                             color="black"
