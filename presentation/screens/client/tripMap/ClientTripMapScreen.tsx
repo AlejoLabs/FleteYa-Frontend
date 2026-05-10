@@ -25,7 +25,12 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     const [clientRequest, setClientRequest] = useState<ClientRequestResponse>();
     const [directionsRoute, setDirectionsRoute] = useState<LatLng[]>([]);
     const [driverPosition, setDriverPosition] = useState<LatLng | null>(null);
-    const [isDriverPositionSet, setIsDriverPositionSet] = useState<boolean>(false);
+    const [isDriverPositionSet, setIsDriverPositionSet] = useState(false);
+
+     useEffect(() => {
+        viewModel.initSocket();
+        handleGetClientRequestById();
+    }, []);
 
     useEffect(() => {
         if (isDriverPositionSet === true) {
@@ -41,13 +46,13 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                     }
                 );
             }
-    }, [isDriverPositionSet])
+    }, [isDriverPositionSet]);
 
     useEffect(() => {
         if (driverPosition !== null) {
             setIsDriverPositionSet(true);
         }
-    }, [driverPosition])
+    }, [driverPosition]);
 
     const handleGetClientRequestById = async () => {
         const response = await viewModel.getClientRequestById(idClientRequest);
@@ -60,7 +65,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
             });
-            viewModel.listenerDriverPositionSocket(authResponse?.user.id!, (data: any) => {
+            viewModel.listenerDriverPositionSocket(response.id_client, (data: any) => {
                 console.log('Conductor Asignado: ', data);
                 setDriverPosition({
                     latitude: data.lat,
@@ -95,10 +100,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
         }
     }
 
-    useEffect(() => {
-        viewModel.initSocket();
-        handleGetClientRequestById();
-    }, []);
+   
 
     const toggleView = (isInteractingWithMap: boolean) => {
         setIsInteractingWithMap(isInteractingWithMap);

@@ -48,7 +48,11 @@ export class ClientTripMapViewModel {
 
     listenerDriverPositionSocket(idClient: number, callback: (data: any) => void){
         this.socketService.onMessage(`trip_new_driver_position/${idClient}`, (data: any) => {
-            
+            callback(data);
+        });
+
+        // fallback: mismo canal que usa la pantalla de búsqueda y que sí funciona
+        this.socketService.onMessage('new_driver_position', (data: any) => {
             callback(data);
         });
     }

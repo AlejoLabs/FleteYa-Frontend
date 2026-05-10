@@ -99,7 +99,7 @@ const createDriverTripOfferUseCase = new CreateDriverTripOfferUseCase({ driverTr
 const getDriverTripOfferUseCase = new GetDriverTripOfferUseCase({ driverTripOfferRepository });
 const driverTripOfferUseCases = new DriverTripOfferUseCases({ createDriverTripOfferUseCase, getDriverTripOfferUseCase });
 const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverTripOfferUseCases });
-const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCases, socketService });
+const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases });
 const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases });
 const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases, driverPositionUseCases, driverTripOfferUseCases, socketService });
 

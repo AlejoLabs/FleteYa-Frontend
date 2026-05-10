@@ -123,14 +123,6 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
 
     }, [clientRequest, tracking]);
 
-    if (!clientRequest || !location) {
-        return (
-            <View style={styles.container}>
-                <Text>Cargando...</Text>
-            </View>
-        );
-    }
-
     const startRealTimeLocation = async () => {
         if (!locationSubscription.current) {
 
@@ -174,6 +166,14 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
             locationSubscription.current.remove();
             locationSubscription.current = null;
         }
+    }
+
+    if (!clientRequest || !location) {
+        return (
+            <View style={styles.container}>
+                <Text>Cargando...</Text>
+            </View>
+        );
     }
 
     const toggleView = (isInteractingWithMap: boolean) => {
