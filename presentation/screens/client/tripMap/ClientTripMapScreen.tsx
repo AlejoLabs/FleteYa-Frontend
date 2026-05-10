@@ -3,14 +3,17 @@ import { StackScreenProps } from "@react-navigation/stack";
 import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
 import { container } from "../../../../di/container";
 import { ClientTripMapViewModel } from "./ClientTripMapViewModel";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import MapView, { Region } from "react-native-maps";
 import styles from './Styles'
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../../../hooks/useAuth";
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientTripMapScreen'> { };
 export function ClientTripMapScreen({ navigation, route }: Props) {
+
+    const {authResponse} = useAuth();
     const { idClientRequest } = route.params;
     const viewModel: ClientTripMapViewModel = container.resolve("clientTripMapViewModel");
     const animatedValue = useRef(new Animated.Value(0)).current;
@@ -30,10 +33,14 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
             });
+            viewModel.listenerDriverPositionSocket(authResponse?.user.id!, (data: any) => {
+                console.log('Conductor Asignado: ', data);
+            });
         }
     }
 
     useEffect(() => {
+        viewModel.initSocket();
         handleGetClientRequestById();
     }, []);
 
@@ -44,6 +51,10 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
             duration: 200,
             useNativeDriver: true,
         }).start();
+    }
+
+    if(!location){
+        return <View style={styles.container} />
     }
 
     return (

@@ -1,5 +1,5 @@
 import { StackScreenProps } from "@react-navigation/stack";
-import { Animated, Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Dimensions, Image, Platform, Text, TouchableOpacity, View } from "react-native";
 import { DriverMapStackParamList } from "../../../navigator/DriverMapStackNavigator";
 import { container } from "../../../../di/container";
 import { DriverTripMapViewModel } from "./DriverTripMapViewModel";
@@ -8,6 +8,7 @@ import { ClientRequestResponse } from "../../../../domain/models/ClientRequestRe
 import MapView, { Region } from "react-native-maps";
 import styles from './Styles';
 import { Ionicons } from "@expo/vector-icons";
+import * as Location from "expo-location";
 
 interface Props extends StackScreenProps<DriverMapStackParamList, 'DriverTripMapScreen'> { };
 export function DriverTripMapScreen({ navigation, route }: Props) {
@@ -17,20 +18,99 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
     const mapRef = useRef<MapView>(null);
     const [isInteractingWithMap, setIsInteractingWithMap] = useState<boolean>(false);
     const [location, setLocation] = useState<Region | undefined>(undefined);
-    const [clientRequest, setClientRequest] = useState<ClientRequestResponse>();
+    const [clientRequest, setClientRequest] = useState<ClientRequestResponse | null>(null);
+    const [tracking, setTracking] = useState<boolean>(true);
+    const locationSubscription = useRef<Location.LocationSubscription | null>(null);
 
     const handleGetClientRequestById = async () => {
         const response = await viewModel.getClientRequestById(idClientRequest);
         console.log('getClientRequestById', response);
         if ('id' in response) {
             setClientRequest(response);
-            
+
         }
     }
 
     useEffect(() => {
         handleGetClientRequestById();
     }, []);
+
+    useEffect(() => {
+        if (clientRequest !== null) {
+            (async () => {
+                try {
+                    const { status } = await Location.requestForegroundPermissionsAsync();
+                    if (status !== 'granted') {
+                        console.log('Permiso de ubicacion denegado');
+                        return;
+                    }
+
+                    if (Platform.OS === 'android') {
+                        const backgroundStatus = await Location.requestBackgroundPermissionsAsync();
+                        if (backgroundStatus.status !== 'granted') {
+                            console.log('Permiso de ubicacion en segundo plano denegado');
+                        }
+                    }
+
+                    if (tracking) {
+                        startRealTimeLocation();
+                    }
+                    else {
+                        stopRealTimeLocation();
+                    }
+
+
+                } catch (error) {
+                    console.log('No se pudo obtener la ubicacion actual', error);
+                }
+            })();
+        }
+
+    }, [clientRequest, tracking]);
+
+    const startRealTimeLocation = async () => {
+        if (!locationSubscription.current) {
+
+            locationSubscription.current = await Location.watchPositionAsync(
+                {
+                    accuracy: Location.Accuracy.BestForNavigation,
+                    timeInterval: 1000,
+                    distanceInterval: 1
+                },
+                (newLocation) => {
+                    console.log('MI UBICACION', newLocation);
+                    const currentCoords = {
+                        latitude: newLocation.coords.latitude,
+                        longitude: newLocation.coords.longitude,
+                    };
+
+                    setLocation({
+                        latitude: currentCoords.latitude,
+                        longitude: currentCoords.longitude,
+                        latitudeDelta: 0.0922,
+                        longitudeDelta: 0.0421,
+                    });
+                    viewModel.emitDriverPosition(
+                        clientRequest?.id_client!,
+                        newLocation.coords.latitude,
+                        newLocation.coords.longitude
+                    );
+                }
+
+            );
+        }
+
+        viewModel.initSocket();
+    }
+
+    const stopRealTimeLocation = () => {
+        console.log('Locacion detenida');
+        if (locationSubscription.current) {
+            viewModel.discconectSocket();
+            locationSubscription.current.remove();
+            locationSubscription.current = null;
+        }
+    }
 
     const toggleView = (isInteractingWithMap: boolean) => {
         setIsInteractingWithMap(isInteractingWithMap);

@@ -90,7 +90,7 @@ export class ClientSearchMapViewModel {
 
     listenerDriverPositionSocket(callback: (data: any) => void){
         this.socketService.onMessage('new_driver_position', (data: any) => {
-            console.log('NUEVO CONDUCTOR', data);
+            //console.log('NUEVO CONDUCTOR', data);
             
             callback(data);
         });
