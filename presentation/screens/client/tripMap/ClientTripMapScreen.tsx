@@ -138,7 +138,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                     <View style={styles.rowContainer}>
                         <View style={styles.dataContainer}>
                             <Text>{clientRequest?.driver.name} {clientRequest?.driver.lastname}</Text>
-                            <Text>Tel: {clientRequest?.driver.phone}</Text>
+                            <Text>Cel: {clientRequest?.driver.phone}</Text>
                         </View>
                         <Image 
                             source={{ uri: clientRequest?.driver.image }}
