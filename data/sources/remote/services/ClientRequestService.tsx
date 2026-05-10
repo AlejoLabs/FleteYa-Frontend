@@ -79,6 +79,30 @@ export class ClientRequestService {
         }
     }
 
+    async getClientRequestById(idClientRequest: number): Promise<ClientRequestResponse | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.get<ClientRequestResponse>(`/client-requests/${idClientRequest}`);
+            console.log('Response', response.data);
+
+            return response.data;
+        } catch (error: any) {
+            if (error.response) {
+                const errorData: ErrorResponse = error.response.data;
+                if (Array.isArray(errorData.message)) {
+                    console.error('Errores multiples del servidor', errorData.message.join(', '));
+                } else {
+                    console.error('Error unico del servidor', errorData.message);
+                }
+                return errorData;
+            }
+            else {
+                console.error('Error en la peticion', error.message);
+                return defaultErrorResponse;
+            }
+
+        }
+    }
+
     async updateDriverAssigned(idClientRequest: number, idDriver: number, fareAssigned: number): Promise<boolean | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.put<boolean>(`/client-requests/updateDriverAssigned`, {
