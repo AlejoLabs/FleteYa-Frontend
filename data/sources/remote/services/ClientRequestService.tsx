@@ -4,6 +4,7 @@ import { ApiRequestHandler } from "../api/ApiRequestHandler";
 import { defaultErrorResponse, ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { ClientRequest } from "../../../../domain/models/ClientRequest";
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
+import { Status } from "../../../../domain/repository/ClientRequestRepository";
 
 export class ClientRequestService {
 
@@ -125,6 +126,33 @@ export class ClientRequestService {
             }
             else {
                 console.error('Error en la peticion', error.message);
+                return defaultErrorResponse;
+            }
+
+        }
+    }
+
+    async updateStatus(idClientRequest: number, status: Status): Promise<boolean | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.put<boolean>(`/client-requests/update_status`, {
+                'id': idClientRequest,
+                'status': status
+            });
+            console.log('Response', response.data);
+
+            return Boolean(response.data);
+        } catch (error: any) {
+            if (error.response) {
+                const errorData: ErrorResponse = error.response.data;
+                if (Array.isArray(errorData.message)) {
+                    console.log('Errores multiples del servidor', errorData.message.join(', '));
+                } else {
+                    console.log('Error unico del servidor', errorData.message);
+                }
+                return errorData;
+            }
+            else {
+                console.log('Error en la peticion', error.message);
                 return defaultErrorResponse;
             }
 

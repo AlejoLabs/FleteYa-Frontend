@@ -1,6 +1,6 @@
 import { LatLng } from "react-native-maps";
 import { TimeAndDistanceValues } from "../../domain/models/TimeAndDistanceValues";
-import { ClientRequestRepository } from "../../domain/repository/ClientRequestRepository";
+import { ClientRequestRepository, Status } from "../../domain/repository/ClientRequestRepository";
 import { ClientRequestService } from "../sources/remote/services/ClientRequestService";
 import { ErrorResponse } from "../../domain/models/ErrorResponse";
 import { ClientRequest } from "../../domain/models/ClientRequest";
@@ -19,6 +19,9 @@ export class ClientRequestRepositoryImpl implements ClientRequestRepository {
         }
     ) {
         this.clientRequestService = clientRequestService;
+    }
+    async updateStatus(idClientRequest: number, status: Status): Promise<boolean | ErrorResponse> {
+        return await this.clientRequestService.updateStatus(idClientRequest, status);
     }
     async getClientRequestById(idClientRequest: number): Promise<ClientRequestResponse | ErrorResponse> {
         return await this.clientRequestService.getClientRequestById(idClientRequest);

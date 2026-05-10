@@ -17,14 +17,14 @@ export class DriverPositionService {
             if (error.response) {
                 const errorData: ErrorResponse = error.response.data;
                 if (Array.isArray(errorData.message)) {
-                    console.error('Errores multiples del servidor', errorData.message.join(', '));
+                    console.log('Errores multiples del servidor', errorData.message.join(', '));
                 } else {
-                    console.error('Error unico del servidor', errorData.message);
+                    console.log('Error unico del servidor', errorData.message);
                 }
                 return errorData;
             }
             else {
-                console.error('Error en la peticion', error.message);
+                console.log('Error en la peticion', error.message);
                 return defaultErrorResponse;
             }
 
@@ -41,14 +41,14 @@ export class DriverPositionService {
             if (error.response) {
                 const errorData: ErrorResponse = error.response.data;
                 if (Array.isArray(errorData.message)) {
-                    console.error('Errores multiples del servidor', errorData.message.join(', '));
+                    console.log('Errores multiples del servidor', errorData.message.join(', '));
                 } else {
-                    console.error('Error unico del servidor', errorData.message);
+                    console.log('Error unico del servidor', errorData.message);
                 }
                 return errorData;
             }
             else {
-                console.error('Error en la peticion', error.message);
+                console.log('Error en la peticion', error.message);
                 return defaultErrorResponse;
             }
 
