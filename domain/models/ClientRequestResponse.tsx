@@ -11,10 +11,18 @@ export interface ClientRequestResponse {
     distance:                number;
     time_difference:         number;
     client:                  Client;
+    driver:                  Driver;
     google_distance_matrix:  GoogleDistanceMatrix;
 }
 
 export interface Client {
+    name:     string;
+    image:    string;
+    phone:    string;
+    lastname: string;
+}
+
+export interface Driver {
     name:     string;
     image:    string;
     phone:    string;
