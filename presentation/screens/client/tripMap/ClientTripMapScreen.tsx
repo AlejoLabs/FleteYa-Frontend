@@ -36,6 +36,11 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
             viewModel.listenerDriverPositionSocket(authResponse?.user.id!, (data: any) => {
                 console.log('Conductor Asignado: ', data);
             });
+
+            viewModel.listenerUpdateStatusSocket(idClientRequest, (data: any) => {
+                console.log('NUEVO ESTADO DEL VIAJE: ', data);
+            });
+
         }
     }
 

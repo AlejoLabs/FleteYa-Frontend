@@ -40,6 +40,7 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
         if (typeof response === 'boolean') {
             console.log('ESTADO ACTUALIZADO CORRECTAMENTE');
             ToastAndroid.show('Estado actualizado', ToastAndroid.LONG);
+            viewModel.emitUpdateStatus(idClientRequest, Status.ARRIVED);
         }
     }
 

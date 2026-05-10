@@ -62,4 +62,11 @@ export class DriverTripMapViewModel {
             'lng': lng
         });
     }
+
+    emitUpdateStatus(idClientRequest: number, status: Status){
+        this.socketService.sendMessage('update_status_trip', {
+            'id_client_request': idClientRequest,
+            'status': status
+        });
+    }
 }

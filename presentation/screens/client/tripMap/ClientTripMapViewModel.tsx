@@ -40,4 +40,10 @@ export class ClientTripMapViewModel {
             callback(data);
         });
     }
+
+    listenerUpdateStatusSocket(idClientRequest: number, callback: (data: any) => void){
+        this.socketService.onMessage(`new_status_trip/${idClientRequest}`, (data: any) => { 
+            callback(data);
+        });
+    }
 }
