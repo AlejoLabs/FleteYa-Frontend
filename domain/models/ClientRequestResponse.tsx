@@ -13,6 +13,11 @@ export interface ClientRequestResponse {
     client:                  Client;
     driver:                  Driver;
     google_distance_matrix:  GoogleDistanceMatrix;
+    cargo_description?:      string;
+    weight_kg?:              number;
+    length_cm?:              number;
+    width_cm?:               number;
+    height_cm?:              number;
 }
 
 export interface Client {

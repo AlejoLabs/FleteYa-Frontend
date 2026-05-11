@@ -9,4 +9,9 @@ export interface ClientRequest {
     destination_lng: number;
     destination_description: string;
     pickup_description: string;
+    cargo_description?: string;
+    weight_kg?: number;
+    length_cm?: number;
+    width_cm?: number;
+    height_cm?: number;
 }

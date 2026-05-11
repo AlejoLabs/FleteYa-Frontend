@@ -10,10 +10,16 @@ interface Props {
     viewModel: ClientSearchMapViewModel;
     driverTripOffer: DriverTripOffer;
     navigation: StackNavigationProp<ClientMapStackParamList, 'ClientSearchMapScreen', undefined>;
-
+    cargo?: {
+        description: string;
+        weight_kg: number;
+        length_cm: number;
+        width_cm: number;
+        height_cm: number;
+    };
 }
 
-export function DriverOfferItem({ viewModel, driverTripOffer, navigation }: Props) {
+export function DriverOfferItem({ viewModel, driverTripOffer, navigation, cargo }: Props) {
 
     const handleUpdateDriverAssigned = async () => {
             const response = await viewModel.updateDriverAssigned(
@@ -73,13 +79,13 @@ export function DriverOfferItem({ viewModel, driverTripOffer, navigation }: Prop
 
 const styles = StyleSheet.create({
     container: {
-        height: 160,
         width: '95%',
         backgroundColor: 'white',
         borderRadius: 20,
         elevation: 2,
         marginTop: 10,
         alignSelf: 'center',
+        paddingBottom: 10,
     },
     row: {
         flexDirection: 'row',
@@ -110,5 +116,22 @@ const styles = StyleSheet.create({
     },
     distance: {
         fontWeight: 'bold'
-    } 
+    },
+    cargoInfo: {
+        marginHorizontal: 20,
+        marginTop: 12,
+        marginBottom: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+        borderTopWidth: 2,
+        borderTopColor: '#ddd',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 8,
+    },
+    cargoText: {
+        fontSize: 13,
+        fontWeight: '500',
+        color: '#333',
+        marginVertical: 4,
+    }
 })

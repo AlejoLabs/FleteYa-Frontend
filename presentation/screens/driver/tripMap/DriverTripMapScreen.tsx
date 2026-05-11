@@ -1,5 +1,5 @@
 import { StackScreenProps } from "@react-navigation/stack";
-import { Animated, Dimensions, Image, Platform, Text, ToastAndroid, TouchableOpacity, View } from "react-native";
+import { Animated, Dimensions, Image, Platform, ScrollView, Text, ToastAndroid, TouchableOpacity, View } from "react-native";
 import { DriverMapStackParamList } from "../../../navigator/DriverMapStackNavigator";
 import { container } from "../../../../di/container";
 import { DriverTripMapViewModel } from "./DriverTripMapViewModel";
@@ -233,7 +233,7 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                     }}
                     initialRegion={location}
                     zoomControlEnabled={true}
-                    mapPadding={{ bottom: 120, top: 0, left: 0, right: 0 }}
+                    mapPadding={{ bottom: isInteractingWithMap ? 140 : 170, top: 0, left: 0, right: 0 }}
                     region={location}
                     onRegionChangeComplete={(region) => {
                         toggleView(false);
@@ -295,7 +295,7 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                         )
                     }
                     {
-                        directionsRoute.length > 0 && (<Polyline coordinates={directionsRoute} strokeWidth={6} strokeColor="red" />)
+                        directionsRoute.length > 0 && (<Polyline coordinates={directionsRoute} strokeWidth={6} strokeColor="#6200EE" />)
                     }
 
                 </MapView>
@@ -309,16 +309,22 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                     ],
                     width: "100%",
                     position: "absolute",
-                    height: "40%",
+                    height: "46%",
                     bottom: 0,
                     backgroundColor: "white",
-                    padding: 10,
+                    paddingTop: 10,
+                    paddingHorizontal: 10,
+                    paddingBottom: 14,
                     borderTopLeftRadius: 25,
                     borderTopRightRadius: 25,
                 }}
             >
 
-                <View style={{ width: "100%", height: "100%" }}>
+                <ScrollView
+                    style={{ width: "100%" }}
+                    contentContainerStyle={{ paddingBottom: 10 }}
+                    showsVerticalScrollIndicator={false}
+                >
 
                     <Text style={styles.textTitle}>TU CLIENTE</Text>
                     <View style={styles.rowContainer}>
@@ -342,6 +348,10 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                         <View style={styles.tripContainer}>
                             <Text>Desde: {clientRequest?.pickup_description}</Text>
                             <Text>Hasta: {clientRequest?.destination_description}</Text>
+                            <Text>Descripcion: {clientRequest?.cargo_description}</Text>
+                            <Text>Peso: {clientRequest?.weight_kg} kg</Text>
+                            <Text>Dimensiones: {clientRequest?.length_cm} x {clientRequest?.width_cm} x {clientRequest?.height_cm} cm</Text>
+
                         </View>
                     </View>
 
@@ -380,7 +390,7 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                         </Text>
                     </TouchableOpacity>
 
-                </View>
+                </ScrollView>
             </Animated.View>
         </View>
     )

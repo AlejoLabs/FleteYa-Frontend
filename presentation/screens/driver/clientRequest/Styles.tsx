@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
         borderRadius: 50
     },
     itemContainer: {
-        height: 220,
+        height: 260,
         backgroundColor: 'white',
         elevation: 2,
         marginTop: 10,

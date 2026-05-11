@@ -216,7 +216,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                         )
                     }
                     {
-                        directionsRoute.length > 0 && (<Polyline coordinates={directionsRoute} strokeWidth={6} strokeColor="red" />)
+                        directionsRoute.length > 0 && (<Polyline coordinates={directionsRoute} strokeWidth={6} strokeColor="#6200EE" />)
                     }
 
                 </MapView>

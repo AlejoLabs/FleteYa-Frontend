@@ -49,6 +49,7 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
     const [cargoLargo, setCargoLargo] = useState<string>("");
     const [cargoAncho, setCargoAncho] = useState<string>("");
     const [cargoAlto, setCargoAlto] = useState<string>("");
+    const [cargoDescription, setCargoDescription] = useState<string>("");
     const [driverMarkers, setDriverMarkers] = useState<{ id: number, idSocket: string, lat: number, lng: number }[]>([]);
 
     const [hasLocation, setHasLocation] = useState(false);
@@ -99,7 +100,7 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
             },
             pitch: 0,
             heading: 0,
-            zoom: 15,
+            zoom: 17,
         };
         mapRef.current?.animateCamera(camera, { duration: 1000 });
     }
@@ -115,6 +116,30 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
     }
 
     const handleCreateClientRequest = async () => {
+        if (!originPlace || !destinationPlace) {
+            ToastAndroid.show("Debes seleccionar origen y destino", ToastAndroid.SHORT);
+            return;
+        }
+
+        const missingRequiredField =
+            offer.trim() === "" ||
+            cargoLargo.trim() === "" ||
+            cargoAncho.trim() === "" ||
+            cargoAlto.trim() === "" ||
+            cargoWeight.trim() === "" ||
+            cargoDescription.trim() === "";
+
+        if (missingRequiredField) {
+            ToastAndroid.show("Debes completar todos los campos", ToastAndroid.SHORT);
+            return;
+        }
+
+        const offeredFare = Number(offer);
+        if (isNaN(offeredFare) || offeredFare <= 0) {
+            ToastAndroid.show("La oferta debe ser un numero mayor a 0", ToastAndroid.SHORT);
+            return;
+        }
+
         const response: number | ErrorResponse = await viewModel.createClientRequest({
             id_client: authResponse?.user.id!,
             pickup_lat: originPlace?.lat!,
@@ -123,7 +148,12 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
             destination_lat: destinationPlace?.lat!,
             destination_lng: destinationPlace?.lng!,
             destination_description: destinationPlace?.address!,
-            fare_offered: Number(offer)
+            fare_offered: offeredFare,
+            cargo_description: cargoDescription.trim() === "" ? undefined : cargoDescription.trim(),
+            weight_kg: cargoWeight ? Number(cargoWeight) : undefined,
+            length_cm: cargoLargo ? Number(cargoLargo) : undefined,
+            width_cm: cargoAncho ? Number(cargoAncho) : undefined,
+            height_cm: cargoAlto ? Number(cargoAlto) : undefined
         });
         if (typeof response === "number") {
             viewModel.emitNewClientRequest(response);
@@ -304,7 +334,7 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
                     }}
                     initialRegion={location}
                     zoomControlEnabled={true}
-                    mapPadding={{ bottom: 220, top: 0, left: 0, right: 0 }}
+                    mapPadding={{ bottom: 230, top: 0, left: 0, right: 0 }}
                     region={location}
                     onRegionChangeComplete={(region) => {
                         toggleView(false);
@@ -366,7 +396,7 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
                         )
                     }
                     {
-                        directionsRoute.length > 0 && (<Polyline coordinates={directionsRoute} strokeWidth={6} strokeColor="red" />)
+                        directionsRoute.length > 0 && (<Polyline coordinates={directionsRoute} strokeWidth={6} strokeColor="#6200EE" />)
                     }
 
                 </MapView>
@@ -380,7 +410,7 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
                     ],
                     width: "100%",
                     position: "absolute",
-                    height: "50%",
+                    height: "53%",
                     bottom: 0,
                     backgroundColor: "white",
                     padding: 10,
@@ -446,6 +476,26 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
                             />
                         </View>
                     </View>
+
+                    <TextInput
+                        value={cargoDescription}
+                        onChangeText={setCargoDescription}
+                        placeholder="Descripcion de carga (trasteo, paquete, repuesto, etc.)"
+                        placeholderTextColor="#888"
+                        multiline
+                        numberOfLines={2}
+                        style={{
+                            borderWidth: 1,
+                            borderColor: '#ddd',
+                            borderRadius: 10,
+                            paddingHorizontal: 10,
+                            paddingVertical: 8,
+                            fontSize: 14,
+                            backgroundColor: '#f3f3f3',
+                            marginBottom: 8,
+                            textAlignVertical: 'top'
+                        }}
+                    />
 
                     <TouchableOpacity style={styles.infoContainer} onPress={() => setIsOfferModalVisible(true)}>
                         <Text>{offer === "" ? "Oferta" : `Oferta: ${offer}`}</Text>
@@ -595,7 +645,18 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
                 <FlatList
                     data={driverTripOffers}
                     keyExtractor={(item) => item.id!.toString()}
-                    renderItem={({ item }) => <DriverOfferItem viewModel={viewModel} driverTripOffer={item} navigation={navigation}/>}
+                    renderItem={({ item }) => <DriverOfferItem 
+                        viewModel={viewModel} 
+                        driverTripOffer={item} 
+                        navigation={navigation}
+                        cargo={{
+                            description: cargoDescription,
+                            weight_kg: Number(cargoWeight),
+                            length_cm: Number(cargoLargo),
+                            width_cm: Number(cargoAncho),
+                            height_cm: Number(cargoAlto)
+                        }}
+                    />}
                     contentContainerStyle={{ paddingTop: 50 }}
                 />
             </Modal>

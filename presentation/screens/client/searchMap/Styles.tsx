@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     timeAndDistanceView: {
         width: "100%",
         height: 70,
-        backgroundColor: "#df9138",
+        backgroundColor: "#018786",
         borderRadius: 10,
         justifyContent: "center",
         paddingLeft: 20,

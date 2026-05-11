@@ -8,7 +8,7 @@ const styles = StyleSheet.create({
     boxBackground: {
         width: '100%',
         height: 300,
-        backgroundColor: 'red',
+        backgroundColor: '#018786',
         alignItems: 'center',
     },
     textBox: {
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
         width: 45,
         height: 45,
         borderRadius: 50,
-        backgroundColor: 'red',
+        backgroundColor: '#03DAC6',
         justifyContent: 'center',
         alignItems: 'center',
     },

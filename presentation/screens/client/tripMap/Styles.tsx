@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     textTitle: {
-        color: "red",
+        color: "#018786",
         fontSize: 16,
         fontWeight: "bold",
         fontStyle: "italic",

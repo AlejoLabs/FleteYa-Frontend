@@ -48,7 +48,10 @@ export function DriverClientRequestItem({ clientRequestResponse, viewModel, auth
             <Text style={styles.textDataTrip}>Datos del viaje</Text>
             <Text>Recoger en: {clientRequestResponse.pickup_description}</Text>
             <Text>Llevar a: {clientRequestResponse.destination_description}</Text>
+            <Text>Descripción de la carga: {clientRequestResponse.cargo_description}</Text>
+            <Text>Medidas: {clientRequestResponse.length_cm} x {clientRequestResponse.width_cm} x {clientRequestResponse.height_cm} cm</Text>
             <Text>Cliente: {clientRequestResponse.client.name} {clientRequestResponse.client.lastname}</Text>
+
 
 
             <Modal
