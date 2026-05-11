@@ -1,18 +1,29 @@
 import { StackScreenProps } from "@react-navigation/stack";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, ToastAndroid, TouchableOpacity, View } from "react-native";
 import { DriverMapStackParamList } from "../../../navigator/DriverMapStackNavigator";
 import styles from "./Styles";
 import { Ionicons } from "@expo/vector-icons";
 import StarRating from "@empglabs/react-native-star-rating-widget";
 import { useState } from "react";
+import { container } from "../../../../di/container";
+import { DriverTripRatingViewModel } from "./DriverTripRatingViewModel";
 
 interface Props extends StackScreenProps<DriverMapStackParamList, 'DriverTripRatingScreen'> { }
 
 export function DriverTripRatingScreen({ navigation, route }: Props) {
 
+    const viewModel : DriverTripRatingViewModel = container.resolve('driverTripRatingViewModel');
     const { clientRequest } = route.params;
     const [rating, setRating] = useState(0);
     console.log('CONDUCTOR PARAMETRO CLIENT REQUEST:', clientRequest);
+
+    const handleUpdateClientRating = async () => {
+        const response = await viewModel.updateClientRating(clientRequest.id, rating);
+        if(typeof response === 'boolean' ){
+            ToastAndroid.show('Calificación actualizada', ToastAndroid.LONG);
+        }
+    }
+
     return (
         <View style={styles.container}>
             <Ionicons
@@ -52,7 +63,7 @@ export function DriverTripRatingScreen({ navigation, route }: Props) {
             />
             <View style={{flex: 1}}></View>
             <TouchableOpacity style={styles.iconContainer} onPress={() => {
-
+                handleUpdateClientRating();
             }}>
                 <View style={styles.iconBox}>
                     <Ionicons name='checkmark' size={25} color='white' />

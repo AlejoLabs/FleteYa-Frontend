@@ -20,6 +20,12 @@ export class ClientRequestRepositoryImpl implements ClientRequestRepository {
     ) {
         this.clientRequestService = clientRequestService;
     }
+    async updateDriverRating(idClientRequest: number, rating: number): Promise<boolean | ErrorResponse> {
+        return await this.clientRequestService.updateDriverRating(idClientRequest, rating);
+    }
+    async updateClientRating(idClientRequest: number, rating: number): Promise<boolean | ErrorResponse> {
+        return await this.clientRequestService.updateClientRating(idClientRequest, rating);
+    }
     async updateStatus(idClientRequest: number, status: Status): Promise<boolean | ErrorResponse> {
         return await this.clientRequestService.updateStatus(idClientRequest, status);
     }

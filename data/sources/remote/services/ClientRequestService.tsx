@@ -158,4 +158,58 @@ export class ClientRequestService {
 
         }
     }
+
+    async updateDriverRating(idClientRequest: number, rating: number): Promise<boolean | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.put<boolean>(`/client-requests/update_driver_rating`, {
+                'id': idClientRequest,
+                'driver_rating': rating
+            });
+            console.log('Response', response.data);
+
+            return Boolean(response.data);
+        } catch (error: any) {
+            if (error.response) {
+                const errorData: ErrorResponse = error.response.data;
+                if (Array.isArray(errorData.message)) {
+                    console.log('Errores multiples del servidor', errorData.message.join(', '));
+                } else {
+                    console.log('Error unico del servidor', errorData.message);
+                }
+                return errorData;
+            }
+            else {
+                console.log('Error en la peticion', error.message);
+                return defaultErrorResponse;
+            }
+
+        }
+    }
+
+    async updateClientRating(idClientRequest: number, rating: number): Promise<boolean | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.put<boolean>(`/client-requests/update_client_rating`, {
+                'id': idClientRequest,
+                'client_rating': rating
+            });
+            console.log('Response', response.data);
+
+            return Boolean(response.data);
+        } catch (error: any) {
+            if (error.response) {
+                const errorData: ErrorResponse = error.response.data;
+                if (Array.isArray(errorData.message)) {
+                    console.log('Errores multiples del servidor', errorData.message.join(', '));
+                } else {
+                    console.log('Error unico del servidor', errorData.message);
+                }
+                return errorData;
+            }
+            else {
+                console.log('Error en la peticion', error.message);
+                return defaultErrorResponse;
+            }
+
+        }
+    }
 }

@@ -2,7 +2,9 @@ import { CreateClientRequestUseCase } from "./CreateClientRequestUseCase";
 import { GetClientRequestByIdUseCase } from "./GetClientRequestByIdUseCase";
 import { GetNearbyTripRequestUseCase } from "./GetNearbyTripRequestUseCase";
 import { GetTimeAndDistanceUseCase } from "./GetTimeAndDistanceUseCase";
+import { UpdateClientRatingUseCase } from "./UpdateClientRatingUseCase";
 import { UpdateDriverAssignedUseCase } from "./UpdateDriverAssignedUseCase";
+import { UpdateDriverRatingUseCase } from "./UpdateDriverRatingUseCase";
 import { UpdateStatusUseCase } from "./UpdateStatusUseCase";
 
 export class ClientRequestUseCases {
@@ -12,6 +14,8 @@ export class ClientRequestUseCases {
     create: CreateClientRequestUseCase;
     updateDriverAssigned: UpdateDriverAssignedUseCase;
     updateStatus: UpdateStatusUseCase;
+    updateDriverRating: UpdateDriverRatingUseCase;
+    updateClientRating: UpdateClientRatingUseCase;
 
     constructor(
         {
@@ -20,7 +24,9 @@ export class ClientRequestUseCases {
             getClientRequestByIdUseCase,
             createClientRequestUseCase,
             updateDriverAssignedUseCase,
-            updateStatusUseCase
+            updateStatusUseCase,
+            updateDriverRatingUseCase,
+            updateClientRatingUseCase
         }: {
             getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
             getNearbyTripRequestUseCase: GetNearbyTripRequestUseCase;
@@ -28,6 +34,8 @@ export class ClientRequestUseCases {
             createClientRequestUseCase: CreateClientRequestUseCase;
             updateDriverAssignedUseCase: UpdateDriverAssignedUseCase;
             updateStatusUseCase: UpdateStatusUseCase;
+            updateDriverRatingUseCase: UpdateDriverRatingUseCase;
+            updateClientRatingUseCase: UpdateClientRatingUseCase;
         }
     ) {
         this.getTimeAndDistanceUseCase = getTimeAndDistanceUseCase;
@@ -36,6 +44,8 @@ export class ClientRequestUseCases {
         this.create = createClientRequestUseCase;
         this.updateDriverAssigned = updateDriverAssignedUseCase;
         this.updateStatus = updateStatusUseCase;
+        this.updateDriverRating = updateDriverRatingUseCase;
+        this.updateClientRating = updateClientRatingUseCase;
         
     }
 }
