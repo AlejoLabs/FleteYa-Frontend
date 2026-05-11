@@ -24,5 +24,7 @@ export interface ClientRequestRepository {
     updateStatus(idClientRequest: number, status: Status): Promise<boolean | ErrorResponse>;
     updateDriverRating(idClientRequest: number, rating: number): Promise<boolean | ErrorResponse>;
     updateClientRating(idClientRequest: number, rating: number): Promise<boolean | ErrorResponse>;
+    getByClientAssigned(idClient: number): Promise<ClientRequestResponse[] | ErrorResponse>;
+    getByDriverAssigned(idDriver: number): Promise<ClientRequestResponse[] | ErrorResponse>;
 
 }

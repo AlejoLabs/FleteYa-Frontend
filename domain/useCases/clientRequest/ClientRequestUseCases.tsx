@@ -1,4 +1,6 @@
 import { CreateClientRequestUseCase } from "./CreateClientRequestUseCase";
+import { GetByClientAssignedUseCase } from "./GetByClientAssignedUseCase";
+import { GetByDriverAssignedUseCase } from "./GetByDriverAssignedUseCase";
 import { GetClientRequestByIdUseCase } from "./GetClientRequestByIdUseCase";
 import { GetNearbyTripRequestUseCase } from "./GetNearbyTripRequestUseCase";
 import { GetTimeAndDistanceUseCase } from "./GetTimeAndDistanceUseCase";
@@ -16,6 +18,8 @@ export class ClientRequestUseCases {
     updateStatus: UpdateStatusUseCase;
     updateDriverRating: UpdateDriverRatingUseCase;
     updateClientRating: UpdateClientRatingUseCase;
+    getByClientAssigned: GetByClientAssignedUseCase;
+    getByDriverAssigned: GetByDriverAssignedUseCase;
 
     constructor(
         {
@@ -26,7 +30,9 @@ export class ClientRequestUseCases {
             updateDriverAssignedUseCase,
             updateStatusUseCase,
             updateDriverRatingUseCase,
-            updateClientRatingUseCase
+            updateClientRatingUseCase,
+            getByClientAssignedUseCase,
+            getByDriverAssignedUseCase
         }: {
             getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
             getNearbyTripRequestUseCase: GetNearbyTripRequestUseCase;
@@ -36,6 +42,8 @@ export class ClientRequestUseCases {
             updateStatusUseCase: UpdateStatusUseCase;
             updateDriverRatingUseCase: UpdateDriverRatingUseCase;
             updateClientRatingUseCase: UpdateClientRatingUseCase;
+            getByClientAssignedUseCase: GetByClientAssignedUseCase;
+            getByDriverAssignedUseCase: GetByDriverAssignedUseCase;
         }
     ) {
         this.getTimeAndDistanceUseCase = getTimeAndDistanceUseCase;
@@ -46,6 +54,8 @@ export class ClientRequestUseCases {
         this.updateStatus = updateStatusUseCase;
         this.updateDriverRating = updateDriverRatingUseCase;
         this.updateClientRating = updateClientRatingUseCase;
+        this.getByClientAssigned = getByClientAssignedUseCase;
+        this.getByDriverAssigned = getByDriverAssignedUseCase;
         
     }
 }

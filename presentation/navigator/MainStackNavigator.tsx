@@ -14,6 +14,7 @@ import { ProfileStackNavigator } from "./ProfileStackNavigator";
 import { DriverClientRequestScreen } from "../screens/driver/clientRequest/DriverClientRequestScreen";
 import { ClientMapStackNavigator } from "./ClientMapStackNavigator";
 import { DriverMapStackNavigator } from "./DriverMapStackNavigator";
+import { ClientTripHistoryScreen } from "../screens/client/tripHistory/ClientTripHistoryScreen";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -27,6 +28,7 @@ export type RootStackParamList = {
     DriverClientRequestScreen: undefined,
     ClientMapStackNavigator: undefined,
     DriverMapStackNavigator: undefined,
+    ClientTripHistoryScreen: undefined,
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -91,6 +93,7 @@ const ClientDrawerNavigator = () => {
         <Drawer.Navigator initialRouteName="ClientMapStackNavigator">
             <Drawer.Screen name="ClientMapStackNavigator" component={ClientMapStackNavigator} />
             <Drawer.Screen name="ProfileStackNavigator" component={ProfileStackNavigator} />
+            <Drawer.Screen name="ClientTripHistoryScreen" component={ClientTripHistoryScreen} />
         </Drawer.Navigator>
     )
 }

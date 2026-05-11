@@ -22,6 +22,8 @@ import { GetTimeAndDistanceUseCase } from "../domain/useCases/clientRequest/GetT
 import { CreateClientRequestUseCase } from "../domain/useCases/clientRequest/CreateClientRequestUseCase";
 import { GetClientRequestByIdUseCase } from "../domain/useCases/clientRequest/GetClientRequestByIdUseCase";
 import { GetNearbyTripRequestUseCase } from "../domain/useCases/clientRequest/GetNearbyTripRequestUseCase";
+import { GetByClientAssignedUseCase } from "../domain/useCases/clientRequest/GetByClientAssignedUseCase";
+import { GetByDriverAssignedUseCase } from "../domain/useCases/clientRequest/GetByDriverAssignedUseCase";
 import { ClientRequestUseCases } from "../domain/useCases/clientRequest/ClientRequestUseCases";
 import { SocketService } from "../data/sources/remote/services/SocketService";
 import { DriverMyLocationMapViewModel } from "../presentation/screens/driver/MyLocationMap/DriverMyLocationMapViewModel";
@@ -50,6 +52,7 @@ import { ClientTripMapViewModel } from "../presentation/screens/client/tripMap/C
 import { DriverTripMapViewModel } from "../presentation/screens/driver/tripMap/DriverTripMapViewModel";
 import { DriverTripRatingViewModel } from "../presentation/screens/driver/tripRating/DriverTripRatingViewModel";
 import { ClientTripRatingViewModel } from "../presentation/screens/client/tripRating/ClientTripRatingViewModel";
+import { ClientTripHistoryViewModel } from "../presentation/screens/client/tripHistory/ClientTripHistoryViewModel";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -81,11 +84,13 @@ const getTimeAndDistanceUseCase = new GetTimeAndDistanceUseCase({ clientRequestR
 const createClientRequestUseCase = new CreateClientRequestUseCase({ clientRequestRepository });
 const getNearbyTripRequestUseCase = new GetNearbyTripRequestUseCase({ clientRequestRepository });
 const getClientRequestByIdUseCase = new GetClientRequestByIdUseCase({ clientRequestRepository });
+const getByClientAssignedUseCase = new GetByClientAssignedUseCase({ clientRequestRepository });
+const getByDriverAssignedUseCase = new GetByDriverAssignedUseCase({ clientRequestRepository });
 const updateDriverAssignedUseCase = new UpdateDriverAssignedUseCase({ clientRequestRepository });
 const updateStatusUseCase = new UpdateStatusUseCase({ clientRequestRepository });
 const updateDriverRatingUseCase = new UpdateDriverRatingUseCase({ clientRequestRepository });
 const updateClientRatingUseCase = new UpdateClientRatingUseCase({ clientRequestRepository });
-const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, getClientRequestByIdUseCase, createClientRequestUseCase, updateDriverAssignedUseCase, updateStatusUseCase, updateDriverRatingUseCase, updateClientRatingUseCase });
+const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, getClientRequestByIdUseCase, createClientRequestUseCase, updateDriverAssignedUseCase, updateStatusUseCase, updateDriverRatingUseCase, updateClientRatingUseCase, getByClientAssignedUseCase, getByDriverAssignedUseCase });
 const socketService = new SocketService({} as any);
 const driverPositionService = new DriverPositionService();
 const driverPositionRepository = new DriverPositionRepositoryImpl({ driverPositionService });
@@ -109,6 +114,7 @@ const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCase
 const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases });
 const driverTripRatingViewModel = new DriverTripRatingViewModel({ clientRequestUseCases });
 const clientTripRatingViewModel = new ClientTripRatingViewModel({ clientRequestUseCases });
+const clientTripHistoryViewModel = new ClientTripHistoryViewModel({ clientRequestUseCases });
 const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases, driverPositionUseCases, driverTripOfferUseCases, socketService });
 
 
@@ -130,11 +136,14 @@ type ContainerDeps = {
     driverTripMapViewModel: DriverTripMapViewModel;
     driverTripRatingViewModel: DriverTripRatingViewModel;
     clientTripRatingViewModel: ClientTripRatingViewModel;
+    clientTripHistoryViewModel: ClientTripHistoryViewModel;
     clientRequestService: ClientRequestService;
     clientRequestRepository: ClientRequestRepositoryImpl;
     getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
     getNearbyTripRequestUseCase: GetNearbyTripRequestUseCase;
     getClientRequestByIdUseCase: GetClientRequestByIdUseCase;
+    getByClientAssignedUseCase: GetByClientAssignedUseCase;
+    getByDriverAssignedUseCase: GetByDriverAssignedUseCase;
     createClientRequestUseCase: CreateClientRequestUseCase;
     clientRequestUseCases: ClientRequestUseCases;
     updateDriverAssignedUseCase: UpdateDriverAssignedUseCase;
@@ -183,11 +192,14 @@ const container = {
             driverTripMapViewModel,
             driverTripRatingViewModel,
             clientTripRatingViewModel,
+            clientTripHistoryViewModel,
             clientRequestService,
             clientRequestRepository,
             getTimeAndDistanceUseCase,
             getNearbyTripRequestUseCase,
             getClientRequestByIdUseCase,
+            getByClientAssignedUseCase,
+            getByDriverAssignedUseCase,
             createClientRequestUseCase,
             updateDriverAssignedUseCase,
             updateDriverRatingUseCase,

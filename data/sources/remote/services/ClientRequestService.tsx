@@ -80,6 +80,54 @@ export class ClientRequestService {
         }
     }
 
+    async getByClientAssigned(idClient: number): Promise<ClientRequestResponse[] | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.get<ClientRequestResponse[]>(`/client-requests/client/assigned/${idClient}`);
+            console.log('Response', response.data);
+
+            return response.data;
+        } catch (error: any) {
+            if (error.response) {
+                const errorData: ErrorResponse = error.response.data;
+                if (Array.isArray(errorData.message)) {
+                    console.error('Errores multiples del servidor', errorData.message.join(', '));
+                } else {
+                    console.error('Error unico del servidor', errorData.message);
+                }
+                return errorData;
+            }
+            else {
+                console.error('Error en la peticion', error.message);
+                return defaultErrorResponse;
+            }
+
+        }
+    }
+
+    async getByDriverAssigned(idDriver: number): Promise<ClientRequestResponse[] | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.get<ClientRequestResponse[]>(`/client-requests/driver/assigned/${idDriver}`);
+            console.log('Response', response.data);
+
+            return response.data;
+        } catch (error: any) {
+            if (error.response) {
+                const errorData: ErrorResponse = error.response.data;
+                if (Array.isArray(errorData.message)) {
+                    console.error('Errores multiples del servidor', errorData.message.join(', '));
+                } else {
+                    console.error('Error unico del servidor', errorData.message);
+                }
+                return errorData;
+            }
+            else {
+                console.error('Error en la peticion', error.message);
+                return defaultErrorResponse;
+            }
+
+        }
+    }
+
     async getClientRequestById(idClientRequest: number): Promise<ClientRequestResponse | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.get<ClientRequestResponse>(`/client-requests/${idClientRequest}`);
