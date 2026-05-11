@@ -16,6 +16,7 @@ import { ClientMapStackNavigator } from "./ClientMapStackNavigator";
 import { DriverMapStackNavigator } from "./DriverMapStackNavigator";
 import { ClientTripHistoryScreen } from "../screens/client/tripHistory/ClientTripHistoryScreen";
 import { DriverTripHistoryScreen } from "../screens/driver/tripHistory/DriverTripHistoryScreen";
+import { DriverCarInfoScreen } from "../screens/driver/carInfo/DriverCarInfoScreen";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -31,6 +32,7 @@ export type RootStackParamList = {
     DriverMapStackNavigator: undefined,
     ClientTripHistoryScreen: undefined,
     DriverTripHistoryScreen: undefined,
+    DriverCarInfoScreen: undefined,
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -93,9 +95,9 @@ export const MainStackNavigator = () => {
 const ClientDrawerNavigator = () => {
     return (
         <Drawer.Navigator initialRouteName="ClientMapStackNavigator">
-            <Drawer.Screen name="ClientMapStackNavigator" component={ClientMapStackNavigator} />
-            <Drawer.Screen name="ProfileStackNavigator" component={ProfileStackNavigator} />
-            <Drawer.Screen name="ClientTripHistoryScreen" component={ClientTripHistoryScreen} />
+            <Drawer.Screen name="ClientMapStackNavigator" options={{title:'Mi Ubicación'}} component={ClientMapStackNavigator} />
+            <Drawer.Screen name="ProfileStackNavigator" options={{title:'Perfil'}} component={ProfileStackNavigator} />
+            <Drawer.Screen name="ClientTripHistoryScreen" options={{title:'Historial de Viajes'}} component={ClientTripHistoryScreen} />
         </Drawer.Navigator>
     )
 }
@@ -103,9 +105,10 @@ const ClientDrawerNavigator = () => {
 const DriverDrawerNavigator = () => {
     return (
         <Drawer.Navigator initialRouteName="DriverMyLocationMapScreen">
-            <Drawer.Screen name="DriverMyLocationMapScreen" component={DriverMyLocationMapScreen} />
-            <Drawer.Screen name="DriverMapStackNavigator" component={DriverMapStackNavigator} />
-            <Drawer.Screen name="DriverTripHistoryScreen" component={DriverTripHistoryScreen} />
+            <Drawer.Screen name="DriverMyLocationMapScreen" options={{title:'Mi Ubicación'}} component={DriverMyLocationMapScreen} />
+            <Drawer.Screen name="DriverMapStackNavigator" options={{title: 'Solicitudes de carga'}} component={DriverMapStackNavigator} />
+            <Drawer.Screen name="DriverTripHistoryScreen" options={{title:'Historial de cargas'}} component={DriverTripHistoryScreen} />
+            <Drawer.Screen name="DriverCarInfoScreen" options={{title:'Datos del Vehiculo'}} component={DriverCarInfoScreen} />
         </Drawer.Navigator>
     )
 }
