@@ -30,7 +30,7 @@ const DEFAULT_REGION: Region = {
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientSearchMapScreen'> { };
 
-export default function ClientSearchMapScreen({navigation, route}: Props) {
+export default function ClientSearchMapScreen({ navigation, route }: Props) {
 
     const viewModel: ClientSearchMapViewModel = container.resolve("clientSearchMapViewModel");
     const { authResponse } = useAuth();
@@ -51,7 +51,7 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
     const [cargoAlto, setCargoAlto] = useState<string>("");
     const [cargoDescription, setCargoDescription] = useState<string>("");
     const [driverMarkers, setDriverMarkers] = useState<{ id: number, idSocket: string, lat: number, lng: number }[]>([]);
-
+    const locationSubscription = useRef<Location.LocationSubscription | null>(null);
     const [hasLocation, setHasLocation] = useState(false);
 
     const [originPlace, setOriginPlace] = useState<{
@@ -74,6 +74,12 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
     const mapRef = useRef<MapView>(null);
     const animatedValue = useRef(new Animated.Value(0)).current;
 
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('beforeRemove', () => {
+            stopRealTimeLocation();
+        });
+        return unsubscribe;
+    }, [navigation]);
 
 
     useEffect(() => {
@@ -92,6 +98,44 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
         }
     }, [cargoWeight, cargoLargo, cargoAncho, cargoAlto, originPlace, destinationPlace]);
 
+    const startRealTimeLocation = async () => {
+        if (!locationSubscription.current) {
+
+            locationSubscription.current = await Location.watchPositionAsync(
+                {
+                    accuracy: Location.Accuracy.BestForNavigation,
+                    timeInterval: 1000,
+                    distanceInterval: 1
+                },
+                (newLocation) => {
+                    const currentCoords = {
+                        latitude: newLocation.coords.latitude,
+                        longitude: newLocation.coords.longitude,
+                    };
+
+                    setLocation({
+                        latitude: currentCoords.latitude,
+                        longitude: currentCoords.longitude,
+                        latitudeDelta: 0.0922,
+                        longitudeDelta: 0.0421,
+                    });
+
+                }
+
+            );
+        }
+    }
+
+
+    const stopRealTimeLocation = () => {
+        console.log('Locacion detenida');
+        if (locationSubscription.current) {
+            locationSubscription.current.remove();
+            locationSubscription.current = null;
+        }
+    }
+
+
     const moveCameraToLocation = (lat: number, lng: number) => {
         const camera: Camera = {
             center: {
@@ -106,7 +150,7 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
     }
 
     const handleGetDriverTripOffers = async (idClientRequest: number) => {
-        viewModel.listenerNewDriverOffer(idClientRequest, async (data:number) => {
+        viewModel.listenerNewDriverOffer(idClientRequest, async (data: number) => {
             const response = await viewModel.getDriverTripOffers(data);
             setIsDriverOfferModalVisible(true);
             setDriverTripOffers(response as DriverTripOffer[]);
@@ -268,13 +312,7 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
                     return;
                 }
 
-                const currentLocation = await Location.getCurrentPositionAsync({});
-                setLocation({
-                    latitude: currentLocation.coords.latitude,
-                    longitude: currentLocation.coords.longitude,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
-                });
+                startRealTimeLocation();
                 viewModel.initSocket();
                 viewModel.listenerDriverPositionSocket((data: any) => {
                     const newMarker = {
@@ -296,7 +334,7 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
                 viewModel.listenerDriverDisconnectSocket((idSocket: string) => {
                     setDriverMarkers((prevMarkers) => prevMarkers.filter(marker => marker.idSocket !== idSocket));
                 });
-                
+
                 setHasLocation(true);
             } catch (error) {
                 console.log('No se pudo obtener la ubicacion actual', error);
@@ -645,9 +683,9 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
                 <FlatList
                     data={driverTripOffers}
                     keyExtractor={(item) => item.id!.toString()}
-                    renderItem={({ item }) => <DriverOfferItem 
-                        viewModel={viewModel} 
-                        driverTripOffer={item} 
+                    renderItem={({ item }) => <DriverOfferItem
+                        viewModel={viewModel}
+                        driverTripOffer={item}
                         navigation={navigation}
                         cargo={{
                             description: cargoDescription,
