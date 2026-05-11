@@ -10,6 +10,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@empglabs/react-native-star-rating-widget": "^1.0.17",
     "@expo/vector-icons": "^15.1.1",
     "@googlemaps/polyline-codec": "^1.0.28",
     "@react-native-async-storage/async-storage": "2.2.0",
