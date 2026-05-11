@@ -32,9 +32,13 @@ export class ClientRequestService {
         }
     }
 
-    async getTimeAndDistance(origin: LatLng, destination: LatLng): Promise<TimeAndDistanceValues | ErrorResponse> {
+    async getTimeAndDistance(origin: LatLng, destination: LatLng, weight?: number, size?: number): Promise<TimeAndDistanceValues | ErrorResponse> {
         try {
-            const response = await ApiRequestHandler.get<TimeAndDistanceValues>(`/client-requests/${origin.latitude}/${origin.longitude}/${destination.latitude}/${destination.longitude}`);
+            const params: string[] = [];
+            if (weight !== undefined) params.push(`weight=${weight}`);
+            if (size !== undefined) params.push(`size=${size}`);
+            const query = params.length > 0 ? `?${params.join('&')}` : '';
+            const response = await ApiRequestHandler.get<TimeAndDistanceValues>(`/client-requests/${origin.latitude}/${origin.longitude}/${destination.latitude}/${destination.longitude}${query}`);
             console.log('Response', response.data);
 
             return response.data;

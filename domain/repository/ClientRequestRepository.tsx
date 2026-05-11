@@ -17,7 +17,7 @@ export enum Status {
 export interface ClientRequestRepository {
 
     create(clientRequest: ClientRequest): Promise<number | ErrorResponse>;
-    getTimeAndDistance(origin:LatLng, destination: LatLng): Promise<TimeAndDistanceValues | ErrorResponse>;
+    getTimeAndDistance(origin: LatLng, destination: LatLng, weight?: number, size?: number): Promise<TimeAndDistanceValues | ErrorResponse>;
     getNearbyTripRequest(driverPosition: LatLng): Promise<ClientRequestResponse[] | ErrorResponse>;
     updateDriverAssigned(idClientRequest: number, idDriver: number, fareAssigned: number): Promise<boolean | ErrorResponse>;
     getClientRequestById(idClientRequest: number): Promise<ClientRequestResponse | ErrorResponse>;

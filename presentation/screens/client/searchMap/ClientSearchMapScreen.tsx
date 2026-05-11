@@ -1,4 +1,4 @@
-import { View, Image, Animated, Dimensions, Text, TouchableOpacity, Modal, Pressable, ToastAndroid, FlatList } from "react-native"
+import { View, Image, Animated, Dimensions, Text, TouchableOpacity, Modal, Pressable, ToastAndroid, FlatList, TextInput } from "react-native"
 import styles from "./Styles"
 import MapView, { Camera, LatLng, Marker, Polyline, Region } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
@@ -45,6 +45,10 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
     const [isDriverOfferModalVisible, setIsDriverOfferModalVisible] = useState(false);
     const [driverTripOffers, setDriverTripOffers] = useState<DriverTripOffer[]>([]);
     const [offer, setOffer] = useState<string>("");
+    const [cargoWeight, setCargoWeight] = useState<string>("");
+    const [cargoLargo, setCargoLargo] = useState<string>("");
+    const [cargoAncho, setCargoAncho] = useState<string>("");
+    const [cargoAlto, setCargoAlto] = useState<string>("");
     const [driverMarkers, setDriverMarkers] = useState<{ id: number, idSocket: string, lat: number, lng: number }[]>([]);
 
     const [hasLocation, setHasLocation] = useState(false);
@@ -77,9 +81,15 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
             console.log("Origin:", originPlace);
             console.log("Destination:", destinationPlace);
             handleGetDirections();
-            handleGetTimeAndDistance();
         }
     }, [originPlace, destinationPlace, shouldDrawRoute]);
+
+    useEffect(() => {
+        const allCargoFilled = cargoLargo !== '' && cargoAncho !== '' && cargoAlto !== '' && cargoWeight !== '';
+        if (originPlace != undefined && destinationPlace !== undefined && allCargoFilled) {
+            handleGetTimeAndDistance();
+        }
+    }, [cargoWeight, cargoLargo, cargoAncho, cargoAlto, originPlace, destinationPlace]);
 
     const moveCameraToLocation = (lat: number, lng: number) => {
         const camera: Camera = {
@@ -123,6 +133,10 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
     }
 
     const handleGetTimeAndDistance = async () => {
+        const weight = cargoWeight !== '' ? parseFloat(cargoWeight) : undefined;
+        const l = parseFloat(cargoLargo), a = parseFloat(cargoAncho), h = parseFloat(cargoAlto);
+        // dimensions are in cm, convert to m³ before sending
+        const size = (!isNaN(l) && !isNaN(a) && !isNaN(h)) ? (l / 100) * (a / 100) * (h / 100) : undefined;
         const response: TimeAndDistanceValues | ErrorResponse = await viewModel.getTimeAndDistance(
             {
                 latitude: originPlace!.lat,
@@ -131,7 +145,9 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
             {
                 latitude: destinationPlace!.lat,
                 longitude: destinationPlace!.lng,
-            }
+            },
+            weight,
+            size
         );
         if ('distance' in response) {
             const result = response as TimeAndDistanceValues;
@@ -288,7 +304,7 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
                     }}
                     initialRegion={location}
                     zoomControlEnabled={true}
-                    mapPadding={{ bottom: 120, top: 0, left: 0, right: 0 }}
+                    mapPadding={{ bottom: 220, top: 0, left: 0, right: 0 }}
                     region={location}
                     onRegionChangeComplete={(region) => {
                         toggleView(false);
@@ -356,15 +372,15 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
                 </MapView>
             </Animated.View>
 
-            <Animated.View
+            <Animated.View // container blanco 
                 style={{
                     transform: [
                         { scaleY: animatedValue.interpolate({ inputRange: [0, 1], outputRange: [1, 1] }) },
-                        { translateY: animatedValue.interpolate({ inputRange: [0, 1], outputRange: [0, 280] }) }
+                        { translateY: animatedValue.interpolate({ inputRange: [0, 1], outputRange: [0, 380] }) }
                     ],
                     width: "100%",
                     position: "absolute",
-                    height: "40%",
+                    height: "50%",
                     bottom: 0,
                     backgroundColor: "white",
                     padding: 10,
@@ -382,6 +398,54 @@ export default function ClientSearchMapScreen({navigation, route}: Props) {
                     <TouchableOpacity style={styles.infoContainer} onPress={() => setIsDestinationModalVisible(true)}>
                         <Text>{destinationPlace?.address ?? "Destino..."}</Text>
                     </TouchableOpacity>
+
+                    {/* Cargo inputs: 4 fields in one row */}
+                    <View style={{ flexDirection: 'row', gap: 6, marginVertical: 6 }}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 10, color: 'gray', marginBottom: 2, textAlign: 'center' }}>Largo (cm)</Text>
+                            <TextInput
+                                value={cargoLargo}
+                                onChangeText={setCargoLargo}
+                                keyboardType="decimal-pad"
+                                placeholder="0.0"
+                                placeholderTextColor="#bbb"
+                                style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 4, paddingVertical: 5, fontSize: 13, textAlign: 'center', backgroundColor: '#fafafa' }}
+                            />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 10, color: 'gray', marginBottom: 2, textAlign: 'center' }}>Ancho (cm)</Text>
+                            <TextInput
+                                value={cargoAncho}
+                                onChangeText={setCargoAncho}
+                                keyboardType="decimal-pad"
+                                placeholder="0.0"
+                                placeholderTextColor="#bbb"
+                                style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 4, paddingVertical: 5, fontSize: 13, textAlign: 'center', backgroundColor: '#fafafa' }}
+                            />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 10, color: 'gray', marginBottom: 2, textAlign: 'center' }}>Alto (cm)</Text>
+                            <TextInput
+                                value={cargoAlto}
+                                onChangeText={setCargoAlto}
+                                keyboardType="decimal-pad"
+                                placeholder="0.0"
+                                placeholderTextColor="#bbb"
+                                style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 4, paddingVertical: 5, fontSize: 13, textAlign: 'center', backgroundColor: '#fafafa' }}
+                            />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 10, color: 'gray', marginBottom: 2, textAlign: 'center' }}>Peso (kg)</Text>
+                            <TextInput
+                                value={cargoWeight}
+                                onChangeText={setCargoWeight}
+                                keyboardType="decimal-pad"
+                                placeholder="0"
+                                placeholderTextColor="#bbb"
+                                style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 4, paddingVertical: 5, fontSize: 13, textAlign: 'center', backgroundColor: '#fafafa' }}
+                            />
+                        </View>
+                    </View>
 
                     <TouchableOpacity style={styles.infoContainer} onPress={() => setIsOfferModalVisible(true)}>
                         <Text>{offer === "" ? "Oferta" : `Oferta: ${offer}`}</Text>

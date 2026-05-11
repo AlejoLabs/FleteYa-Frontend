@@ -71,8 +71,8 @@ export class ClientSearchMapViewModel {
         return await this.googlePlaceUseCases.getDirections.execute(origin, destination);
     }
 
-    async getTimeAndDistance(origin: LatLng, destination: LatLng): Promise<TimeAndDistanceValues | ErrorResponse> {
-        return await this.clientRequestUseCases.getTimeAndDistanceUseCase.execute(origin, destination);
+    async getTimeAndDistance(origin: LatLng, destination: LatLng, weight?: number, size?: number): Promise<TimeAndDistanceValues | ErrorResponse> {
+        return await this.clientRequestUseCases.getTimeAndDistanceUseCase.execute(origin, destination, weight, size);
     }
 
     emitNewClientRequest(idClientRequest: number) {

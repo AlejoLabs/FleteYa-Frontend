@@ -8,7 +8,7 @@ export class GetTimeAndDistanceUseCase {
         this.clientRequestRepository = clientRequestRepository;
     }
 
-    async execute(origin: LatLng, destination: LatLng) {
-        return await this.clientRequestRepository.getTimeAndDistance(origin, destination);
+    async execute(origin: LatLng, destination: LatLng, weight?: number, size?: number) {
+        return await this.clientRequestRepository.getTimeAndDistance(origin, destination, weight, size);
     }
 }

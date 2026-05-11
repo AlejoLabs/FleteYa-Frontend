@@ -48,7 +48,7 @@ export class ClientRequestRepositoryImpl implements ClientRequestRepository {
         return await this.clientRequestService.create(clientRequest);
     }
 
-    async getTimeAndDistance(origin: LatLng, destination: LatLng): Promise<TimeAndDistanceValues | ErrorResponse> {
-        return await this.clientRequestService.getTimeAndDistance(origin, destination);
+    async getTimeAndDistance(origin: LatLng, destination: LatLng, weight?: number, size?: number): Promise<TimeAndDistanceValues | ErrorResponse> {
+        return await this.clientRequestService.getTimeAndDistance(origin, destination, weight, size);
     }
 }
