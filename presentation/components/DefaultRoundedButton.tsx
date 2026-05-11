@@ -5,13 +5,17 @@ interface Props {
     onPress: () => void,
     backgroundColor?: string,
     width?: any,
-    height?: any
+    height?: any,
+    marginTop?: number,
+    marginBottom?: number,
+    marginRight?: number,
+    marginLeft?: number,
 }
 
-const DefaultRoundedButton = ({ text, onPress, backgroundColor, width='100%', height=55}: Props) => {
+const DefaultRoundedButton = ({ text, onPress, backgroundColor, width='100%', height=55, marginTop=25, marginBottom=0, marginRight=0, marginLeft=0}: Props) => {
     return (
         <TouchableOpacity 
-            style={[styles.roundedButton,{backgroundColor: backgroundColor || 'red', width: width, height: height}]}
+            style={[styles.roundedButton,{backgroundColor: backgroundColor || 'red', width: width, height: height, marginTop: marginTop, marginBottom: marginBottom, marginRight: marginRight, marginLeft: marginLeft}]}
             onPress={()=> onPress()}
         >
             <Text style={styles.textButton}>{text}</Text>
@@ -25,7 +29,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 50,
-        marginTop: 25
   },
   textButton: {
     color: 'white',

@@ -11,6 +11,7 @@ interface Props {
   textColor?: string;
   placeholderTextColor?: string;
   borderBottomColor?: string;
+  marginHorizontal?: number;
 }
 
 const DefaultTextInput = ({
@@ -23,9 +24,10 @@ const DefaultTextInput = ({
   textColor = 'white',
   placeholderTextColor = 'white',
   borderBottomColor = 'white',
+  marginHorizontal = 0
 }: Props) => {
   return (
-    <View style={styles.containerTextInput}>
+    <View style={{ ...styles.containerTextInput, marginHorizontal: marginHorizontal }}>
       <Image
         style={styles.textInputIcon}
         source={icon}
@@ -49,11 +51,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 10,
+    backgroundColor: '#E8E8E8',
+    borderTopLeftRadius: 15,
+    borderBottomRightRadius: 15,
+    paddingHorizontal: 15,
   },
   textInput: {
     width: '90%',
     height: 50,
-    borderBottomWidth: 1,
+    // borderBottomWidth: 1,
     borderBottomColor: 'white',
     fontSize: 18,
   },

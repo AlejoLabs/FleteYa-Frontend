@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, Alert, Platform } from "react-native";
+import { View, Text, Image, TouchableOpacity, Alert, Platform, UIManager } from "react-native";
 import styles from "./Styles";
 import DefaultTextInput from "../../../components/DefaultTextInput";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
@@ -10,6 +10,8 @@ import { KeyboardAvoidingView } from "react-native";
 import { ScrollView } from "react-native";
 import { container } from "../../../../di/container";
 import { RegisterViewModel } from "./RegisterViewModel";
+import { Shadow } from "react-native-shadow-2";
+import LottieView from "lottie-react-native";
 
 
 interface Props extends StackScreenProps<RootStackParamList, 'RegisterScreen'> { };
@@ -22,61 +24,193 @@ export default function RegisterScreen({ navigation, route }: Props) {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
+    const hasLottieNativeView = (() => {
+        if (Platform.OS !== 'android') return true;
+        try {
+            return Boolean(UIManager.getViewManagerConfig?.('LottieAnimationView'))
+                || Boolean(UIManager.getViewManagerConfig?.('RCTLottieAnimationView'));
+        } catch {
+            return false;
+        }
+    })();
+
     const registerViewModel: RegisterViewModel = container.resolve('registerViewModel');
 
-    const handleRegister = () => {
-        if (name === "") {
-            Alert.alert("Error", "El nombre no puede estar vacio")
+    const handleRegister = async () => {
+        if (name.trim() === "") {
+            Alert.alert("Error", "El nombre no puede estar vacio");
+            return;
         }
-        if (lastname === "") {
-            Alert.alert("Error", "El apellido no puede estar vacio")
+        if (lastname.trim() === "") {
+            Alert.alert("Error", "El apellido no puede estar vacio");
+            return;
         }
-        if (email === "") {
-            Alert.alert("Error", "El correo no puede estar vacio")
+        if (email.trim() === "") {
+            Alert.alert("Error", "El correo no puede estar vacio");
+            return;
         }
-        if (phone === "") {
-            Alert.alert("Error", "El telefono no puede estar vacio")
+        if (phone.trim() === "") {
+            Alert.alert("Error", "El telefono no puede estar vacio");
+            return;
         }
         if (password === "") {
-            Alert.alert("Error", "El password no puede estar vacio")
+            Alert.alert("Error", "El password no puede estar vacio");
+            return;
         }
         if (confirmPassword === "") {
-            Alert.alert("Error", "La confirmacion no puede estar vacia")
+            Alert.alert("Error", "La confirmacion no puede estar vacia");
+            return;
         }
-        if (!EmailValidator(email)) {
-            Alert.alert("Error", "El email no es valido")
+        if (!EmailValidator(email.trim())) {
+            Alert.alert("Error", "El email no es valido");
+            return;
         }
         if (confirmPassword !== password) {
-            Alert.alert("Error", "Las contraseñas no coinciden")
+            Alert.alert("Error", "Las contraseñas no coinciden");
+            return;
         }
 
-        const response = registerViewModel.register({
-            name: name,
-            lastname: lastname,
-            email: email,
-            phone: phone,
+        const response = await registerViewModel.register({
+            name: name.trim(),
+            lastname: lastname.trim(),
+            email: email.trim(),
+            phone: phone.trim(),
             password: password
         });
-        console.log('Register response', response);
 
+        if ('token' in response) {
+            Alert.alert(
+                'Exito',
+                'Usuario creado exitosamente',
+                [{ text: 'OK', onPress: () => navigation.replace('LoginScreen') }]
+            );
+            return;
+        }
+
+        const errorMessage = Array.isArray(response.message)
+            ? response.message.join(', ')
+            : response.message;
+        Alert.alert('Error', errorMessage);
     }
 
     return (
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style = {{flex: 1}}
-            >
+            style={{ flex: 1 }}
+        >
 
-            <ScrollView 
-                contentContainerStyle = {{flexGrow: 1}}
+            <ScrollView
+                contentContainerStyle={{ flexGrow: 1 }}
                 keyboardShouldPersistTaps='handled'
             >
                 <View style={styles.container}>
                     <Image
                         source={require('../../../../assets/city.jpg')}
-                        style={styles.imageBackground}
+                        style={styles.ImageBackground}
                     />
-                    <View style={styles.form}>
+                    <Image
+                        style={styles.topImage}
+                        source={require('../../../../assets/city_background.jpg')}
+                    />
+
+                    <TouchableOpacity
+                        style={styles.containerBack}
+                        onPress={() => navigation.pop()}>
+                        <Image
+                            style={styles.back}
+                            source={require('../../../../assets/left_arrow.png')}
+                        />
+                    </TouchableOpacity>
+
+                    <Shadow containerStyle={styles.shadowForm} distance={15} startColor={'#717171'} >
+                        {<View style={styles.form}>
+                            {hasLottieNativeView ? (
+                                <LottieView style={styles.lottie} source={require('../../../../assets/sign_in.json')} autoPlay loop />
+                            ) : (
+                                <Text style={{ color: '#fff', marginBottom: 12 }}>Cargando animacion...</Text>
+                            )}
+
+
+                            <DefaultTextInput
+                                placeholder="Nombre"
+                                value={name}
+                                onChangeText={setName}
+                                icon={require('../../../../assets/user.png')}
+                                placeholderTextColor="gray"
+                                marginHorizontal={15}
+                                textColor="gray"
+                            />
+
+                            <DefaultTextInput
+                                placeholder="Apellido"
+                                value={lastname}
+                                onChangeText={setLastname}
+                                icon={require('../../../../assets/user_image.png')}
+                                placeholderTextColor="gray"
+                                marginHorizontal={15}
+                                textColor="gray"
+                            />
+
+                            <DefaultTextInput
+                                placeholder="Email"
+                                value={email}
+                                onChangeText={setEmail}
+                                keyboardType="email-address"
+                                icon={require('../../../../assets/email.png')}
+                                placeholderTextColor="gray"
+                                marginHorizontal={15}
+                                textColor="gray"
+                            />
+
+                            <DefaultTextInput
+                                placeholder="Telefono"
+                                value={phone}
+                                onChangeText={setPhone}
+                                keyboardType="number-pad"
+                                icon={require('../../../../assets/phone.png')}
+                                placeholderTextColor="gray"
+                                marginHorizontal={15}
+                                textColor="gray"
+                            />
+
+                            <DefaultTextInput
+                                placeholder="Contraseña"
+                                value={password}
+                                onChangeText={setPassword}
+                                icon={require('../../../../assets/password.png')}
+                                secureTextEntry={true}
+                                placeholderTextColor="gray"
+                                marginHorizontal={15}
+                                textColor="gray"
+                            />
+
+                            <DefaultTextInput
+                                placeholder="Confirmar Contraseña"
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                icon={require('../../../../assets/password.png')}
+                                secureTextEntry={true}
+                                placeholderTextColor="gray"
+                                marginHorizontal={15}
+                                textColor="gray"
+                            />
+
+                            <DefaultRoundedButton
+                                text="Crear Usuario"
+                                onPress={() => {
+                                    handleRegister();
+                                }}
+                                backgroundColor="orange"
+                                marginTop={15}
+                                height={50}
+                                marginLeft={15}
+                                width={260}
+                            />
+
+                        </View>}
+                    </Shadow>
+
+                    {/*<View style={styles.form}>
                         <TouchableOpacity onPress={() => navigation.pop()}>
                             <Image
                                 style={styles.back}
@@ -143,7 +277,7 @@ export default function RegisterScreen({ navigation, route }: Props) {
 
                         />
 
-                    </View>
+                    </View>*/}
                 </View>
             </ScrollView>
 
