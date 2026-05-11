@@ -54,6 +54,11 @@ import { DriverTripRatingViewModel } from "../presentation/screens/driver/tripRa
 import { ClientTripRatingViewModel } from "../presentation/screens/client/tripRating/ClientTripRatingViewModel";
 import { ClientTripHistoryViewModel } from "../presentation/screens/client/tripHistory/ClientTripHistoryViewModel";
 import { DriverTripHistoryViewModel } from "../presentation/screens/driver/tripHistory/DriverTripHistoryViewModel";
+import { DriverCarInfoService } from "../data/sources/remote/services/DriverCarInfoService";
+import { DriverCarInfoRepositoryImpl } from "../data/repository/DriverCarInfoRepositoryImpl";
+import { CreateDriverCarInfoUseCase } from "../domain/useCases/driverCarInfo/CreateDriverCarInfoUseCase";
+import { DriverCarInfoUseCases } from "../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
+import { DriverCarInfoViewModel } from "../presentation/screens/driver/carInfo/DriverCarInfoViewModel";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -98,6 +103,11 @@ const driverPositionRepository = new DriverPositionRepositoryImpl({ driverPositi
 const createDriverPositionUseCase = new CreateDriverPositionUseCase({ driverPositionRepository });
 const getDriverPositionUseCase = new GetDriverPositionUseCase({ driverPositionRepository });
 const driverPositionUseCases = new DriverPositionUseCases({ createDriverPositionUseCase, getDriverPositionUseCase });
+const driverCarInfoService = new DriverCarInfoService();
+const driverCarInfoRepository = new DriverCarInfoRepositoryImpl({ driverCarInfoService });
+const createDriverCarInfoUseCase = new CreateDriverCarInfoUseCase({ driverCarInfoRepository });
+const driverCarInfoUseCases = new DriverCarInfoUseCases({ createDriverCarInfoUseCase });
+const driverCarInfoViewModel = new DriverCarInfoViewModel({ driverCarInfoUseCases });
 const userService = new UserService();
 const driverMyLocationMapViewModel = new DriverMyLocationMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverPositionUseCases });
 const userRepository = new UserRepositoryImpl(userService);
@@ -164,6 +174,11 @@ type ContainerDeps = {
     createDriverPositionUseCase: CreateDriverPositionUseCase;
     getDriverPositionUseCase: GetDriverPositionUseCase;
     driverPositionUseCases: DriverPositionUseCases;
+    driverCarInfoService: DriverCarInfoService;
+    driverCarInfoRepository: DriverCarInfoRepositoryImpl;
+    createDriverCarInfoUseCase: CreateDriverCarInfoUseCase;
+    driverCarInfoUseCases: DriverCarInfoUseCases;
+    driverCarInfoViewModel: DriverCarInfoViewModel;
     userRepository: UserRepositoryImpl;
     updateUserUseCase: UpdateUserUseCase;
     updateImageUserUseCase: UpdateImageUserUseCase;
@@ -220,6 +235,11 @@ const container = {
             createDriverPositionUseCase,
             getDriverPositionUseCase,
             driverPositionUseCases,
+            driverCarInfoService,
+            driverCarInfoRepository,
+            createDriverCarInfoUseCase,
+            driverCarInfoUseCases,
+            driverCarInfoViewModel,
             userRepository,
             updateUserUseCase,
             updateImageUserUseCase,
