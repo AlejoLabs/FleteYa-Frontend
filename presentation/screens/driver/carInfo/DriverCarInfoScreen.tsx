@@ -1,6 +1,6 @@
 import { View, Text, Image, TouchableOpacity, Alert, ToastAndroid } from "react-native";
 import styles from "./Styles";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import DefaultTextInput from "../../../components/DefaultTextInput";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +15,10 @@ export function DriverCarInfoScreen() {
     const [color, setColor] = useState('');
     const { authResponse, removeAuthSession, saveAuthSession } = useAuth();
 
+    useEffect(() => {
+        handleGetDriverCarInfo();
+    }, []);
+
     const handleCreateCarInfo = async () => {
         const response = await viewModel.createDriverCarInfo({
             id_driver: authResponse?.user.id!,
@@ -27,6 +31,15 @@ export function DriverCarInfoScreen() {
         }
         else{
             ToastAndroid.show(response.message.toString(), ToastAndroid.LONG);
+        }
+    }
+
+    const handleGetDriverCarInfo = async () => {
+        const response = await viewModel.getDriverCarInfo(authResponse?.user.id!);
+        if ('brand' in response) {
+            setBrand(response.brand);
+            setPlate(response.plate);
+            setColor(response.color);
         }
     }
 

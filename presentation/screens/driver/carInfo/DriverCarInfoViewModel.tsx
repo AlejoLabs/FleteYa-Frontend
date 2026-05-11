@@ -19,4 +19,8 @@ export class DriverCarInfoViewModel {
     async createDriverCarInfo(driverCarInfo: DriverCarInfo){
         return await this.driverCarInfoUseCases.create.execute(driverCarInfo);
     }
+
+    async getDriverCarInfo(idDriver: number){
+        return await this.driverCarInfoUseCases.getDriverCarInfo.execute(idDriver);
+    }
 }

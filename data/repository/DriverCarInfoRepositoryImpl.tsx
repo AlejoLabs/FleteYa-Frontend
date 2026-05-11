@@ -17,6 +17,9 @@ export class DriverCarInfoRepositoryImpl implements DriverCarInfoRepository {
     ){
         this.driverCarInfoService = driverCarInfoService;
     }
+    async getDriverCarInfo(id_driver: number): Promise<DriverCarInfo | ErrorResponse> {
+        return await this.driverCarInfoService.getDriverCarInfo(id_driver);
+    }
     async create(driverCarInfo: DriverCarInfo): Promise<DriverCarInfo | ErrorResponse> {
         return await this.driverCarInfoService.create(driverCarInfo);
     }

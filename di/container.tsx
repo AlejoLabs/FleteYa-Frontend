@@ -57,6 +57,7 @@ import { DriverTripHistoryViewModel } from "../presentation/screens/driver/tripH
 import { DriverCarInfoService } from "../data/sources/remote/services/DriverCarInfoService";
 import { DriverCarInfoRepositoryImpl } from "../data/repository/DriverCarInfoRepositoryImpl";
 import { CreateDriverCarInfoUseCase } from "../domain/useCases/driverCarInfo/CreateDriverCarInfoUseCase";
+import { GetDriverCarInfoUseCase } from "../domain/useCases/driverCarInfo/GetDriverCarInfoUseCase";
 import { DriverCarInfoUseCases } from "../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
 import { DriverCarInfoViewModel } from "../presentation/screens/driver/carInfo/DriverCarInfoViewModel";
 
@@ -106,7 +107,8 @@ const driverPositionUseCases = new DriverPositionUseCases({ createDriverPosition
 const driverCarInfoService = new DriverCarInfoService();
 const driverCarInfoRepository = new DriverCarInfoRepositoryImpl({ driverCarInfoService });
 const createDriverCarInfoUseCase = new CreateDriverCarInfoUseCase({ driverCarInfoRepository });
-const driverCarInfoUseCases = new DriverCarInfoUseCases({ createDriverCarInfoUseCase });
+const getDriverCarInfoUseCase = new GetDriverCarInfoUseCase({ driverCarInfoRepository });
+const driverCarInfoUseCases = new DriverCarInfoUseCases({ createDriverCarInfoUseCase, getDriverCarInfoUseCase });
 const driverCarInfoViewModel = new DriverCarInfoViewModel({ driverCarInfoUseCases });
 const userService = new UserService();
 const driverMyLocationMapViewModel = new DriverMyLocationMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverPositionUseCases });
@@ -177,6 +179,7 @@ type ContainerDeps = {
     driverCarInfoService: DriverCarInfoService;
     driverCarInfoRepository: DriverCarInfoRepositoryImpl;
     createDriverCarInfoUseCase: CreateDriverCarInfoUseCase;
+    getDriverCarInfoUseCase: GetDriverCarInfoUseCase;
     driverCarInfoUseCases: DriverCarInfoUseCases;
     driverCarInfoViewModel: DriverCarInfoViewModel;
     userRepository: UserRepositoryImpl;
@@ -238,6 +241,7 @@ const container = {
             driverCarInfoService,
             driverCarInfoRepository,
             createDriverCarInfoUseCase,
+            getDriverCarInfoUseCase,
             driverCarInfoUseCases,
             driverCarInfoViewModel,
             userRepository,
