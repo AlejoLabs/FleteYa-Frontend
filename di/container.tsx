@@ -53,6 +53,7 @@ import { DriverTripMapViewModel } from "../presentation/screens/driver/tripMap/D
 import { DriverTripRatingViewModel } from "../presentation/screens/driver/tripRating/DriverTripRatingViewModel";
 import { ClientTripRatingViewModel } from "../presentation/screens/client/tripRating/ClientTripRatingViewModel";
 import { ClientTripHistoryViewModel } from "../presentation/screens/client/tripHistory/ClientTripHistoryViewModel";
+import { DriverTripHistoryViewModel } from "../presentation/screens/driver/tripHistory/DriverTripHistoryViewModel";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -115,6 +116,7 @@ const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCase
 const driverTripRatingViewModel = new DriverTripRatingViewModel({ clientRequestUseCases });
 const clientTripRatingViewModel = new ClientTripRatingViewModel({ clientRequestUseCases });
 const clientTripHistoryViewModel = new ClientTripHistoryViewModel({ clientRequestUseCases });
+const driverTripHistoryViewModel = new DriverTripHistoryViewModel({ clientRequestUseCases });
 const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases, driverPositionUseCases, driverTripOfferUseCases, socketService });
 
 
@@ -137,6 +139,7 @@ type ContainerDeps = {
     driverTripRatingViewModel: DriverTripRatingViewModel;
     clientTripRatingViewModel: ClientTripRatingViewModel;
     clientTripHistoryViewModel: ClientTripHistoryViewModel;
+    driverTripHistoryViewModel: DriverTripHistoryViewModel;
     clientRequestService: ClientRequestService;
     clientRequestRepository: ClientRequestRepositoryImpl;
     getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
@@ -193,6 +196,7 @@ const container = {
             driverTripRatingViewModel,
             clientTripRatingViewModel,
             clientTripHistoryViewModel,
+            driverTripHistoryViewModel,
             clientRequestService,
             clientRequestRepository,
             getTimeAndDistanceUseCase,
