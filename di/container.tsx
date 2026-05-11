@@ -49,6 +49,7 @@ import { UpdateStatusUseCase } from "../domain/useCases/clientRequest/UpdateStat
 import { ClientTripMapViewModel } from "../presentation/screens/client/tripMap/ClientTripMapViewModel";
 import { DriverTripMapViewModel } from "../presentation/screens/driver/tripMap/DriverTripMapViewModel";
 import { DriverTripRatingViewModel } from "../presentation/screens/driver/tripRating/DriverTripRatingViewModel";
+import { ClientTripRatingViewModel } from "../presentation/screens/client/tripRating/ClientTripRatingViewModel";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -107,6 +108,7 @@ const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCa
 const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases });
 const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases });
 const driverTripRatingViewModel = new DriverTripRatingViewModel({ clientRequestUseCases });
+const clientTripRatingViewModel = new ClientTripRatingViewModel({ clientRequestUseCases });
 const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases, driverPositionUseCases, driverTripOfferUseCases, socketService });
 
 
@@ -127,6 +129,7 @@ type ContainerDeps = {
     clientTripMapViewModel: ClientTripMapViewModel;
     driverTripMapViewModel: DriverTripMapViewModel;
     driverTripRatingViewModel: DriverTripRatingViewModel;
+    clientTripRatingViewModel: ClientTripRatingViewModel;
     clientRequestService: ClientRequestService;
     clientRequestRepository: ClientRequestRepositoryImpl;
     getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
@@ -179,6 +182,7 @@ const container = {
             clientTripMapViewModel,
             driverTripMapViewModel,
             driverTripRatingViewModel,
+            clientTripRatingViewModel,
             clientRequestService,
             clientRequestRepository,
             getTimeAndDistanceUseCase,

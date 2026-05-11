@@ -1,4 +1,4 @@
-import { StackScreenProps } from "@react-navigation/stack";
+import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
 import { Text, ToastAndroid, TouchableOpacity, View } from "react-native";
 import { DriverMapStackParamList } from "../../../navigator/DriverMapStackNavigator";
 import styles from "./Styles";
@@ -7,20 +7,24 @@ import StarRating from "@empglabs/react-native-star-rating-widget";
 import { useState } from "react";
 import { container } from "../../../../di/container";
 import { DriverTripRatingViewModel } from "./DriverTripRatingViewModel";
+import { useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "../../../navigator/MainStackNavigator";
 
 interface Props extends StackScreenProps<DriverMapStackParamList, 'DriverTripRatingScreen'> { }
 
 export function DriverTripRatingScreen({ navigation, route }: Props) {
 
-    const viewModel : DriverTripRatingViewModel = container.resolve('driverTripRatingViewModel');
     const { clientRequest } = route.params;
+    const viewModel : DriverTripRatingViewModel = container.resolve('driverTripRatingViewModel');
     const [rating, setRating] = useState(0);
+    const rootNavigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     console.log('CONDUCTOR PARAMETRO CLIENT REQUEST:', clientRequest);
 
     const handleUpdateClientRating = async () => {
         const response = await viewModel.updateClientRating(clientRequest.id, rating);
         if(typeof response === 'boolean' ){
             ToastAndroid.show('Calificación actualizada', ToastAndroid.LONG);
+            rootNavigation.replace('DriverHomeScreen');
         }
     }
 
