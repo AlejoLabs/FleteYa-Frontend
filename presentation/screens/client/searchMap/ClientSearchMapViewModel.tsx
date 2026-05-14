@@ -10,6 +10,7 @@ import { SocketService } from "../../../../data/sources/remote/services/SocketSe
 import { ClientRequest } from "../../../../domain/models/ClientRequest";
 import { DriverTripOfferUseCases } from "../../../../domain/useCases/driverTripOffer/DriverTripOfferUseCases";
 import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
+import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
 
 export class ClientSearchMapViewModel {
     
@@ -17,24 +18,28 @@ export class ClientSearchMapViewModel {
     private clientRequestUseCases: ClientRequestUseCases;
     private socketService: SocketService;
     private driverTripOfferUseCases: DriverTripOfferUseCases;
+    private driverCarInfoUseCases: DriverCarInfoUseCases;
 
     constructor(
         {
             googlePlaceUseCases,
             clientRequestUseCases,
             socketService,
-            driverTripOfferUseCases
+            driverTripOfferUseCases,
+            driverCarInfoUseCases
         }: {
             googlePlaceUseCases: GooglePlaceUseCases,
             clientRequestUseCases: ClientRequestUseCases,
             socketService: SocketService,
-            driverTripOfferUseCases: DriverTripOfferUseCases
+            driverTripOfferUseCases: DriverTripOfferUseCases,
+            driverCarInfoUseCases: DriverCarInfoUseCases
         }
     ) {
         this.googlePlaceUseCases = googlePlaceUseCases;
         this.clientRequestUseCases = clientRequestUseCases;
         this.socketService = socketService;
         this.driverTripOfferUseCases = driverTripOfferUseCases;
+        this.driverCarInfoUseCases = driverCarInfoUseCases;
     }
 
     initSocket(){
@@ -61,6 +66,10 @@ export class ClientSearchMapViewModel {
 
     async getDriverTripOffers(idClientRequest: number): Promise<DriverTripOffer[] | ErrorResponse> {
         return await this.driverTripOfferUseCases.getDriverTripOffers.execute(idClientRequest);
+    }
+
+    async getDriverCarInfo(idDriver: number) {
+        return await this.driverCarInfoUseCases.getDriverCarInfo.execute(idDriver);
     }
 
     async getPlaceDetailsByCoords(lat: number, lng: number): Promise<PlaceGeocodeDetail | null> {

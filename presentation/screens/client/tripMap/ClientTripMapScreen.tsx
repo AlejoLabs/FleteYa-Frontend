@@ -12,12 +12,13 @@ import { useAuth } from "../../../hooks/useAuth";
 import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { decode } from "@googlemaps/polyline-codec";
 import { Status } from "../../../../domain/repository/ClientRequestRepository";
+import { DriverCarInfo } from "../../../../domain/models/DriverCarInfo";
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientTripMapScreen'> { };
 export function ClientTripMapScreen({ navigation, route }: Props) {
 
     const { authResponse } = useAuth();
-    const { idClientRequest } = route.params;
+    const { idClientRequest, idDriver } = route.params;
     const viewModel: ClientTripMapViewModel = container.resolve("clientTripMapViewModel");
     const animatedValue = useRef(new Animated.Value(0)).current;
     const mapRef = useRef<MapView>(null);
@@ -28,6 +29,8 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     const [driverPosition, setDriverPosition] = useState<LatLng | null>(null);
     const [isDriverPositionSet, setIsDriverPositionSet] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(Status.ACCEPTED);
+    const [carInfo, setCarInfo] = useState<DriverCarInfo | null>(null);
+    const [etaMinutesFromRoute, setEtaMinutesFromRoute] = useState<number | null>(null);
 
     useEffect(() => {
         viewModel.initSocket();
@@ -79,6 +82,13 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
         console.log('getClientRequestById', response);
         if ('id' in response) {
             setClientRequest(response);
+
+            const driverIdFromTrip = (response as any).id_driver_assigned ?? (response as any).id_driver ?? idDriver;
+            const carInfoResponse = await viewModel.getDriverCarInfo(driverIdFromTrip);
+            if ('brand' in carInfoResponse) {
+                setCarInfo(carInfoResponse);
+            }
+
             setLocation({
                 latitude: response.pickup_position.y,
                 longitude: response.pickup_position.x,
@@ -114,6 +124,11 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                 const points = response.routes[0].overview_polyline.points;
                 const coordinates = decode(points).map(([lat, lng]) => ({ latitude: lat, longitude: lng }));
                 setDirectionsRoute(coordinates);
+
+                const durationInSeconds = response.routes[0]?.legs?.[0]?.duration?.value;
+                if (typeof durationInSeconds === 'number' && durationInSeconds > 0) {
+                    setEtaMinutesFromRoute(Math.max(1, Math.round(durationInSeconds / 60)));
+                }
             }
         }
     }
@@ -132,6 +147,11 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     if (!location) {
         return <View style={styles.container} />
     }
+
+    const etaMinutes = etaMinutesFromRoute
+        ?? (clientRequest?.google_distance_matrix?.duration?.value
+        ? Math.round(clientRequest.google_distance_matrix.duration.value / 60)
+        : Math.round(clientRequest?.time_difference ?? 0));
 
     return (
         <View style={styles.container}>
@@ -254,9 +274,9 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                     </View>
                     <View style={styles.rowContainer}>
                         <View style={styles.dataContainer}>
-                            <Text>Marca del vehiculo</Text>
-                            <Text>Placa del vehiculo</Text>
-                            <Text>Llega en 00 Mins Aproximadamente</Text>
+                            <Text>{carInfo?.brand ?? 'Sin marca registrada'}</Text>
+                            <Text>{carInfo?.plate ?? 'Sin placa registrada'}</Text>
+                            <Text>Llega en {etaMinutes} Mins Aproximadamente</Text>
                         </View>
                         <Image
                             style={styles.userImage}

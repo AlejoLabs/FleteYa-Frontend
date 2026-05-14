@@ -392,7 +392,7 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                             >
                                 <View style={{ width: 50, height: 50 }}>
                                     <Image
-                                        source={require("../../../../assets/pin_map.png")}
+                                        source={require("../../../../assets/car_yellow.png")}
                                         style={{ resizeMode: "contain", width: "50%", height: "50%" }}
                                     />
                                 </View>

@@ -6,7 +6,7 @@ import { ClientTripRatingScreen } from "../screens/client/tripRating/ClientTripR
 
 export type ClientMapStackParamList = {
     ClientSearchMapScreen: undefined,
-    ClientTripMapScreen: {idClientRequest: number},
+    ClientTripMapScreen: {idClientRequest: number, idDriver: number},
     ClientTripRatingScreen: { clientRequest: ClientRequestResponse },
     
 }

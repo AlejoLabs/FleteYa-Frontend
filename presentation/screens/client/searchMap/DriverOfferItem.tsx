@@ -5,6 +5,9 @@ import { Client } from "../../../../domain/models/ClientRequestResponse";
 import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
 import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
+import { useEffect, useState } from "react";
+import { DriverCarInfo } from "../../../../domain/models/DriverCarInfo";
+import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 
 interface Props {
     viewModel: ClientSearchMapViewModel;
@@ -21,6 +24,16 @@ interface Props {
 
 export function DriverOfferItem({ viewModel, driverTripOffer, navigation, cargo }: Props) {
 
+    const [carBrand, setCarBrand] = useState<string>('');
+
+    useEffect(() => {
+        viewModel.getDriverCarInfo(driverTripOffer.id_driver).then((response) => {
+            if ((response as DriverCarInfo).brand) {
+                setCarBrand((response as DriverCarInfo).brand);
+            }
+        });
+    }, [driverTripOffer.id_driver]);
+
     const handleUpdateDriverAssigned = async () => {
             const response = await viewModel.updateDriverAssigned(
                 driverTripOffer.id_client_request, 
@@ -31,7 +44,8 @@ export function DriverOfferItem({ viewModel, driverTripOffer, navigation, cargo 
                 viewModel.emitNewDriverAssigned(driverTripOffer.id_client_request, driverTripOffer.id_driver);
                 console.log('CONDUCTOR ASIGNADO CORRECTAMENTE');
                 navigation.navigate('ClientTripMapScreen', {
-                    idClientRequest: driverTripOffer.id_client_request,      
+                    idClientRequest: driverTripOffer.id_client_request,
+                    idDriver: driverTripOffer.id_driver,
                 });
             }
     }
@@ -44,7 +58,7 @@ export function DriverOfferItem({ viewModel, driverTripOffer, navigation, cargo 
                     style={styles.imageDriver}
                 />
                 <View style={styles.infoDriver}>
-                    <Text>Marca de vehiculos</Text>
+                    <Text>{carBrand}</Text>
                     <Text>{driverTripOffer.driver?.name} {driverTripOffer.driver?.lastname}</Text>
                     <Text>5.0</Text>
                 </View>

@@ -4,28 +4,33 @@ import { ClientRequestUseCases } from "../../../../domain/useCases/clientRequest
 import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { G } from "react-native-svg";
 import { GooglePlaceUseCases } from "../../../../domain/useCases/GooglePlaces/GooglePlacesUseCases";
+import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
 
 export class ClientTripMapViewModel {
     
     private clientRequestUseCases: ClientRequestUseCases;
     private socketService: SocketService;
     private googlePlaceUseCases: GooglePlaceUseCases;
+    private driverCarInfoUseCases: DriverCarInfoUseCases;
 
     constructor(
         {
             clientRequestUseCases,
             socketService,
-            googlePlaceUseCases
+            googlePlaceUseCases,
+            driverCarInfoUseCases
         }: 
         {
             clientRequestUseCases: ClientRequestUseCases,
             socketService: SocketService,
-            googlePlaceUseCases: GooglePlaceUseCases
+            googlePlaceUseCases: GooglePlaceUseCases,
+            driverCarInfoUseCases: DriverCarInfoUseCases
         }
     ) {
         this.clientRequestUseCases = clientRequestUseCases;
         this.socketService = socketService;
         this.googlePlaceUseCases = googlePlaceUseCases;
+        this.driverCarInfoUseCases = driverCarInfoUseCases;
     }
 
     initSocket(){
@@ -40,6 +45,10 @@ export class ClientTripMapViewModel {
 
     async getClientRequestById(idClientRequest: number) {
         return await this.clientRequestUseCases.getClientRequestById.execute(idClientRequest);
+    }
+
+    async getDriverCarInfo(idDriver: number) {
+        return await this.driverCarInfoUseCases.getDriverCarInfo.execute(idDriver);
     }
 
     async getDirections(origin: LatLng, destination: LatLng): Promise<GoogleDirections | null> {
