@@ -23,9 +23,7 @@
         }
       ]
     ],
-    "extra": {
-      "googleMapsApiKey": "AIzaSyCo2zaq4NDH9Yb5q2GzTSy5rE09Vejs0WI"
-    },
+    "extra": {},
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -36,9 +34,7 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Este App utiliza su ubicación para mostrar conductores cercanos y proporcionar información precisa sobre el viaje."
       },
-      "config":{
-        "googleMapsApiKey": "AIzaSyCo2zaq4NDH9Yb5q2GzTSy5rE09Vejs0WI"
-      }
+      "config": {}
     },
     "android": {
       "adaptiveIcon": {
@@ -52,11 +48,7 @@
         "ACCESS_COARSE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION"
       ],
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyCo2zaq4NDH9Yb5q2GzTSy5rE09Vejs0WI"
-        }
-      },
+      "config": {},
       "predictiveBackGestureEnabled": false
     },
     "web": {

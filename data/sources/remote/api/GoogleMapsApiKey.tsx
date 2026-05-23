@@ -1,3 +1,1 @@
-import Constants from 'expo-constants';
-
-export const GoogleMapsApiKey = Constants.expoConfig?.extra?.googleMapsApiKey;
+export const GoogleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;

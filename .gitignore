@@ -31,11 +31,20 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
+.env.local
 .env*.local
+!.env.example
 
 # typescript
 *.tsbuildinfo
 
 # generated native folders
 /ios
-/android
+
+# Android - excluir solo archivos generados
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+android/app/release/

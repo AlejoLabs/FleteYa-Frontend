@@ -1,0 +1,68 @@
+import { ExpoConfig, ConfigContext } from 'expo/config';
+
+export default ({ config }: ConfigContext): ExpoConfig => ({
+  ...config,
+  name: "InDriverReactNative",
+  slug: "InDriverReactNative",
+  version: "1.0.0",
+  orientation: "portrait",
+  icon: "./assets/icon.png",
+  userInterfaceStyle: "light",
+  plugins: [
+    [
+      "expo-image-picker",
+      {
+        photosPermission: "La app requiere acceder a tu galeria de fotos",
+        cameraPermission: "La app requiere acceder a tu camara",
+        colors: {
+          cropToolbarColor: "#000000"
+        },
+        dark: {
+          colors: {
+            cropToolbarColor: "#000000"
+          }
+        }
+      }
+    ]
+  ],
+  extra: {
+    googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY
+  },
+  splash: {
+    image: "./assets/splash-icon.png",
+    resizeMode: "contain",
+    backgroundColor: "#ffffff"
+  },
+  ios: {
+    supportsTablet: true,
+    infoPlist: {
+      NSLocationWhenInUseUsageDescription:
+        "Este App utiliza su ubicación para mostrar conductores cercanos y proporcionar información precisa sobre el viaje."
+    },
+    config: {
+      googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY
+    }
+  },
+  android: {
+    adaptiveIcon: {
+      backgroundColor: "#E6F4FE",
+      foregroundImage: "./assets/android-icon-foreground.png",
+      backgroundImage: "./assets/android-icon-background.png",
+      monochromeImage: "./assets/android-icon-monochrome.png"
+    },
+    permissions: [
+      "ACCESS_FINE_LOCATION",
+      "ACCESS_COARSE_LOCATION",
+      "ACCESS_BACKGROUND_LOCATION"
+    ],
+    config: {
+      googleMaps: {
+        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY
+      }
+    },
+    predictiveBackGestureEnabled: false
+  },
+  web: {
+    favicon: "./assets/favicon.png"
+  }
+});
