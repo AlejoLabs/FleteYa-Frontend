@@ -13,4 +13,20 @@ export class LoginViewModel {
         return await this.authUseCases.login.execute(email, password);
     }
 
+    async forgotPassword(email: string) {
+        return await this.authUseCases.forgotPassword.execute(email);
+    }
+
+    async resetPassword(email: string, code: string, password: string) {
+        return await this.authUseCases.resetPassword.execute(email, code, password);
+    }
+
+    async loginWithGoogle(idToken: string) {
+        return await this.authUseCases.loginWithGoogle.execute(idToken);
+    }
+
+    async linkGoogle(idToken: string, password: string) {
+        return await this.authUseCases.linkGoogle.execute(idToken, password);
+    }
+
 }

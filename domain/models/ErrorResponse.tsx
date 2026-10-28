@@ -1,7 +1,9 @@
 interface ErrorResponse {
     statusCode: number,
     error?: string,
-    message: string | string[]
+    message: string | string[],
+    // Distingue casos con el mismo estado HTTP; por ejemplo LINK_REQUIRED al entrar con Google
+    code?: string
 }
 
 const defaultErrorResponse: ErrorResponse = {

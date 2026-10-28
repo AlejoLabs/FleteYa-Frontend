@@ -7,6 +7,12 @@ import { LoginUseCase } from "../domain/useCases/auth/LoginUseCase";
 import { RemoveAuthSessionUseCase } from "../domain/useCases/auth/RemoveAuthSessionUseCase";
 import { RegisterUseCase } from "../domain/useCases/auth/RegisterUseCase";
 import { SaveAuthSessionUseCase } from "../domain/useCases/auth/SaveAuthSessionUseCase";
+import { RegisterDriverUseCase } from "../domain/useCases/auth/RegisterDriverUseCase";
+import { ForgotPasswordUseCase } from "../domain/useCases/auth/ForgotPasswordUseCase";
+import { ResetPasswordUseCase } from "../domain/useCases/auth/ResetPasswordUseCase";
+import { ChangePasswordUseCase } from "../domain/useCases/auth/ChangePasswordUseCase";
+import { LoginWithGoogleUseCase } from "../domain/useCases/auth/LoginWithGoogleUseCase";
+import { LinkGoogleUseCase } from "../domain/useCases/auth/LinkGoogleUseCase";
 import { LoginViewModel } from "../presentation/screens/auth/login/LoginViewModel";
 import { RegisterViewModel } from "../presentation/screens/auth/register/RegisterViewModel";
 import { GooglePlaceServices } from "../data/sources/remote/services/GooglePlacesService";
@@ -75,9 +81,21 @@ const registerUseCase = new RegisterUseCase({ authRepository });
 const saveAuthSessionUseCase = new SaveAuthSessionUseCase({ authRepository });
 const getAuthSessionUseCase = new GetAuthSessionUseCase({ authRepository });
 const removeAuthSessionUseCase = new RemoveAuthSessionUseCase({ authRepository });
+const registerDriverUseCase = new RegisterDriverUseCase({ authRepository });
+const forgotPasswordUseCase = new ForgotPasswordUseCase({ authRepository });
+const resetPasswordUseCase = new ResetPasswordUseCase({ authRepository });
+const changePasswordUseCase = new ChangePasswordUseCase({ authRepository });
+const loginWithGoogleUseCase = new LoginWithGoogleUseCase({ authRepository });
+const linkGoogleUseCase = new LinkGoogleUseCase({ authRepository });
 const authUseCases = new AuthUseCases({
     loginUseCase,
     registerUseCase,
+    registerDriverUseCase,
+    forgotPasswordUseCase,
+    resetPasswordUseCase,
+    changePasswordUseCase,
+    loginWithGoogleUseCase,
+    linkGoogleUseCase,
     saveAuthSessionUseCase,
     getAuthSessionUseCase,
     removeAuthSessionUseCase

@@ -17,13 +17,19 @@ import { container } from '../../../../di/container';
 import { useAuth } from '../../../hooks/useAuth';
 import { Shadow } from 'react-native-shadow-2';
 import LottieView from 'lottie-react-native';
+import { formatErrorMessage } from '../../../utils/Formatters';
+import { getGoogleIdToken } from '../../../utils/GoogleAuth';
+import { Modal } from 'react-native';
 
 interface Props extends StackScreenProps<RootStackParamList, 'LoginScreen'> { };
 export default function LoginScreen({ navigation, route }: Props) {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  const [isGoogleBusy, setIsGoogleBusy] = useState(false);
+  // Token de Google pendiente de vincular a una cuenta que ya existía con ese correo
+  const [linkToken, setLinkToken] = useState<string | null>(null);
+  const [linkPassword, setLinkPassword] = useState('');
 
   const loginViewModel = container.resolve('loginViewModel');
   const { authResponse, saveAuthSession } = useAuth();
@@ -41,6 +47,10 @@ export default function LoginScreen({ navigation, route }: Props) {
     if (authResponse !== null && authResponse !== undefined) {
       if (authResponse.user.roles!.length > 1) {
         navigation.replace('RolesScreen');
+      }
+      // Con un solo rol se entra directo; un conductor recién registrado solo tiene DRIVER
+      else if (authResponse.user.roles?.[0]?.id === 'DRIVER') {
+        navigation.replace('DriverHomeScreen');
       }
       else {
         navigation.replace('ClientHomeScreen');
@@ -62,6 +72,45 @@ export default function LoginScreen({ navigation, route }: Props) {
     if ('token' in response) { //LOGIN EXITOSO
 
       saveAuthSession(response);
+    } else {
+      // Antes un login fallido no mostraba nada; el mensaje del servidor dice por qué (por ejemplo, cuenta de Google)
+      Alert.alert('No pudimos iniciar sesión', formatErrorMessage(response.message));
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    if (isGoogleBusy) return;
+    setIsGoogleBusy(true);
+    const google = await getGoogleIdToken();
+    if (!google.ok) {
+      setIsGoogleBusy(false);
+      if (!google.cancelled) Alert.alert('Google', google.message);
+      return;
+    }
+    const response = await loginViewModel.loginWithGoogle(google.idToken);
+    setIsGoogleBusy(false);
+    if ('token' in response) {
+      saveAuthSession(response);
+    } else if (response.code === 'LINK_REQUIRED') {
+      // El correo ya tiene cuenta con contraseña: se pide una vez para vincular Google a esa cuenta
+      setLinkToken(google.idToken);
+    } else {
+      Alert.alert('No pudimos entrar con Google', formatErrorMessage(response.message));
+    }
+  }
+
+  const handleLinkGoogle = async () => {
+    if (!linkToken || linkPassword === '') return;
+    setIsGoogleBusy(true);
+    const response = await loginViewModel.linkGoogle(linkToken, linkPassword);
+    setIsGoogleBusy(false);
+    if ('token' in response) {
+      setLinkToken(null);
+      setLinkPassword('');
+      Alert.alert('Cuenta vinculada', 'Desde ahora puedes entrar con Google o con tu contraseña');
+      saveAuthSession(response);
+    } else {
+      Alert.alert('No se pudo vincular', formatErrorMessage(response.message));
     }
   }
 
@@ -115,10 +164,43 @@ export default function LoginScreen({ navigation, route }: Props) {
             backgroundColor="orange"
           />
 
+          <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin}>
+            <Text style={styles.googleG}>G</Text>
+            <Text style={styles.googleText}>{isGoogleBusy ? 'Conectando...' : 'Continuar con Google'}</Text>
+          </TouchableOpacity>
+
         </View>}
       </Shadow>
 
-      <Text style={styles.textLogin}>¿Olvidaste tu Contraseña?</Text>
+      <Modal visible={linkToken !== null} transparent animationType="fade" onRequestClose={() => setLinkToken(null)}>
+        <View style={styles.linkOverlay}>
+          <View style={styles.linkCard}>
+            <Text style={styles.linkTitle}>Vincular tu cuenta de Google</Text>
+            <Text style={styles.linkText}>
+              Ya tienes una cuenta con este correo. Escribe tu contraseña una sola vez para vincular Google; después podrás entrar de las dos formas.
+            </Text>
+            <TextInput
+              style={styles.linkInput}
+              value={linkPassword}
+              onChangeText={setLinkPassword}
+              secureTextEntry
+              placeholder="Contraseña de tu cuenta"
+              placeholderTextColor="#999"
+            />
+            <DefaultRoundedButton text={isGoogleBusy ? 'Vinculando...' : 'Vincular'} backgroundColor="orange" onPress={handleLinkGoogle} marginTop={14} height={50} />
+            <TouchableOpacity style={{ alignSelf: 'center', padding: 12 }} onPress={() => { setLinkToken(null); setLinkPassword(''); }}>
+              <Text style={{ color: '#555', fontWeight: 'bold' }}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{ alignSelf: 'center', paddingBottom: 4 }} onPress={() => { setLinkToken(null); navigation.navigate('ForgotPasswordScreen', { email }); }}>
+              <Text style={{ color: '#555' }}>No recuerdo mi contraseña</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <TouchableOpacity style={styles.forgotLink} onPress={() => navigation.navigate('ForgotPasswordScreen', { email })}>
+        <Text style={styles.textForgot}>¿Olvidaste tu Contraseña?</Text>
+      </TouchableOpacity>
 
       <View style={styles.containerDivider}>
         <View style={styles.divider} />

@@ -19,6 +19,9 @@ import { DriverTripHistoryScreen } from "../screens/driver/tripHistory/DriverTri
 import { DriverCarInfoScreen } from "../screens/driver/carInfo/DriverCarInfoScreen";
 import { AppDrawerContent } from "./AppDrawerContent";
 import { UpcomingTripsScreen } from "../screens/upcoming/UpcomingTripsScreen";
+import ForgotPasswordScreen from "../screens/auth/forgotPassword/ForgotPasswordScreen";
+import DriverVehicleRegisterScreen from "../screens/auth/driverVehicle/DriverVehicleRegisterScreen";
+import { User } from "../../domain/models/User";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -36,6 +39,8 @@ export type RootStackParamList = {
     DriverTripHistoryScreen: undefined,
     DriverCarInfoScreen: undefined,
     UpcomingTripsScreen: undefined,
+    ForgotPasswordScreen: { email?: string } | undefined,
+    DriverVehicleRegisterScreen: { account: User },
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -63,6 +68,18 @@ export const MainStackNavigator = () => {
                     }}
                     name="RegisterScreen"
                     component={RegisterScreen}
+                />
+
+                <Stack.Screen
+                    options={{ title: 'Recuperar contraseña' }}
+                    name="ForgotPasswordScreen"
+                    component={ForgotPasswordScreen}
+                />
+
+                <Stack.Screen
+                    options={{ title: 'Registro de conductor' }}
+                    name="DriverVehicleRegisterScreen"
+                    component={DriverVehicleRegisterScreen}
                 />
 
                 <Stack.Screen

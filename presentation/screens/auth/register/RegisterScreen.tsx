@@ -23,6 +23,8 @@ export default function RegisterScreen({ navigation, route }: Props) {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    // Cliente envía carga; conductor la transporta y además registra su vehículo
+    const [accountType, setAccountType] = useState<'CLIENT' | 'DRIVER'>('CLIENT');
 
     const hasLottieNativeView = (() => {
         if (Platform.OS !== 'android') return true;
@@ -67,6 +69,14 @@ export default function RegisterScreen({ navigation, route }: Props) {
         }
         if (confirmPassword !== password) {
             Alert.alert("Error", "Las contraseñas no coinciden");
+            return;
+        }
+
+        // "Quiero transportar": la cuenta se crea en el paso siguiente, junto con el vehículo y sus documentos
+        if (accountType === 'DRIVER') {
+            navigation.navigate('DriverVehicleRegisterScreen', {
+                account: { name: name.trim(), lastname: lastname.trim(), email: email.trim(), phone: phone.trim(), password }
+            });
             return;
         }
 
@@ -130,6 +140,21 @@ export default function RegisterScreen({ navigation, route }: Props) {
                                 <Text style={{ color: '#fff', marginBottom: 12 }}>Cargando animacion...</Text>
                             )}
 
+
+                            <View style={{ flexDirection: 'row', gap: 8, marginHorizontal: 15, marginBottom: 6 }}>
+                                {([['CLIENT', 'Quiero enviar'], ['DRIVER', 'Quiero transportar']] as const).map(([value, label]) => (
+                                    <TouchableOpacity
+                                        key={value}
+                                        onPress={() => setAccountType(value)}
+                                        style={{
+                                            flex: 1, paddingVertical: 10, borderRadius: 20, alignItems: 'center',
+                                            backgroundColor: accountType === value ? 'orange' : '#eee',
+                                        }}
+                                    >
+                                        <Text style={{ color: accountType === value ? 'white' : '#444', fontWeight: 'bold' }}>{label}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
 
                             <DefaultTextInput
                                 placeholder="Nombre"
@@ -196,7 +221,7 @@ export default function RegisterScreen({ navigation, route }: Props) {
                             />
 
                             <DefaultRoundedButton
-                                text="Crear Usuario"
+                                text={accountType === 'DRIVER' ? "Siguiente: mi vehículo" : "Crear Usuario"}
                                 onPress={() => {
                                     handleRegister();
                                 }}

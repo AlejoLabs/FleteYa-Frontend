@@ -50,6 +50,14 @@ export default function ProfileInfoScreen({navigation, route}: Props) {
                     </View>
                     <Text style={styles.textAction}>EDITAR PERFIL</Text>
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('ChangePasswordScreen')}>
+                    <View style={styles.iconBox}>
+                        <Ionicons name='key-outline' size={25} color='white' />
+                    </View>
+                    <Text style={styles.textAction}>
+                        {authResponse?.user?.has_password === false ? 'CREAR CONTRASEÑA' : 'CAMBIAR CONTRASEÑA'}
+                    </Text>
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.iconContainer} onPress={async () => {
                     await removeAuthSession();
                     rootNavigation.replace('LoginScreen');

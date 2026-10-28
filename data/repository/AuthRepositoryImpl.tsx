@@ -1,5 +1,7 @@
 import { AuthResponse } from "../../domain/models/AuthResponse";
 import { ErrorResponse } from "../../domain/models/ErrorResponse";
+import { DriverVehicle } from "../../domain/models/DriverVehicle";
+import { MessageResponse } from "../../domain/models/MessageResponse";
 import { User } from "../../domain/models/User";
 import { AuthRepository } from "../../domain/repository/AuthRepository";
 import { LocalStorage } from "../sources/local/LocalStorage";
@@ -37,6 +39,24 @@ export class AuthRespositoryImpl implements AuthRepository{
     }
     async register(user: User): Promise<AuthResponse | ErrorResponse> {
         return await this.authService.register(user);
+    }
+    async registerDriver(user: User, vehicle: DriverVehicle): Promise<AuthResponse | ErrorResponse> {
+        return await this.authService.registerDriver(user, vehicle);
+    }
+    async forgotPassword(email: string): Promise<MessageResponse | ErrorResponse> {
+        return await this.authService.forgotPassword(email);
+    }
+    async resetPassword(email: string, code: string, password: string): Promise<MessageResponse | ErrorResponse> {
+        return await this.authService.resetPassword(email, code, password);
+    }
+    async changePassword(currentPassword: string | undefined, newPassword: string): Promise<MessageResponse | ErrorResponse> {
+        return await this.authService.changePassword(currentPassword, newPassword);
+    }
+    async loginWithGoogle(idToken: string): Promise<AuthResponse | ErrorResponse> {
+        return await this.authService.loginWithGoogle(idToken);
+    }
+    async linkGoogle(idToken: string, password: string): Promise<AuthResponse | ErrorResponse> {
+        return await this.authService.linkGoogle(idToken, password);
     }
     async login(email: string, password: string): Promise<AuthResponse | ErrorResponse>{
         return await this.authService.login(email, password);
