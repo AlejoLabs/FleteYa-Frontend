@@ -60,6 +60,12 @@ import { CreateDriverCarInfoUseCase } from "../domain/useCases/driverCarInfo/Cre
 import { GetDriverCarInfoUseCase } from "../domain/useCases/driverCarInfo/GetDriverCarInfoUseCase";
 import { DriverCarInfoUseCases } from "../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
 import { DriverCarInfoViewModel } from "../presentation/screens/driver/carInfo/DriverCarInfoViewModel";
+import { RaiseFareUseCase } from "../domain/useCases/clientRequest/RaiseFareUseCase";
+import { CancelClientRequestUseCase } from "../domain/useCases/clientRequest/CancelClientRequestUseCase";
+import { DismissClientRequestUseCase } from "../domain/useCases/clientRequest/DismissClientRequestUseCase";
+import { GetMyActiveTripsUseCase } from "../domain/useCases/clientRequest/GetMyActiveTripsUseCase";
+import { ChangeDriverTripOfferStatusUseCase } from "../domain/useCases/driverTripOffer/ChangeDriverTripOfferStatusUseCase";
+import { UpcomingTripsViewModel } from "../presentation/screens/upcoming/UpcomingTripsViewModel";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -97,7 +103,12 @@ const updateDriverAssignedUseCase = new UpdateDriverAssignedUseCase({ clientRequ
 const updateStatusUseCase = new UpdateStatusUseCase({ clientRequestRepository });
 const updateDriverRatingUseCase = new UpdateDriverRatingUseCase({ clientRequestRepository });
 const updateClientRatingUseCase = new UpdateClientRatingUseCase({ clientRequestRepository });
-const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, getClientRequestByIdUseCase, createClientRequestUseCase, updateDriverAssignedUseCase, updateStatusUseCase, updateDriverRatingUseCase, updateClientRatingUseCase, getByClientAssignedUseCase, getByDriverAssignedUseCase });
+const raiseFareUseCase = new RaiseFareUseCase({ clientRequestRepository });
+const cancelClientRequestUseCase = new CancelClientRequestUseCase({ clientRequestRepository });
+const dismissClientRequestUseCase = new DismissClientRequestUseCase({ clientRequestRepository });
+const getMyActiveTripsUseCase = new GetMyActiveTripsUseCase({ clientRequestRepository });
+const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, getClientRequestByIdUseCase, createClientRequestUseCase, updateDriverAssignedUseCase, updateStatusUseCase, updateDriverRatingUseCase, updateClientRatingUseCase, getByClientAssignedUseCase, getByDriverAssignedUseCase, raiseFareUseCase, cancelClientRequestUseCase, dismissClientRequestUseCase, getMyActiveTripsUseCase });
+const upcomingTripsViewModel = new UpcomingTripsViewModel({ clientRequestUseCases });
 const socketService = new SocketService({} as any);
 const driverPositionService = new DriverPositionService();
 const driverPositionRepository = new DriverPositionRepositoryImpl({ driverPositionService });
@@ -121,7 +132,8 @@ const driverTripOfferService = new DriverTripOfferService();
 const driverTripOfferRepository = new DriverTripOfferRepositoryImpl({ driverTripOfferService });
 const createDriverTripOfferUseCase = new CreateDriverTripOfferUseCase({ driverTripOfferRepository });
 const getDriverTripOfferUseCase = new GetDriverTripOfferUseCase({ driverTripOfferRepository });
-const driverTripOfferUseCases = new DriverTripOfferUseCases({ createDriverTripOfferUseCase, getDriverTripOfferUseCase });
+const changeDriverTripOfferStatusUseCase = new ChangeDriverTripOfferStatusUseCase({ driverTripOfferRepository });
+const driverTripOfferUseCases = new DriverTripOfferUseCases({ createDriverTripOfferUseCase, getDriverTripOfferUseCase, changeDriverTripOfferStatusUseCase });
 const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverTripOfferUseCases, driverCarInfoUseCases });
 const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, driverCarInfoUseCases });
 const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases });
@@ -191,6 +203,7 @@ type ContainerDeps = {
     createDriverTripOfferUseCase: CreateDriverTripOfferUseCase;
     getDriverTripOfferUseCase: GetDriverTripOfferUseCase;
     driverTripOfferUseCases: DriverTripOfferUseCases;
+    upcomingTripsViewModel: UpcomingTripsViewModel;
 };
 
 const container = {
@@ -253,7 +266,8 @@ const container = {
             driverTripOfferRepository,
             createDriverTripOfferUseCase,
             getDriverTripOfferUseCase,
-            driverTripOfferUseCases
+            driverTripOfferUseCases,
+            upcomingTripsViewModel
         };
         return deps[name];
     }

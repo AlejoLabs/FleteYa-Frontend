@@ -16,6 +16,9 @@ export class DriverTripOfferRepositoryImpl implements DriverTripOfferRepository 
     ) {
         this.driverTripOfferService = driverTripOfferService;
     }
+    async changeStatus(idOffer: number, action: 'reject' | 'withdraw'): Promise<boolean | ErrorResponse> {
+        return await this.driverTripOfferService.changeStatus(idOffer, action);
+    }
     async getDriverTripOffers(idClientRequest: number): Promise<DriverTripOffer[] | ErrorResponse> {
         return await this.driverTripOfferService.getDriverTripOffers(idClientRequest);
     }

@@ -2,7 +2,7 @@ import { LatLng } from "react-native-maps";
 import { TimeAndDistanceValues } from "../models/TimeAndDistanceValues";
 import { ErrorResponse } from "../models/ErrorResponse";
 import { ClientRequest } from "../models/ClientRequest";
-import { ClientRequestResponse } from "../models/ClientRequestResponse";
+import { ActiveTrip, ClientRequestResponse } from "../models/ClientRequestResponse";
 
 export enum Status {
     CREATED = 'CREATED',
@@ -11,7 +11,8 @@ export enum Status {
     ARRIVED = 'ARRIVED',
     TRAVELING = 'TRAVELING',
     FINISHED = 'FINISHED',
-    CANCELLED = 'CANCELLED'
+    CANCELED = 'CANCELED',
+    EXPIRED = 'EXPIRED'
 }
 
 export interface ClientRequestRepository {
@@ -26,5 +27,9 @@ export interface ClientRequestRepository {
     updateClientRating(idClientRequest: number, rating: number): Promise<boolean | ErrorResponse>;
     getByClientAssigned(idClient: number): Promise<ClientRequestResponse[] | ErrorResponse>;
     getByDriverAssigned(idDriver: number): Promise<ClientRequestResponse[] | ErrorResponse>;
+    raiseFare(idClientRequest: number, fare: number): Promise<boolean | ErrorResponse>;
+    cancel(idClientRequest: number, reason: string): Promise<boolean | ErrorResponse>;
+    dismiss(idClientRequest: number): Promise<boolean | ErrorResponse>;
+    getMyActiveTrips(): Promise<ActiveTrip[] | ErrorResponse>;
 
 }

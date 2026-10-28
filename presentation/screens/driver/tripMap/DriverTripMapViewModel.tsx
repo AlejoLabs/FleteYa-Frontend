@@ -50,6 +50,15 @@ export class DriverTripMapViewModel {
         return await this.clientRequestUseCases.updateStatus.execute(idClientRequest, status);
     }
 
+    async cancelTrip(idClientRequest: number, reason: string) {
+        return await this.clientRequestUseCases.cancel.execute(idClientRequest, reason);
+    }
+
+    // El servidor avisa si el cliente cancela mientras el conductor va en camino
+    listenerTripCanceled(idClientRequest: number, callback: (reason: string) => void) {
+        return this.socketService.onMessage(`trip_canceled/${idClientRequest}`, (data: any) => callback(data?.reason ?? ''));
+    }
+
     emitDriverPosition(idClient: number, lat: number, lng: number){
         this.socketService.sendMessage('trip_change_driver_position', {
             'id_client': idClient,

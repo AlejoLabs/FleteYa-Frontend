@@ -9,6 +9,21 @@ import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 
 export class DriverTripOfferService {
 
+    // El cliente rechaza una oferta, o el conductor retira la suya
+    async changeStatus(idOffer: number, action: 'reject' | 'withdraw'): Promise<boolean | ErrorResponse> {
+        try {
+            await ApiRequestHandler.put(`/driver-trip-offers/${idOffer}/${action}`, {});
+            return true;
+        } catch (error: any) {
+            if (error.response) {
+                console.log('Error del servidor', error.response.data?.message);
+                return error.response.data;
+            }
+            console.log('Error en la peticion', error.message);
+            return defaultErrorResponse;
+        }
+    }
+
     async create(driverTripOffer: DriverTripOffer): Promise<DriverTripOffer | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.post<DriverTripOffer>(`/driver-trip-offers`, driverTripOffer);

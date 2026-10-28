@@ -1,4 +1,4 @@
-import { View, Image, Animated, Dimensions, Text, TouchableOpacity, Modal, Pressable, ToastAndroid, FlatList, TextInput } from "react-native"
+import { View, Image, Animated, Dimensions, Text, TouchableOpacity, Modal, Pressable, ToastAndroid, ScrollView, TextInput } from "react-native"
 import styles from "./Styles"
 import MapView, { Camera, LatLng, Marker, Polyline, Region } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
@@ -16,11 +16,14 @@ import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import DefaultTextInput from "../../../components/DefaultTextInput";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
 import { useAuth } from "../../../hooks/useAuth";
-import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
-import { DriverOfferItem } from "./DriverOfferItem";
 import { StackScreenProps } from "@react-navigation/stack";
 import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
-import { formatCOP, formatErrorMessage } from "../../../utils/Formatters";
+import { formatCOP, formatErrorMessage, formatScheduledDate } from "../../../utils/Formatters";
+import CargoDetailsModal, { CargoDetails, DEFAULT_CARGO_DETAILS } from "./CargoDetailsModal";
+import SearchingPanel from "./SearchingPanel";
+import { cargoCategoryLabel, suggestVehicle, vehicleLabel } from "../../../utils/Cargo";
+
+const PHONE_REGEX = /^3\d{9}$/;
 
 const DEFAULT_REGION: Region = {
     latitude: 19.4326,
@@ -44,8 +47,10 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
     const [isOriginModalVisible, setIsOriginModalVisible] = useState(false);
     const [isDestinationModalVisible, setIsDestinationModalVisible] = useState(false);
     const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
-    const [isDriverOfferModalVisible, setIsDriverOfferModalVisible] = useState(false);
-    const [driverTripOffers, setDriverTripOffers] = useState<DriverTripOffer[]>([]);
+    const [isCargoModalVisible, setIsCargoModalVisible] = useState(false);
+    const [cargoDetails, setCargoDetails] = useState<CargoDetails>(DEFAULT_CARGO_DETAILS);
+    // Búsqueda en curso: mientras exista se muestra el panel "Buscando conductor"
+    const [activeSearchId, setActiveSearchId] = useState<number | null>(route.params?.idClientRequest ?? null);
     const [offer, setOffer] = useState<string>("");
     const [cargoWeight, setCargoWeight] = useState<string>("");
     const [cargoLargo, setCargoLargo] = useState<string>("");
@@ -150,14 +155,20 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
         mapRef.current?.animateCamera(camera, { duration: 1000 });
     }
 
-    const handleGetDriverTripOffers = async (idClientRequest: number) => {
-        const off = viewModel.listenerNewDriverOffer(idClientRequest, async (data: number) => {
-            const response = await viewModel.getDriverTripOffers(data);
-            setIsDriverOfferModalVisible(true);
-            setDriverTripOffers(response as DriverTripOffer[]);
-        });
-        socketListeners.current.push(off);
-    }
+    useEffect(() => {
+        if (route.params?.idClientRequest) setActiveSearchId(route.params.idClientRequest);
+    }, [route.params?.idClientRequest]);
+
+    const suggestedVehicle = cargoWeight && cargoLargo && cargoAncho && cargoAlto
+        ? suggestVehicle(Number(cargoWeight), Number(cargoLargo), Number(cargoAncho), Number(cargoAlto), cargoDetails.packages)
+        : null;
+
+    const cargoSummary = [
+        cargoCategoryLabel(cargoDetails.category),
+        `${cargoDetails.packages} ${cargoDetails.packages === 1 ? 'bulto' : 'bultos'}`,
+        vehicleLabel(cargoDetails.vehicleType ?? suggestedVehicle),
+        cargoDetails.scheduledAt ? formatScheduledDate(cargoDetails.scheduledAt) : 'Ahora',
+    ].join(' · ');
 
     const handleCreateClientRequest = async () => {
         if (!originPlace || !destinationPlace) {
@@ -184,6 +195,25 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
             return;
         }
 
+        if (suggestedVehicle === null) {
+            ToastAndroid.show("La carga supera la capacidad de un camión; divídela en varios fletes", ToastAndroid.LONG);
+            return;
+        }
+        const details = cargoDetails;
+        const contactMissing =
+            (details.otherSender && (!details.senderName.trim() || !PHONE_REGEX.test(details.senderPhone))) ||
+            (details.otherReceiver && (!details.receiverName.trim() || !PHONE_REGEX.test(details.receiverPhone)));
+        if (contactMissing) {
+            ToastAndroid.show("Revisa los contactos: nombre y celular de 10 dígitos que empiece por 3", ToastAndroid.LONG);
+            setIsCargoModalVisible(true);
+            return;
+        }
+        if (!details.noProhibitedItems) {
+            ToastAndroid.show("Confirma en Detalles del flete que la carga no es material peligroso ni animales", ToastAndroid.LONG);
+            setIsCargoModalVisible(true);
+            return;
+        }
+
         const response: number | ErrorResponse = await viewModel.createClientRequest({
             id_client: authResponse?.user.id!,
             pickup_lat: originPlace?.lat!,
@@ -197,12 +227,27 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
             weight_kg: cargoWeight ? Number(cargoWeight) : undefined,
             length_cm: cargoLargo ? Number(cargoLargo) : undefined,
             width_cm: cargoAncho ? Number(cargoAncho) : undefined,
-            height_cm: cargoAlto ? Number(cargoAlto) : undefined
+            height_cm: cargoAlto ? Number(cargoAlto) : undefined,
+            cargo_category: details.category,
+            packages: details.packages,
+            is_fragile: details.isFragile,
+            needs_cover: details.needsCover,
+            vehicle_type: details.vehicleType ?? undefined,
+            no_prohibited_items: details.noProhibitedItems,
+            helpers: details.helpers,
+            pickup_floor: details.pickupFloor,
+            pickup_has_elevator: details.pickupFloor > 1 ? details.pickupElevator : undefined,
+            destination_floor: details.destinationFloor,
+            destination_has_elevator: details.destinationFloor > 1 ? details.destinationElevator : undefined,
+            sender_name: details.otherSender ? details.senderName.trim() : undefined,
+            sender_phone: details.otherSender ? details.senderPhone : undefined,
+            receiver_name: details.otherReceiver ? details.receiverName.trim() : undefined,
+            receiver_phone: details.otherReceiver ? details.receiverPhone : undefined,
+            scheduled_at: details.scheduledAt ? details.scheduledAt.toISOString() : undefined,
         });
         if (typeof response === "number") {
             viewModel.emitNewClientRequest(response);
-            handleGetDriverTripOffers(response);
-            ToastAndroid.show("Solicitud enviada", ToastAndroid.LONG);
+            setActiveSearchId(response);
         } else {
             ToastAndroid.show(formatErrorMessage(response.message), ToastAndroid.LONG);
         }
@@ -468,7 +513,8 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                 }}
             >
 
-                <View style={{ width: "100%", height: "100%" }}>
+                {/* Con los detalles del flete el formulario ya no cabe en pantallas pequeñas: se desplaza */}
+                <ScrollView style={{ width: "100%", height: "100%" }} contentContainerStyle={{ paddingBottom: 20 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
                     <TouchableOpacity style={styles.infoContainer} onPress={() => setIsOriginModalVisible(true)}>
                         <Text>{originPlace?.address ?? "Recoger en..."}</Text>
@@ -546,9 +592,21 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                         }}
                     />
 
+                    <TouchableOpacity style={styles.infoContainer} onPress={() => setIsCargoModalVisible(true)}>
+                        <Text numberOfLines={1}>{cargoSummary}</Text>
+                    </TouchableOpacity>
+
                     <TouchableOpacity style={styles.infoContainer} onPress={() => setIsOfferModalVisible(true)}>
                         <Text>{offer === "" ? "Oferta" : `Oferta: ${formatCOP(Number(offer))}`}</Text>
                     </TouchableOpacity>
+
+                    <CargoDetailsModal
+                        visible={isCargoModalVisible}
+                        value={cargoDetails}
+                        suggestedVehicle={suggestedVehicle}
+                        onChange={(changes) => setCargoDetails((prev) => ({ ...prev, ...changes }))}
+                        onClose={() => setIsCargoModalVisible(false)}
+                    />
 
                     <Modal
                         visible={isOriginModalVisible}
@@ -695,9 +753,10 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                         }}
                         text="Solicitar conductor"
                         backgroundColor="black"
+                        marginTop={12}
                     />
 
-                </View>
+                </ScrollView>
             </Animated.View>
 
 
@@ -710,30 +769,19 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                 }}
                 source={require("../../../../assets/pin_red.png")}
             />
-            <Modal
-                visible={isDriverOfferModalVisible}
-                animationType="fade"
-                onRequestClose={() => setIsDriverOfferModalVisible(false)}
-                transparent={true}
-            >
-                <FlatList
-                    data={driverTripOffers}
-                    keyExtractor={(item) => item.id!.toString()}
-                    renderItem={({ item }) => <DriverOfferItem
-                        viewModel={viewModel}
-                        driverTripOffer={item}
-                        navigation={navigation}
-                        cargo={{
-                            description: cargoDescription,
-                            weight_kg: Number(cargoWeight),
-                            length_cm: Number(cargoLargo),
-                            width_cm: Number(cargoAncho),
-                            height_cm: Number(cargoAlto)
-                        }}
-                    />}
-                    contentContainerStyle={{ paddingTop: 50 }}
+            {
+                activeSearchId !== null &&
+                <SearchingPanel
+                    key={activeSearchId}
+                    viewModel={viewModel}
+                    idClientRequest={activeSearchId}
+                    navigation={navigation}
+                    onClose={() => {
+                        setActiveSearchId(null);
+                        navigation.setParams({ idClientRequest: undefined });
+                    }}
                 />
-            </Modal>
+            }
         </View>
     )
 }

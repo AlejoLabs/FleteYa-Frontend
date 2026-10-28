@@ -4,7 +4,7 @@ import { ClientRequestRepository, Status } from "../../domain/repository/ClientR
 import { ClientRequestService } from "../sources/remote/services/ClientRequestService";
 import { ErrorResponse } from "../../domain/models/ErrorResponse";
 import { ClientRequest } from "../../domain/models/ClientRequest";
-import { ClientRequestResponse } from "../../domain/models/ClientRequestResponse";
+import { ActiveTrip, ClientRequestResponse } from "../../domain/models/ClientRequestResponse";
 
 export class ClientRequestRepositoryImpl implements ClientRequestRepository {
 
@@ -19,6 +19,18 @@ export class ClientRequestRepositoryImpl implements ClientRequestRepository {
         }
     ) {
         this.clientRequestService = clientRequestService;
+    }
+    async raiseFare(idClientRequest: number, fare: number): Promise<boolean | ErrorResponse> {
+        return await this.clientRequestService.raiseFare(idClientRequest, fare);
+    }
+    async cancel(idClientRequest: number, reason: string): Promise<boolean | ErrorResponse> {
+        return await this.clientRequestService.cancel(idClientRequest, reason);
+    }
+    async dismiss(idClientRequest: number): Promise<boolean | ErrorResponse> {
+        return await this.clientRequestService.dismiss(idClientRequest);
+    }
+    async getMyActiveTrips(): Promise<ActiveTrip[] | ErrorResponse> {
+        return await this.clientRequestService.getMyActiveTrips();
     }
     async getByClientAssigned(idClient: number): Promise<ClientRequestResponse[] | ErrorResponse> {
         return await this.clientRequestService.getByClientAssigned(idClient);

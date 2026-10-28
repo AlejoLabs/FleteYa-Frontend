@@ -12,7 +12,21 @@ import * as Location from "expo-location";
 import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { decode } from "@googlemaps/polyline-codec";
 import { Status } from "../../../../domain/repository/ClientRequestRepository";
-import { formatCOP, getTripFare } from "../../../utils/Formatters";
+import { formatCOP, formatErrorMessage, getTripFare } from "../../../utils/Formatters";
+import TripProgress from "../../../components/TripProgress";
+import CargoInfo from "../../../components/CargoInfo";
+import CancelReasonModal from "../../../components/CancelReasonModal";
+import { DRIVER_CANCEL_REASONS } from "../../../utils/Cargo";
+import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
+
+// Siguiente paso del viaje para el conductor: llegar al origen, recoger la carga y entregarla
+const NEXT_STEP: Partial<Record<Status, { status: Status; label: string }>> = {
+    [Status.ACCEPTED]: { status: Status.ARRIVED, label: 'NOTIFICAR LLEGADA' },
+    [Status.ON_THE_WAY]: { status: Status.ARRIVED, label: 'NOTIFICAR LLEGADA' },
+    [Status.ARRIVED]: { status: Status.TRAVELING, label: 'CARGA RECOGIDA' },
+    [Status.TRAVELING]: { status: Status.FINISHED, label: 'FINALIZAR VIAJE' },
+};
+const CANCELABLE = [Status.ACCEPTED, Status.ON_THE_WAY, Status.ARRIVED];
 
 interface Props extends StackScreenProps<DriverMapStackParamList, 'DriverTripMapScreen'> { };
 export function DriverTripMapScreen({ navigation, route }: Props) {
@@ -27,45 +41,67 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
     const locationSubscription = useRef<Location.LocationSubscription | null>(null);
     const [directionsRoute, setDirectionsRoute] = useState<LatLng[]>([]);
     const [currentStatus, setCurrentStatus] = useState(Status.ACCEPTED);
+    const [isCancelVisible, setIsCancelVisible] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     const handleGetClientRequestById = async () => {
         const response = await viewModel.getClientRequestById(idClientRequest);
         if ('id' in response) {
             setClientRequest(response);
-
+            // Si el conductor vuelve al viaje desde "Próximos fletes", sigue en el paso en que iba
+            setCurrentStatus(response.status as Status);
         }
     }
 
-    const handleUpdateStatusToArrived = async (status: Status) => {
-        const response = await viewModel.updateStatus(idClientRequest, Status.ARRIVED);
-        if (typeof response === 'boolean') {
-            ToastAndroid.show('Estado actualizado', ToastAndroid.LONG);
-            setCurrentStatus(Status.ARRIVED);
-            viewModel.emitUpdateStatus(idClientRequest, Status.ARRIVED);
+    const handleNextStep = async () => {
+        const next = NEXT_STEP[currentStatus];
+        if (!next || isUpdating) return;
+        setIsUpdating(true);
+        const response = await viewModel.updateStatus(idClientRequest, next.status);
+        setIsUpdating(false);
+        if (typeof response !== 'boolean') {
+            ToastAndroid.show(formatErrorMessage((response as ErrorResponse).message), ToastAndroid.LONG);
+            return;
+        }
+        setCurrentStatus(next.status);
+        viewModel.emitUpdateStatus(idClientRequest, next.status);
+        if (next.status === Status.TRAVELING) {
+            ToastAndroid.show('Carga recogida: ruta al destino', ToastAndroid.SHORT);
             handleGetDirections(
-                {
-                    latitude: location!.latitude,
-                    longitude: location!.longitude,
-                },
-                {
-                    latitude: clientRequest!.destination_position.y,
-                    longitude: clientRequest!.destination_position.x,
-
-                }
+                { latitude: location!.latitude, longitude: location!.longitude },
+                { latitude: clientRequest!.destination_position.y, longitude: clientRequest!.destination_position.x }
             );
+        } else if (next.status === Status.FINISHED) {
+            navigation.replace('DriverTripRatingScreen', { clientRequest: clientRequest! });
+        } else {
+            ToastAndroid.show('Estado actualizado', ToastAndroid.SHORT);
         }
     }
 
-    const handleUpdateStatusToFinished = async (status: Status) => {
-        const response = await viewModel.updateStatus(idClientRequest, Status.FINISHED);
-        if (typeof response === 'boolean') {
-            setCurrentStatus(Status.FINISHED);
-            viewModel.emitUpdateStatus(idClientRequest, Status.FINISHED);
-            navigation.replace('DriverTripRatingScreen', { 
-                clientRequest: clientRequest! 
-            });
+    const leaveTrip = () => {
+        stopRealTimeLocation();
+        // reset y no popToTop: si el viaje se abrió desde "Próximos fletes" no hay pantalla anterior en este stack
+        navigation.reset({ index: 0, routes: [{ name: 'DriverClientRequestScreen' }] });
+    }
+
+    const handleCancel = async (reason: string) => {
+        setIsCancelVisible(false);
+        const response = await viewModel.cancelTrip(idClientRequest, reason);
+        if (response === true) {
+            ToastAndroid.show('Viaje cancelado', ToastAndroid.SHORT);
+            leaveTrip();
+        } else {
+            ToastAndroid.show(formatErrorMessage((response as ErrorResponse).message), ToastAndroid.LONG);
         }
     }
+
+    useEffect(() => {
+        const off = viewModel.listenerTripCanceled(idClientRequest, (reason) => {
+            ToastAndroid.show(`El cliente canceló el viaje${reason ? `: ${reason}` : ''}`, ToastAndroid.LONG);
+            leaveTrip();
+        });
+        return off;
+    }, [idClientRequest]);
 
     const moveCameraToLocation = (lat: number, lng: number) => {
         const camera: Camera = {
@@ -125,14 +161,16 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                     };
                     setLocation(currentCoords);
                     moveCameraToLocation(location.coords.latitude, location.coords.longitude);
+                    // Con la carga a bordo la ruta va al destino; antes, al punto de recogida
+                    const target = clientRequest.status === Status.TRAVELING ? clientRequest.destination_position : clientRequest.pickup_position;
                     handleGetDirections(
                         {
                             latitude: location.coords.latitude,
                             longitude: location.coords.longitude,
                         },
                         {
-                            latitude: clientRequest.pickup_position.y,
-                            longitude: clientRequest.pickup_position.x,
+                            latitude: target.y,
+                            longitude: target.x,
 
                         }
                     );
@@ -261,7 +299,7 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                         )
                     }
                     {
-                        (clientRequest !== null && currentStatus === Status.ACCEPTED) && (
+                        (clientRequest !== null && currentStatus !== Status.TRAVELING) && (
                             <Marker
                                 coordinate={{
                                     latitude: clientRequest.pickup_position.y,
@@ -279,7 +317,7 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                         )
                     }
                     {
-                        (clientRequest !== null && currentStatus === Status.ARRIVED) && (
+                        (clientRequest !== null && currentStatus === Status.TRAVELING) && (
                             <Marker
                                 coordinate={{
                                     latitude: clientRequest.destination_position.y,
@@ -328,6 +366,8 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                     showsVerticalScrollIndicator={false}
                 >
 
+                    <TripProgress status={currentStatus} />
+
                     <Text style={styles.textTitle}>TU CLIENTE</Text>
                     <View style={styles.rowContainer}>
                         <View style={styles.dataContainer}>
@@ -350,10 +390,7 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                         <View style={styles.tripContainer}>
                             <Text>Desde: {clientRequest?.pickup_description}</Text>
                             <Text>Hasta: {clientRequest?.destination_description}</Text>
-                            <Text>Descripcion: {clientRequest?.cargo_description}</Text>
-                            <Text>Peso: {clientRequest?.weight_kg} kg</Text>
-                            <Text>Dimensiones: {clientRequest?.length_cm} x {clientRequest?.width_cm} x {clientRequest?.height_cm} cm</Text>
-
+                            <CargoInfo request={clientRequest} showContacts />
                         </View>
                     </View>
 
@@ -371,25 +408,32 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                         </View>
                     </View>
 
-                    <TouchableOpacity style={styles.iconContainer} onPress={() => {
-                        if(currentStatus === Status.ACCEPTED){
-                            handleUpdateStatusToArrived(Status.ARRIVED);
-                        }
-                        else if(currentStatus === Status.ARRIVED){
-                            handleUpdateStatusToFinished(Status.FINISHED);
-                        }
-                        
-                    }}>
-                        <View style={styles.iconBox}>
-                            <Ionicons name='checkmark' size={25} color='white' />
-                        </View>
-                        <Text style={styles.textAction}>
-                            {currentStatus === Status.ACCEPTED ? 'NOTIFICAR LLEGADA' : 'FINALIZAR VIAJE'}
-                        </Text>
-                    </TouchableOpacity>
+                    {NEXT_STEP[currentStatus] &&
+                        <TouchableOpacity style={styles.iconContainer} onPress={handleNextStep}>
+                            <View style={styles.iconBox}>
+                                <Ionicons name='checkmark' size={25} color='white' />
+                            </View>
+                            <Text style={styles.textAction}>
+                                {isUpdating ? 'GUARDANDO...' : NEXT_STEP[currentStatus]!.label}
+                            </Text>
+                        </TouchableOpacity>
+                    }
+
+                    {CANCELABLE.includes(currentStatus) &&
+                        <TouchableOpacity style={{ alignSelf: 'center', padding: 12 }} onPress={() => setIsCancelVisible(true)}>
+                            <Text style={{ color: 'red', fontWeight: 'bold' }}>Cancelar viaje</Text>
+                        </TouchableOpacity>
+                    }
 
                 </ScrollView>
             </Animated.View>
+            <CancelReasonModal
+                visible={isCancelVisible}
+                title="Cancelar el viaje"
+                reasons={DRIVER_CANCEL_REASONS}
+                onClose={() => setIsCancelVisible(false)}
+                onConfirm={handleCancel}
+            />
         </View>
     )
 }

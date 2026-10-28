@@ -1,52 +1,56 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, ToastAndroid, View } from "react-native";
 import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
-import { Client } from "../../../../domain/models/ClientRequestResponse";
 import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
-import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
-import { useEffect, useState } from "react";
-import { DriverCarInfo } from "../../../../domain/models/DriverCarInfo";
-import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
+import { useState } from "react";
+import { formatCOP, formatErrorMessage } from "../../../utils/Formatters";
+import { vehicleLabel } from "../../../utils/Cargo";
 
 interface Props {
     viewModel: ClientSearchMapViewModel;
     driverTripOffer: DriverTripOffer;
     navigation: StackNavigationProp<ClientMapStackParamList, 'ClientSearchMapScreen', undefined>;
-    cargo?: {
-        description: string;
-        weight_kg: number;
-        length_cm: number;
-        width_cm: number;
-        height_cm: number;
-    };
+    // Se llama después de aceptar o rechazar, para que el panel actualice la lista
+    onResolved: (accepted: boolean) => void;
 }
 
-export function DriverOfferItem({ viewModel, driverTripOffer, navigation, cargo }: Props) {
+export function DriverOfferItem({ viewModel, driverTripOffer, navigation, onResolved }: Props) {
 
-    const [carBrand, setCarBrand] = useState<string>('');
-
-    useEffect(() => {
-        viewModel.getDriverCarInfo(driverTripOffer.id_driver).then((response) => {
-            if ((response as DriverCarInfo).brand) {
-                setCarBrand((response as DriverCarInfo).brand);
-            }
-        });
-    }, [driverTripOffer.id_driver]);
+    const [isBusy, setIsBusy] = useState(false);
 
     const handleUpdateDriverAssigned = async () => {
-            const response = await viewModel.updateDriverAssigned(
-                driverTripOffer.id_client_request, 
-                driverTripOffer.id_driver, 
-                driverTripOffer.fare_offered
-            );
-            if (response === true || (response as any)?.id_driver_assigned === driverTripOffer.id_driver) {
-                viewModel.emitNewDriverAssigned(driverTripOffer.id_client_request, driverTripOffer.id_driver);
-                navigation.navigate('ClientTripMapScreen', {
-                    idClientRequest: driverTripOffer.id_client_request,
-                    idDriver: driverTripOffer.id_driver,
-                });
-            }
+        if (isBusy) return;
+        setIsBusy(true);
+        const response = await viewModel.updateDriverAssigned(
+            driverTripOffer.id_client_request,
+            driverTripOffer.id_driver,
+            driverTripOffer.fare_offered
+        );
+        setIsBusy(false);
+        if (response === true || (response as any)?.id_driver_assigned === driverTripOffer.id_driver) {
+            viewModel.emitNewDriverAssigned(driverTripOffer.id_client_request, driverTripOffer.id_driver);
+            onResolved(true);
+            navigation.navigate('ClientTripMapScreen', {
+                idClientRequest: driverTripOffer.id_client_request,
+                idDriver: driverTripOffer.id_driver,
+            });
+        } else {
+            ToastAndroid.show(formatErrorMessage((response as any).message), ToastAndroid.LONG);
+            onResolved(false);
+        }
+    }
+
+    const handleReject = async () => {
+        if (isBusy) return;
+        setIsBusy(true);
+        const response = await viewModel.rejectDriverTripOffer(driverTripOffer.id!);
+        setIsBusy(false);
+        if (response !== true) {
+            ToastAndroid.show(formatErrorMessage((response as any).message), ToastAndroid.LONG);
+        }
+        onResolved(false);
     }
 
     return (
@@ -57,94 +61,81 @@ export function DriverOfferItem({ viewModel, driverTripOffer, navigation, cargo 
                     style={styles.imageDriver}
                 />
                 <View style={styles.infoDriver}>
-                    <Text>{carBrand}</Text>
-                    <Text>{driverTripOffer.driver?.name} {driverTripOffer.driver?.lastname}</Text>
-                    <Text>5.0</Text>
+                    <Text style={styles.name}>{driverTripOffer.driver?.name} {driverTripOffer.driver?.lastname}</Text>
+                    <Text>{vehicleLabel(driverTripOffer.car?.vehicle_type)}{driverTripOffer.car ? ` · ${driverTripOffer.car.brand}` : ''}</Text>
                 </View>
                 <View>
-                    <Text style={styles.price}>{driverTripOffer.fare_offered.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}</Text>
-                    <Text style={styles.time}>{Math.round(driverTripOffer.time)} Min</Text>
-                    <Text style={styles.distance}>{driverTripOffer.distance.toFixed(2)} Km</Text>
+                    <Text style={styles.price}>{formatCOP(driverTripOffer.fare_offered)}</Text>
+                    <Text style={styles.time}>Llega en {Math.round(driverTripOffer.time)} min</Text>
+                    <Text style={styles.distance}>{driverTripOffer.distance.toFixed(1)} km</Text>
                 </View>
             </View>
             <View style={styles.rowButtons}>
                 <DefaultRoundedButton
                     text="Rechazar"
-                    onPress={() => {}}
+                    onPress={handleReject}
                     backgroundColor="red"
-                    width={'50%'}
+                    width={'48%'}
                     height={45}
+                    marginTop={10}
                 />
                 <DefaultRoundedButton
-                    text="Aceptar"
-                    onPress={() => {
-                        handleUpdateDriverAssigned();
-                    }}
+                    text={isBusy ? "..." : "Aceptar"}
+                    onPress={handleUpdateDriverAssigned}
                     backgroundColor="green"
-                    width={'50%'}
+                    width={'48%'}
                     height={45}
+                    marginTop={10}
                 />
             </View>
-
         </View>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-        width: '95%',
+        width: '100%',
         backgroundColor: 'white',
-        borderRadius: 20,
+        borderRadius: 16,
         elevation: 2,
         marginTop: 10,
-        alignSelf: 'center',
-        paddingBottom: 10,
+        paddingVertical: 12,
     },
     row: {
         flexDirection: 'row',
-        marginHorizontal: 20,
+        marginHorizontal: 14,
         alignItems: 'center',
     },
     imageDriver: {
         height: 50,
         width: 50,
-        borderRadius: 50
+        borderRadius: 50,
+        backgroundColor: '#eee',
     },
     infoDriver: {
         marginLeft: 10,
         flex: 1,
     },
+    name: {
+        fontWeight: 'bold',
+        fontSize: 15,
+    },
     rowButtons: {
         flexDirection: 'row',
-        marginHorizontal: 20,
-        marginTop: 10,
+        justifyContent: 'space-between',
+        marginHorizontal: 14,
     },
     price: {
         color: 'green',
-        fontSize: 22,
-        fontWeight: 'bold'
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'right',
     },
     time: {
-        fontWeight: 'bold'
+        textAlign: 'right',
     },
     distance: {
-        fontWeight: 'bold'
+        textAlign: 'right',
+        color: 'gray',
     },
-    cargoInfo: {
-        marginHorizontal: 20,
-        marginTop: 12,
-        marginBottom: 12,
-        paddingVertical: 12,
-        paddingHorizontal: 12,
-        borderTopWidth: 2,
-        borderTopColor: '#ddd',
-        backgroundColor: '#f5f5f5',
-        borderRadius: 8,
-    },
-    cargoText: {
-        fontSize: 13,
-        fontWeight: '500',
-        color: '#333',
-        marginVertical: 4,
-    }
 })

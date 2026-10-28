@@ -5,7 +5,8 @@ import { ClientRequestResponse } from "../../domain/models/ClientRequestResponse
 import { ClientTripRatingScreen } from "../screens/client/tripRating/ClientTripRating";
 
 export type ClientMapStackParamList = {
-    ClientSearchMapScreen: undefined,
+    // Con idClientRequest se reabre el panel de una búsqueda en curso (desde "Próximos fletes")
+    ClientSearchMapScreen: { idClientRequest?: number } | undefined,
     ClientTripMapScreen: {idClientRequest: number, idDriver: number},
     ClientTripRatingScreen: { clientRequest: ClientRequestResponse },
     

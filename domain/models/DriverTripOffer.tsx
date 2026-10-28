@@ -5,7 +5,9 @@ export interface DriverTripOffer {
     fare_offered: number;
     time: number;
     distance: number;
+    status?: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN' | 'EXPIRED';
     driver?: Driver;
+    car?: { brand: string; color: string; plate: string; vehicle_type?: string };
     cargo_description?: string;
     weight_kg?: number;
     length_cm?: number;

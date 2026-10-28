@@ -70,6 +70,12 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         borderRadius: 10,
     },
+    statusText: {
+        fontSize: 16,
+        fontWeight: "bold",
+        textAlign: "center",
+        marginBottom: 10,
+    },
     textTitle: {
         color: "#018786",
         fontSize: 16,

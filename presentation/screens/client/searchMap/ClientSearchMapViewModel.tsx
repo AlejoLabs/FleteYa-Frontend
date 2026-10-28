@@ -104,6 +104,27 @@ export class ClientSearchMapViewModel {
         });
     }
 
+    async getClientRequestById(idClientRequest: number) {
+        return await this.clientRequestUseCases.getClientRequestById.execute(idClientRequest);
+    }
+
+    async raiseFare(idClientRequest: number, fare: number) {
+        return await this.clientRequestUseCases.raiseFare.execute(idClientRequest, fare);
+    }
+
+    async cancelClientRequest(idClientRequest: number, reason: string) {
+        return await this.clientRequestUseCases.cancel.execute(idClientRequest, reason);
+    }
+
+    async rejectDriverTripOffer(idOffer: number) {
+        return await this.driverTripOfferUseCases.changeStatus.execute(idOffer, 'reject');
+    }
+
+    // Vencimiento de la búsqueda: lo avisa el servidor cuando pasan los 10 minutos sin conductor
+    listenerClientRequestExpired(idClientRequest: number, callback: () => void) {
+        return this.socketService.onMessage(`client_request_expired/${idClientRequest}`, () => callback());
+    }
+
     listenerNewDriverOffer(idClientRequest: number, callback: (data: any) => void){
         return this.socketService.onMessage(`created_driver_offer/${idClientRequest}`, (data: any) => {
             callback(idClientRequest);

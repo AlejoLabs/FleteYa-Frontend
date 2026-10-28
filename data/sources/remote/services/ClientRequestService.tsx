@@ -3,10 +3,56 @@ import { TimeAndDistanceValues } from "../../../../domain/models/TimeAndDistance
 import { ApiRequestHandler } from "../api/ApiRequestHandler";
 import { defaultErrorResponse, ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { ClientRequest } from "../../../../domain/models/ClientRequest";
-import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
+import { ActiveTrip, ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { Status } from "../../../../domain/repository/ClientRequestRepository";
 
 export class ClientRequestService {
+
+    // Mismo manejo de errores que el resto de métodos: devuelve el mensaje del servidor para mostrarlo en la app
+    private toErrorResponse(error: any): ErrorResponse {
+        if (error.response) {
+            console.log('Error del servidor', error.response.data?.message);
+            return error.response.data;
+        }
+        console.log('Error en la peticion', error.message);
+        return defaultErrorResponse;
+    }
+
+    async raiseFare(idClientRequest: number, fare: number): Promise<boolean | ErrorResponse> {
+        try {
+            await ApiRequestHandler.put(`/client-requests/${idClientRequest}/fare`, { fare_offered: fare });
+            return true;
+        } catch (error: any) {
+            return this.toErrorResponse(error);
+        }
+    }
+
+    async cancel(idClientRequest: number, reason: string): Promise<boolean | ErrorResponse> {
+        try {
+            await ApiRequestHandler.put(`/client-requests/${idClientRequest}/cancel`, { reason });
+            return true;
+        } catch (error: any) {
+            return this.toErrorResponse(error);
+        }
+    }
+
+    async dismiss(idClientRequest: number): Promise<boolean | ErrorResponse> {
+        try {
+            await ApiRequestHandler.post(`/client-requests/${idClientRequest}/dismiss`, {});
+            return true;
+        } catch (error: any) {
+            return this.toErrorResponse(error);
+        }
+    }
+
+    async getMyActiveTrips(): Promise<ActiveTrip[] | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.get<ActiveTrip[]>(`/client-requests/me/active`);
+            return response.data;
+        } catch (error: any) {
+            return this.toErrorResponse(error);
+        }
+    }
 
     async create(clientRequest: ClientRequest): Promise<number | ErrorResponse> {
         try {

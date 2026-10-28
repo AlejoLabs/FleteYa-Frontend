@@ -8,6 +8,10 @@ import { UpdateClientRatingUseCase } from "./UpdateClientRatingUseCase";
 import { UpdateDriverAssignedUseCase } from "./UpdateDriverAssignedUseCase";
 import { UpdateDriverRatingUseCase } from "./UpdateDriverRatingUseCase";
 import { UpdateStatusUseCase } from "./UpdateStatusUseCase";
+import { RaiseFareUseCase } from "./RaiseFareUseCase";
+import { CancelClientRequestUseCase } from "./CancelClientRequestUseCase";
+import { DismissClientRequestUseCase } from "./DismissClientRequestUseCase";
+import { GetMyActiveTripsUseCase } from "./GetMyActiveTripsUseCase";
 
 export class ClientRequestUseCases {
     getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
@@ -20,6 +24,10 @@ export class ClientRequestUseCases {
     updateClientRating: UpdateClientRatingUseCase;
     getByClientAssigned: GetByClientAssignedUseCase;
     getByDriverAssigned: GetByDriverAssignedUseCase;
+    raiseFare: RaiseFareUseCase;
+    cancel: CancelClientRequestUseCase;
+    dismiss: DismissClientRequestUseCase;
+    getMyActiveTrips: GetMyActiveTripsUseCase;
 
     constructor(
         {
@@ -32,7 +40,11 @@ export class ClientRequestUseCases {
             updateDriverRatingUseCase,
             updateClientRatingUseCase,
             getByClientAssignedUseCase,
-            getByDriverAssignedUseCase
+            getByDriverAssignedUseCase,
+            raiseFareUseCase,
+            cancelClientRequestUseCase,
+            dismissClientRequestUseCase,
+            getMyActiveTripsUseCase
         }: {
             getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
             getNearbyTripRequestUseCase: GetNearbyTripRequestUseCase;
@@ -44,6 +56,10 @@ export class ClientRequestUseCases {
             updateClientRatingUseCase: UpdateClientRatingUseCase;
             getByClientAssignedUseCase: GetByClientAssignedUseCase;
             getByDriverAssignedUseCase: GetByDriverAssignedUseCase;
+            raiseFareUseCase: RaiseFareUseCase;
+            cancelClientRequestUseCase: CancelClientRequestUseCase;
+            dismissClientRequestUseCase: DismissClientRequestUseCase;
+            getMyActiveTripsUseCase: GetMyActiveTripsUseCase;
         }
     ) {
         this.getTimeAndDistanceUseCase = getTimeAndDistanceUseCase;
@@ -56,6 +72,10 @@ export class ClientRequestUseCases {
         this.updateClientRating = updateClientRatingUseCase;
         this.getByClientAssigned = getByClientAssignedUseCase;
         this.getByDriverAssigned = getByDriverAssignedUseCase;
+        this.raiseFare = raiseFareUseCase;
+        this.cancel = cancelClientRequestUseCase;
+        this.dismiss = dismissClientRequestUseCase;
+        this.getMyActiveTrips = getMyActiveTripsUseCase;
         
     }
 }

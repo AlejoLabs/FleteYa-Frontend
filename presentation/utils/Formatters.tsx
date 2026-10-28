@@ -21,6 +21,22 @@ export const formatTripDate = (value?: string | Date | null): string => {
   });
 }
 
+// Tiempo restante de una búsqueda, por ejemplo "9:05"
+export const formatCountdown = (ms: number): string => {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Fecha de un flete programado, por ejemplo "jue 30 oct, 8:00 a. m."
+export const formatScheduledDate = (value?: string | Date | null): string => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleString('es-CO', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+}
+
 // El backend puede devolver un mensaje o una lista (varios campos inválidos a la vez)
 export const formatErrorMessage = (message: string | string[]): string =>
   Array.isArray(message) ? message.join('\n') : message;

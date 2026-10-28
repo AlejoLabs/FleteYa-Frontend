@@ -1,4 +1,4 @@
-import { View, Image, Animated, Dimensions, Text, TouchableOpacity, Modal, Pressable, ToastAndroid, FlatList } from "react-native"
+import { View, Image, Animated, Dimensions, Text, TouchableOpacity, ToastAndroid, ScrollView } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack";
 import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
 import { container } from "../../../../di/container";
@@ -13,7 +13,12 @@ import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { decode } from "@googlemaps/polyline-codec";
 import { Status } from "../../../../domain/repository/ClientRequestRepository";
 import { DriverCarInfo } from "../../../../domain/models/DriverCarInfo";
-import { formatCOP, getTripFare } from "../../../utils/Formatters";
+import { formatCOP, formatErrorMessage, getTripFare } from "../../../utils/Formatters";
+import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
+import TripProgress from "../../../components/TripProgress";
+import CargoInfo from "../../../components/CargoInfo";
+import CancelReasonModal from "../../../components/CancelReasonModal";
+import { CLIENT_CANCEL_REASONS, DRIVER_STATUS_LABELS } from "../../../utils/Cargo";
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientTripMapScreen'> { };
 export function ClientTripMapScreen({ navigation, route }: Props) {
@@ -33,10 +38,32 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     const [carInfo, setCarInfo] = useState<DriverCarInfo | null>(null);
     const [etaMinutesFromRoute, setEtaMinutesFromRoute] = useState<number | null>(null);
     const socketListeners = useRef<(() => void)[]>([]);
+    const [isCancelVisible, setIsCancelVisible] = useState(false);
+
+    const leaveTrip = () => {
+        // reset: si el viaje se abrió desde "Próximos fletes" no hay pantalla anterior en este stack
+        navigation.reset({ index: 0, routes: [{ name: 'ClientSearchMapScreen' }] });
+    }
+
+    const handleCancel = async (reason: string) => {
+        setIsCancelVisible(false);
+        const response = await viewModel.cancelTrip(idClientRequest, reason);
+        if (response === true) {
+            ToastAndroid.show('Viaje cancelado', ToastAndroid.SHORT);
+            leaveTrip();
+        } else {
+            ToastAndroid.show(formatErrorMessage((response as ErrorResponse).message), ToastAndroid.LONG);
+        }
+    }
 
     useEffect(() => {
         viewModel.initSocket();
         handleGetClientRequestById();
+        const offCanceled = viewModel.listenerTripCanceled(idClientRequest, (reason) => {
+            ToastAndroid.show(`El conductor canceló el viaje${reason ? `: ${reason}` : ''}`, ToastAndroid.LONG);
+            leaveTrip();
+        });
+        socketListeners.current.push(offCanceled);
         return () => {
             socketListeners.current.forEach((off) => off());
             socketListeners.current = [];
@@ -59,7 +86,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     }, [isDriverPositionSet]);
 
     useEffect(() => {
-        if(currentStatus === Status.ARRIVED && driverPosition !== null && clientRequest){
+        if(currentStatus === Status.TRAVELING && driverPosition !== null && clientRequest){
             handleGetDirections(
                 {
                     latitude: driverPosition!.latitude,
@@ -86,6 +113,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
         const response = await viewModel.getClientRequestById(idClientRequest);
         if ('id' in response) {
             setClientRequest(response);
+            setCurrentStatus(response.status as Status);
 
             const driverIdFromTrip = (response as any).id_driver_assigned ?? (response as any).id_driver ?? idDriver;
             const carInfoResponse = await viewModel.getDriverCarInfo(driverIdFromTrip);
@@ -107,11 +135,8 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
             });
 
             const offStatus = viewModel.listenerUpdateStatusSocket(idClientRequest, (data: any) => {
-                if(data.status === Status.ARRIVED){
-                    setCurrentStatus(Status.ARRIVED);
-                }
-                else if(data.status === Status.FINISHED){
-                    setCurrentStatus(Status.FINISHED);
+                if (data?.status) {
+                    setCurrentStatus(data.status as Status);
                 }
 
             });
@@ -203,7 +228,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                         )
                     }
                     {
-                        (clientRequest !== null && currentStatus === Status.ACCEPTED) && (
+                        (clientRequest !== null && currentStatus !== Status.TRAVELING) && (
                             <Marker
                                 coordinate={{
                                     latitude: clientRequest!.pickup_position.y,
@@ -221,7 +246,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                         )
                     }
                     {
-                        (clientRequest !== null && currentStatus === Status.ARRIVED) && (
+                        (clientRequest !== null && currentStatus === Status.TRAVELING) && (
                             <Marker
                                 coordinate={{
                                     latitude: clientRequest!.destination_position.y,
@@ -262,7 +287,10 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                 }}
             >
 
-                <View style={{ width: "100%", height: "100%" }}>
+                <ScrollView style={{ width: "100%", height: "100%" }} showsVerticalScrollIndicator={false}>
+
+                    <TripProgress status={currentStatus} />
+                    <Text style={styles.statusText}>{DRIVER_STATUS_LABELS[currentStatus] ?? ''}</Text>
 
                     <Text style={styles.textTitle}>TU CONDUCTOR</Text>
                     <View style={styles.rowContainer}>
@@ -297,6 +325,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                         <View style={styles.tripContainer}>
                             <Text>Desde: {clientRequest?.pickup_description}</Text>
                             <Text>Hasta: {clientRequest?.destination_description}</Text>
+                            {clientRequest && <CargoInfo request={clientRequest} showContacts />}
                         </View>
                     </View>
 
@@ -314,8 +343,21 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                         </View>
                     </View>
 
-                </View>
+                    {[Status.ACCEPTED, Status.ON_THE_WAY, Status.ARRIVED].includes(currentStatus) &&
+                        <TouchableOpacity style={{ alignSelf: 'center', padding: 12 }} onPress={() => setIsCancelVisible(true)}>
+                            <Text style={{ color: 'red', fontWeight: 'bold' }}>Cancelar viaje</Text>
+                        </TouchableOpacity>
+                    }
+
+                </ScrollView>
             </Animated.View>
+            <CancelReasonModal
+                visible={isCancelVisible}
+                title="Cancelar el viaje"
+                reasons={CLIENT_CANCEL_REASONS}
+                onClose={() => setIsCancelVisible(false)}
+                onConfirm={handleCancel}
+            />
         </View>
     )
 }

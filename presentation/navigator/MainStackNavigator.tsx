@@ -18,6 +18,7 @@ import { ClientTripHistoryScreen } from "../screens/client/tripHistory/ClientTri
 import { DriverTripHistoryScreen } from "../screens/driver/tripHistory/DriverTripHistoryScreen";
 import { DriverCarInfoScreen } from "../screens/driver/carInfo/DriverCarInfoScreen";
 import { AppDrawerContent } from "./AppDrawerContent";
+import { UpcomingTripsScreen } from "../screens/upcoming/UpcomingTripsScreen";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -34,6 +35,7 @@ export type RootStackParamList = {
     ClientTripHistoryScreen: undefined,
     DriverTripHistoryScreen: undefined,
     DriverCarInfoScreen: undefined,
+    UpcomingTripsScreen: undefined,
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -98,6 +100,7 @@ const ClientDrawerNavigator = () => {
     return (
         <Drawer.Navigator initialRouteName="ClientMapStackNavigator" drawerContent={(props) => <AppDrawerContent {...props} />}>
             <Drawer.Screen name="ClientMapStackNavigator" options={{title:'Mi Ubicación'}} component={ClientMapStackNavigator} />
+            <Drawer.Screen name="UpcomingTripsScreen" options={{title:'Próximos fletes'}} component={UpcomingTripsScreen} />
             <Drawer.Screen name="ProfileStackNavigator" options={{title:'Perfil'}} component={ProfileStackNavigator} />
             <Drawer.Screen name="ClientTripHistoryScreen" options={{title:'Historial de Viajes'}} component={ClientTripHistoryScreen} />
         </Drawer.Navigator>
@@ -109,6 +112,7 @@ const DriverDrawerNavigator = () => {
         <Drawer.Navigator initialRouteName="DriverMyLocationMapScreen" drawerContent={(props) => <AppDrawerContent {...props} />}>
             <Drawer.Screen name="DriverMyLocationMapScreen" options={{title:'Mi Ubicación'}} component={DriverMyLocationMapScreen} />
             <Drawer.Screen name="DriverMapStackNavigator" options={{title: 'Solicitudes de carga'}} component={DriverMapStackNavigator} />
+            <Drawer.Screen name="UpcomingTripsScreen" options={{title:'Próximos fletes'}} component={UpcomingTripsScreen} />
             <Drawer.Screen name="DriverTripHistoryScreen" options={{title:'Historial de cargas'}} component={DriverTripHistoryScreen} />
             <Drawer.Screen name="DriverCarInfoScreen" options={{title:'Datos del Vehículo'}} component={DriverCarInfoScreen} />
             <Drawer.Screen name="ProfileStackNavigator" options={{title:'Perfil'}} component={ProfileStackNavigator} />

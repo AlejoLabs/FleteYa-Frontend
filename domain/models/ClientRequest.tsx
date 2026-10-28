@@ -14,4 +14,24 @@ export interface ClientRequest {
     length_cm?: number;
     width_cm?: number;
     height_cm?: number;
+    cargo_category?: CargoCategory;
+    packages?: number;
+    is_fragile?: boolean;
+    needs_cover?: boolean;
+    vehicle_type?: VehicleType;
+    no_prohibited_items?: boolean;
+    helpers?: number;
+    pickup_floor?: number;
+    pickup_has_elevator?: boolean;
+    destination_floor?: number;
+    destination_has_elevator?: boolean;
+    sender_name?: string;
+    sender_phone?: string;
+    receiver_name?: string;
+    receiver_phone?: string;
+    // ISO; sin fecha el flete es "Ahora"
+    scheduled_at?: string;
 }
+
+export type CargoCategory = 'MUDANZA' | 'MERCANCIA' | 'MATERIALES' | 'MAQUINARIA' | 'ELECTRODOMESTICOS' | 'OTRO';
+export type VehicleType = 'CARRY' | 'ESTACAS' | 'FURGON' | 'CAMION';

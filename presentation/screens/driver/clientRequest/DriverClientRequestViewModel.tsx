@@ -44,6 +44,25 @@ export class DriverClientRequestViewModel {
         return await this.driverTripOfferUseCases.create.execute(driverTripOffer);
     }
 
+    async dismissClientRequest(idClientRequest: number) {
+        return await this.clientRequestUseCases.dismiss.execute(idClientRequest);
+    }
+
+    // Cambios que obligan a recargar la lista: una solicitud sale (asignada, cancelada, vencida) o sube de precio
+    listenerClientRequestsChanged(callback: () => void) {
+        const offRemoved = this.socketService.onMessage('client_request_removed', () => callback());
+        const offUpdated = this.socketService.onMessage('client_request_updated', () => callback());
+        return () => {
+            offRemoved();
+            offUpdated();
+        };
+    }
+
+    // El cliente rechazó la oferta de este conductor o eligió a otro
+    listenerOfferStatus(idDriver: number, callback: (data: { id_client_request: number; status: string; reason: string }) => void) {
+        return this.socketService.onMessage(`offer_status/${idDriver}`, (data: any) => callback(data));
+    }
+
     listenerNewClientRequestSocket(callback: (data: any) => void){
         return this.socketService.onMessage('created_client_request', (data: any) => {
             callback(data);

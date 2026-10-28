@@ -59,6 +59,47 @@ const styles = StyleSheet.create({
     textDecoration: {
         color: "white",
     },
+    actionsRow: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: 12,
+    },
+    actionButton: {
+        flex: 1,
+        height: 46,
+        borderRadius: 23,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    actionText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 15,
+    },
+    stepperRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 14,
+    },
+    stepperButton: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#eee',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    stepperText: {
+        fontSize: 26,
+        fontWeight: 'bold',
+    },
+    counterFare: {
+        fontSize: 26,
+        fontWeight: 'bold',
+        minWidth: 160,
+        textAlign: 'center',
+    },
 });
 
 export default styles;

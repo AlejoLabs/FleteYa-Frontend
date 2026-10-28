@@ -65,6 +65,15 @@ export class ClientTripMapViewModel {
         };
     }
 
+    async cancelTrip(idClientRequest: number, reason: string) {
+        return await this.clientRequestUseCases.cancel.execute(idClientRequest, reason);
+    }
+
+    // El servidor avisa si el conductor cancela el viaje
+    listenerTripCanceled(idClientRequest: number, callback: (reason: string) => void) {
+        return this.socketService.onMessage(`trip_canceled/${idClientRequest}`, (data: any) => callback(data?.reason ?? ''));
+    }
+
     listenerUpdateStatusSocket(idClientRequest: number, callback: (data: any) => void){
         return this.socketService.onMessage(`new_status_trip/${idClientRequest}`, (data: any) => {
             callback(data);

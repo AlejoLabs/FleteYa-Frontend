@@ -1,3 +1,5 @@
+import { CargoCategory, VehicleType } from "./ClientRequest";
+
 export interface ClientRequestResponse {
     id:                      number;
     id_client:               number;
@@ -19,6 +21,45 @@ export interface ClientRequestResponse {
     length_cm?:              number;
     width_cm?:               number;
     height_cm?:              number;
+    id_driver_assigned?:     number | null;
+    cargo_category?:         CargoCategory;
+    packages?:               number;
+    is_fragile?:             boolean;
+    needs_cover?:            boolean;
+    required_vehicle?:       VehicleType;
+    helpers?:                number;
+    pickup_floor?:           number | null;
+    pickup_has_elevator?:    boolean | null;
+    destination_floor?:      number | null;
+    destination_has_elevator?: boolean | null;
+    sender_name?:            string | null;
+    sender_phone?:           string | null;
+    receiver_name?:          string | null;
+    receiver_phone?:         string | null;
+    scheduled_at?:           string | null;
+    expires_at?:             string | null;
+    cancel_reason?:          string | null;
+    // Precio de la oferta pendiente del conductor que consulta la lista, si ya ofertó
+    my_offer?:               number | null;
+}
+
+// Búsqueda o viaje en curso del usuario (GET /client-requests/me/active)
+export interface ActiveTrip {
+    id:                      number;
+    id_client:               number;
+    id_driver_assigned:      number | null;
+    status:                  string;
+    fare_offered:            number;
+    fare_assigned:           number | null;
+    pickup_description:      string;
+    destination_description: string;
+    cargo_category:          CargoCategory;
+    cargo_description:       string | null;
+    required_vehicle:        VehicleType;
+    scheduled_at:            string | null;
+    expires_at:              string | null;
+    created_at:              string;
+    role:                    'CLIENT' | 'DRIVER';
 }
 
 export interface Client {
