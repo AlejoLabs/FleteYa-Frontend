@@ -20,7 +20,7 @@ import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import { DriverOfferItem } from "./DriverOfferItem";
 import { StackScreenProps } from "@react-navigation/stack";
 import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
-import { formatCOP } from "../../../utils/Formatters";
+import { formatCOP, formatErrorMessage } from "../../../utils/Formatters";
 
 const DEFAULT_REGION: Region = {
     latitude: 19.4326,
@@ -203,6 +203,8 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
             viewModel.emitNewClientRequest(response);
             handleGetDriverTripOffers(response);
             ToastAndroid.show("Solicitud enviada", ToastAndroid.LONG);
+        } else {
+            ToastAndroid.show(formatErrorMessage(response.message), ToastAndroid.LONG);
         }
     }
 

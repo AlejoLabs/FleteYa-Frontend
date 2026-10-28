@@ -29,17 +29,12 @@ export class DriverTripMapViewModel {
     }
 
     initSocket(){
-        if(!this.socketService.getSocket().connected){
-            this.socketService.getSocket();
-        }
-        
-       // this.socketService.onMessage('connect', () => {
-        //    console.log('Conectado a SOCKET IO');
-        //});
+        this.socketService.connect();
     }
 
+    // Al dejar de rastrear el viaje no se cierra el socket compartido: lo siguen usando las demás pantallas del conductor
     discconectSocket(){
-        this.socketService.disconnect();
+        this.socketService.sendMessage('driver_offline', {});
     }
 
     async getClientRequestById(idClientRequest: number) {

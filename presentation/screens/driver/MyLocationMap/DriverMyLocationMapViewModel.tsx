@@ -30,14 +30,8 @@ export class DriverMyLocationMapViewModel {
     }
 
     initSocket(){
-        if(!this.socketService.getSocket().connected){
-            this.socketService.getSocket().connect();
-        }
-        
-        //this.socketService.onMessage('connect', () => {
-          //  console.log('Conectado a SOCKET IO');
-        //});
-    } 
+        this.socketService.connect();
+    }
     
     emitDriverPosition(id: number, lat: number, lng: number){
         this.socketService.sendMessage('change_driver_position', {
@@ -47,8 +41,9 @@ export class DriverMyLocationMapViewModel {
         });
     }
 
+    // El conductor deja de estar disponible: se avisa a los clientes sin cerrar el socket, que usan sus otras pantallas
     discconectSocket(){
-        this.socketService.disconnect();
+        this.socketService.sendMessage('driver_offline', {});
     }
 
     async createDriverPosition(driverPosition: DriverPosition) {

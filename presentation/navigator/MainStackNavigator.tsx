@@ -42,9 +42,10 @@ const Drawer = createDrawerNavigator<RootStackParamList>();
 export const MainStackNavigator = () => {
     
     const authUseCases = container.resolve("authUseCases");
-    
+    const socketService = container.resolve("socketService");
+
     return (
-        <AuthProvider authUseCases={authUseCases}>
+        <AuthProvider authUseCases={authUseCases} socketService={socketService}>
             <Stack.Navigator>
                 <Stack.Screen
                     options={{

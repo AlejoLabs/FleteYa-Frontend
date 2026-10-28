@@ -43,14 +43,8 @@ export class ClientSearchMapViewModel {
     }
 
     initSocket(){
-        if(!this.socketService.getSocket().connected){
-            this.socketService.getSocket();
-        }
-        
-       // this.socketService.onMessage('connect', () => {
-        //    console.log('Conectado a SOCKET IO');
-        //});
-    } 
+        this.socketService.connect();
+    }
     
     async createClientRequest(clientRequest: ClientRequest): Promise<number | ErrorResponse> {
         return await this.clientRequestUseCases.create.execute(clientRequest);

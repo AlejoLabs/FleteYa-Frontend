@@ -6,7 +6,7 @@ import { useState } from "react";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
 import { DriverClientRequestViewModel } from "./DriverClientRequestViewModel";
 import { AuthResponse } from "../../../../domain/models/AuthResponse";
-import { formatCOP } from "../../../utils/Formatters";
+import { formatCOP, formatErrorMessage } from "../../../utils/Formatters";
 
 interface Props {
     clientRequestResponse: ClientRequestResponse;
@@ -43,7 +43,7 @@ export function DriverClientRequestItem({ clientRequestResponse, viewModel, auth
             setIsOfferModalVisible(false);
             ToastAndroid.show(`Oferta de ${formatCOP(fare)} enviada`, ToastAndroid.SHORT);
         } else {
-            ToastAndroid.show("No se pudo enviar la oferta, intenta de nuevo", ToastAndroid.SHORT);
+            ToastAndroid.show(formatErrorMessage(response.message), ToastAndroid.LONG);
         }
     }
 

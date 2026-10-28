@@ -21,6 +21,10 @@ export const formatTripDate = (value?: string | Date | null): string => {
   });
 }
 
+// El backend puede devolver un mensaje o una lista (varios campos inválidos a la vez)
+export const formatErrorMessage = (message: string | string[]): string =>
+  Array.isArray(message) ? message.join('\n') : message;
+
 // El valor del viaje es el acordado al aceptar una oferta; mientras no haya, se muestra la oferta del cliente
 export const getTripFare = (clientRequest: { fare_offered: number; fare_assigned?: number | null }): number =>
   clientRequest.fare_assigned ?? clientRequest.fare_offered;

@@ -34,14 +34,8 @@ export class ClientTripMapViewModel {
     }
 
     initSocket(){
-        if(!this.socketService.getSocket().connected){
-            this.socketService.getSocket().connect();
-        }
-        
-        //this.socketService.onMessage('connect', () => {
-          //  console.log('Conectado a SOCKET IO');
-        //});
-    } 
+        this.socketService.connect();
+    }
 
     async getClientRequestById(idClientRequest: number) {
         return await this.clientRequestUseCases.getClientRequestById.execute(idClientRequest);

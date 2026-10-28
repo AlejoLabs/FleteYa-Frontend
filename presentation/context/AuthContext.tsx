@@ -12,7 +12,7 @@ export interface AuthContextProps {
 
 export const AuthContext = createContext ( {} as AuthContextProps );
 
-export const AuthProvider = ({children, authUseCases}: any) => {
+export const AuthProvider = ({children, authUseCases, socketService}: any) => {
     const  [authResponse, setAuthResponse] = useState<AuthResponse | null>(null);
    
     useEffect(() => {
@@ -32,6 +32,8 @@ export const AuthProvider = ({children, authUseCases}: any) => {
 
     const removeAuthSession = async () => {
         await authUseCases.removeAuthSession.execute();
+        // El socket quedó autenticado con este usuario: si no se cierra, el siguiente que entre recibiría sus eventos
+        socketService?.disconnect();
         setAuthResponse(null);
     }
 
