@@ -15,6 +15,9 @@ import { LoginWithGoogleUseCase } from "../domain/useCases/auth/LoginWithGoogleU
 import { LinkGoogleUseCase } from "../domain/useCases/auth/LinkGoogleUseCase";
 import { LoginViewModel } from "../presentation/screens/auth/login/LoginViewModel";
 import { RegisterViewModel } from "../presentation/screens/auth/register/RegisterViewModel";
+import { ForgotPasswordViewModel } from "../presentation/screens/auth/forgotPassword/ForgotPasswordViewModel";
+import { DriverVehicleRegisterViewModel } from "../presentation/screens/auth/driverVehicle/DriverVehicleRegisterViewModel";
+import { ChangePasswordViewModel } from "../presentation/screens/profile/changePassword/ChangePasswordViewModel";
 import { GooglePlaceServices } from "../data/sources/remote/services/GooglePlacesService";
 import { GooglePlaceRepositoryImpl } from "../data/repository/GooglePlaceRepositoryImpl";
 import { GetDirectionsUseCase } from "../domain/useCases/GooglePlaces/GetDirectionsUseCase";
@@ -102,6 +105,9 @@ const authUseCases = new AuthUseCases({
 });
 const loginViewModel = new LoginViewModel({ authUseCases });
 const registerViewModel = new RegisterViewModel({ authUseCases });
+const forgotPasswordViewModel = new ForgotPasswordViewModel({ authUseCases });
+const driverVehicleRegisterViewModel = new DriverVehicleRegisterViewModel({ authUseCases });
+const changePasswordViewModel = new ChangePasswordViewModel({ authUseCases });
 
 const googlePlaceService = new GooglePlaceServices();
 const googlePlaceRepository = new GooglePlaceRepositoryImpl({ googlePlaceService });
@@ -165,6 +171,9 @@ const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRe
 type ContainerDeps = {
     loginViewModel: LoginViewModel;
     registerViewModel: RegisterViewModel;
+    forgotPasswordViewModel: ForgotPasswordViewModel;
+    driverVehicleRegisterViewModel: DriverVehicleRegisterViewModel;
+    changePasswordViewModel: ChangePasswordViewModel;
     saveAuthSessionUseCase: SaveAuthSessionUseCase;
     getAuthSessionUseCase: GetAuthSessionUseCase;
     removeAuthSessionUseCase: RemoveAuthSessionUseCase;
@@ -229,6 +238,9 @@ const container = {
         const deps: ContainerDeps = {
             loginViewModel,
             registerViewModel,
+            forgotPasswordViewModel,
+            driverVehicleRegisterViewModel,
+            changePasswordViewModel,
             saveAuthSessionUseCase,
             getAuthSessionUseCase,
             removeAuthSessionUseCase,

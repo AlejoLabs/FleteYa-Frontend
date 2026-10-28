@@ -5,7 +5,6 @@ import { RootStackParamList } from "../../../navigator/MainStackNavigator";
 import { container } from "../../../../di/container";
 import FormField, { formStyles } from "../../../components/FormField";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
-import EmailValidator from "../../../utils/EmailValidator";
 import { formatErrorMessage } from "../../../utils/Formatters";
 
 interface Props extends StackScreenProps<RootStackParamList, 'ForgotPasswordScreen'> { };
@@ -13,7 +12,7 @@ interface Props extends StackScreenProps<RootStackParamList, 'ForgotPasswordScre
 // Dos pasos: pedir el código al correo y luego escribirlo con la contraseña nueva
 export default function ForgotPasswordScreen({ navigation, route }: Props) {
 
-    const viewModel = container.resolve('loginViewModel');
+    const viewModel = container.resolve('forgotPasswordViewModel');
     const [email, setEmail] = useState(route.params?.email ?? '');
     const [codeSent, setCodeSent] = useState(false);
     const [code, setCode] = useState('');
@@ -22,12 +21,13 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
     const [isSending, setIsSending] = useState(false);
 
     const handleSendCode = async () => {
-        if (!EmailValidator(email.trim())) {
-            Alert.alert('Revisa el correo', 'Escribe un correo válido');
+        const problem = viewModel.validateEmail(email);
+        if (problem) {
+            Alert.alert('Revisa el correo', problem);
             return;
         }
         setIsSending(true);
-        const response = await viewModel.forgotPassword(email.trim());
+        const response = await viewModel.sendCode(email);
         setIsSending(false);
         if ('statusCode' in response) {
             Alert.alert('No se pudo enviar', formatErrorMessage(response.message));
@@ -38,20 +38,13 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
     }
 
     const handleReset = async () => {
-        if (!/^\d{6}$/.test(code.trim())) {
-            Alert.alert('Revisa el código', 'El código tiene 6 dígitos');
-            return;
-        }
-        if (password.length < 6) {
-            Alert.alert('Contraseña muy corta', 'Usa al menos 6 caracteres');
-            return;
-        }
-        if (password !== confirmPassword) {
-            Alert.alert('Revisa la contraseña', 'Las contraseñas no coinciden');
+        const problem = viewModel.validateReset(code, password, confirmPassword);
+        if (problem) {
+            Alert.alert('Revisa los datos', problem);
             return;
         }
         setIsSending(true);
-        const response = await viewModel.resetPassword(email.trim(), code.trim(), password);
+        const response = await viewModel.resetPassword(email, code, password);
         setIsSending(false);
         if ('statusCode' in response) {
             Alert.alert('No se pudo cambiar', formatErrorMessage(response.message));

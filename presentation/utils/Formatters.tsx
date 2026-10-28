@@ -44,3 +44,13 @@ export const formatErrorMessage = (message: string | string[]): string =>
 // El valor del viaje es el acordado al aceptar una oferta; mientras no haya, se muestra la oferta del cliente
 export const getTripFare = (clientRequest: { fare_offered: number; fare_assigned?: number | null }): number =>
   clientRequest.fare_assigned ?? clientRequest.fare_offered;
+
+// Fecha escrita como DD/MM/AAAA; devuelve ISO (fin del día) o null si no es una fecha real
+export const parseDayMonthYear = (value: string): string | null => {
+  const match = value.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!match) return null;
+  const [day, month, year] = match.slice(1).map(Number);
+  const date = new Date(year, month - 1, day, 23, 59, 59);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+  return date.toISOString();
+}

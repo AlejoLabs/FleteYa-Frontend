@@ -13,7 +13,7 @@ interface Props extends StackScreenProps<ProfileStackParamList, 'ChangePasswordS
 // Cambiar la contraseña con la sesión abierta. Una cuenta creada con Google no tiene contraseña y aquí la crea
 export default function ChangePasswordScreen({ navigation }: Props) {
 
-    const authUseCases = container.resolve('authUseCases');
+    const viewModel = container.resolve('changePasswordViewModel');
     const { authResponse } = useAuth();
     // Sesiones guardadas antes de la Fase 4 no traen has_password: se asume que la cuenta tiene contraseña
     const hasPassword = authResponse?.user?.has_password !== false;
@@ -23,20 +23,13 @@ export default function ChangePasswordScreen({ navigation }: Props) {
     const [isSending, setIsSending] = useState(false);
 
     const handleSave = async () => {
-        if (hasPassword && currentPassword === '') {
-            Alert.alert('Falta la contraseña actual', 'Escribe tu contraseña actual');
-            return;
-        }
-        if (newPassword.length < 6) {
-            Alert.alert('Contraseña muy corta', 'Usa al menos 6 caracteres');
-            return;
-        }
-        if (newPassword !== confirmPassword) {
-            Alert.alert('Revisa la contraseña', 'Las contraseñas nuevas no coinciden');
+        const problem = viewModel.validate(hasPassword, currentPassword, newPassword, confirmPassword);
+        if (problem) {
+            Alert.alert('Revisa los datos', problem);
             return;
         }
         setIsSending(true);
-        const response = await authUseCases.changePassword.execute(hasPassword ? currentPassword : undefined, newPassword);
+        const response = await viewModel.changePassword(hasPassword, currentPassword, newPassword);
         setIsSending(false);
         if ('statusCode' in response) {
             Alert.alert('No se pudo cambiar', formatErrorMessage(response.message));
