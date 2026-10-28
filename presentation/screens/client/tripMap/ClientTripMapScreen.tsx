@@ -13,6 +13,7 @@ import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { decode } from "@googlemaps/polyline-codec";
 import { Status } from "../../../../domain/repository/ClientRequestRepository";
 import { DriverCarInfo } from "../../../../domain/models/DriverCarInfo";
+import { formatCOP, getTripFare } from "../../../utils/Formatters";
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientTripMapScreen'> { };
 export function ClientTripMapScreen({ navigation, route }: Props) {
@@ -31,15 +32,19 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     const [currentStatus, setCurrentStatus] = useState(Status.ACCEPTED);
     const [carInfo, setCarInfo] = useState<DriverCarInfo | null>(null);
     const [etaMinutesFromRoute, setEtaMinutesFromRoute] = useState<number | null>(null);
+    const socketListeners = useRef<(() => void)[]>([]);
 
     useEffect(() => {
         viewModel.initSocket();
         handleGetClientRequestById();
+        return () => {
+            socketListeners.current.forEach((off) => off());
+            socketListeners.current = [];
+        };
     }, []);
 
     useEffect(() => {
         if (isDriverPositionSet === true) {
-            console.log('SOLO SE EJECUTO UNA VEZ');
             handleGetDirections(
                 {
                     latitude: driverPosition!.latitude,
@@ -79,7 +84,6 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
 
     const handleGetClientRequestById = async () => {
         const response = await viewModel.getClientRequestById(idClientRequest);
-        console.log('getClientRequestById', response);
         if ('id' in response) {
             setClientRequest(response);
 
@@ -95,24 +99,23 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
             });
-            viewModel.listenerDriverPositionSocket(response.id_client, (data: any) => {
-                console.log('Conductor Asignado: ', data);
+            const offPosition = viewModel.listenerDriverPositionSocket(response.id_client, driverIdFromTrip, (data: any) => {
                 setDriverPosition({
                     latitude: data.lat,
                     longitude: data.lng
                 });
             });
 
-            viewModel.listenerUpdateStatusSocket(idClientRequest, (data: any) => {
-                console.log('NUEVO ESTADO DEL VIAJE: ', data);
+            const offStatus = viewModel.listenerUpdateStatusSocket(idClientRequest, (data: any) => {
                 if(data.status === Status.ARRIVED){
                     setCurrentStatus(Status.ARRIVED);
                 }
                 else if(data.status === Status.FINISHED){
                     setCurrentStatus(Status.FINISHED);
                 }
-                    
+
             });
+            socketListeners.current.push(offPosition, offStatus);
 
         }
     }
@@ -306,11 +309,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                         <View style={styles.tripContainer}>
                             <Text>Valor del viaje</Text>
                             <Text style={styles.textPrice}>
-                                {clientRequest?.fare_offered?.toLocaleString('es-CO', {
-                                    style: 'currency',
-                                    currency: 'COP',
-                                    minimumFractionDigits: 0,
-                                })}
+                                {clientRequest && formatCOP(getTripFare(clientRequest))}
                             </Text>
                         </View>
                     </View>

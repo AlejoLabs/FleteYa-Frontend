@@ -55,19 +55,24 @@ export class ClientTripMapViewModel {
                 return await this.googlePlaceUseCases.getDirections.execute(origin, destination);
     }
 
-    listenerDriverPositionSocket(idClient: number, callback: (data: any) => void){
-        this.socketService.onMessage(`trip_new_driver_position/${idClient}`, (data: any) => {
+    listenerDriverPositionSocket(idClient: number, idDriver: number, callback: (data: any) => void){
+        const offTrip = this.socketService.onMessage(`trip_new_driver_position/${idClient}`, (data: any) => {
             callback(data);
         });
 
-        // fallback: mismo canal que usa la pantalla de búsqueda y que sí funciona
-        this.socketService.onMessage('new_driver_position', (data: any) => {
-            callback(data);
+        // fallback: mismo canal que usa la pantalla de búsqueda; trae a todos los conductores, así que se filtra por el asignado
+        const offAll = this.socketService.onMessage('new_driver_position', (data: any) => {
+            if (data?.id === idDriver) callback(data);
         });
+
+        return () => {
+            offTrip();
+            offAll();
+        };
     }
 
     listenerUpdateStatusSocket(idClientRequest: number, callback: (data: any) => void){
-        this.socketService.onMessage(`new_status_trip/${idClientRequest}`, (data: any) => { 
+        return this.socketService.onMessage(`new_status_trip/${idClientRequest}`, (data: any) => {
             callback(data);
         });
     }

@@ -62,9 +62,7 @@ export default function LoginScreen({ navigation, route }: Props) {
     if ('token' in response) { //LOGIN EXITOSO
 
       saveAuthSession(response);
-      console.log('Response', 'Login exitoso');
     }
-    console.log('Login response', response);
   }
 
 

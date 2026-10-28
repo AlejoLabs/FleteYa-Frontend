@@ -12,7 +12,6 @@ export class DriverCarInfoService {
     async create(driverCarInfo: DriverCarInfo): Promise<DriverCarInfo | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.post<DriverCarInfo>(`/driver-car-info`, driverCarInfo);
-            console.log('Response', response.data);
             return response.data;
         } catch (error: any) {
             if (error.response) {
@@ -35,7 +34,6 @@ export class DriverCarInfoService {
     async getDriverCarInfo(idDriver: number): Promise<DriverCarInfo | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.get<DriverCarInfo>(`/driver-car-info/${idDriver}`);
-            console.log('Response', response.data);
             return response.data;
         } catch (error: any) {
             if (error.response) {

@@ -2,6 +2,7 @@ export interface ClientRequestResponse {
     id:                      number;
     id_client:               number;
     fare_offered:            number;
+    fare_assigned?:          number | null;
     pickup_description:      string;
     destination_description: string;
     status:                  string;

@@ -42,7 +42,6 @@ export function DriverOfferItem({ viewModel, driverTripOffer, navigation, cargo 
             );
             if (response === true || (response as any)?.id_driver_assigned === driverTripOffer.id_driver) {
                 viewModel.emitNewDriverAssigned(driverTripOffer.id_client_request, driverTripOffer.id_driver);
-                console.log('CONDUCTOR ASIGNADO CORRECTAMENTE');
                 navigation.navigate('ClientTripMapScreen', {
                     idClientRequest: driverTripOffer.id_client_request,
                     idDriver: driverTripOffer.id_driver,

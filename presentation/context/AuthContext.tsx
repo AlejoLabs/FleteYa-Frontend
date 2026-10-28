@@ -27,7 +27,6 @@ export const AuthProvider = ({children, authUseCases}: any) => {
 
     const getAuthSession = async () => {
         const authData = await authUseCases.getAuthSession.execute();
-        console.log('Session Data: ', authData);
         setAuthResponse(authData);
     }
 

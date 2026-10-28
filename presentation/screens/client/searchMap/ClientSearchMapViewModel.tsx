@@ -98,24 +98,20 @@ export class ClientSearchMapViewModel {
     }
 
     listenerDriverPositionSocket(callback: (data: any) => void){
-        this.socketService.onMessage('new_driver_position', (data: any) => {
-            //console.log('NUEVO CONDUCTOR', data);
-            
+        return this.socketService.onMessage('new_driver_position', (data: any) => {
             callback(data);
         });
     }
 
     listenerDriverDisconnectSocket(callback: (idSocket: string) => void){
-        this.socketService.onMessage('driver_disconnected', (data: any) => {
-            console.log('CONDUCTOR DESCONECTADO', data);
+        return this.socketService.onMessage('driver_disconnected', (data: any) => {
             const idSocket = data.id_socket;
             callback(idSocket);
         });
     }
 
     listenerNewDriverOffer(idClientRequest: number, callback: (data: any) => void){
-        this.socketService.onMessage(`created_driver_offer/${idClientRequest}`, (data: any) => {
-            //console.log('NUEVO CONDUCTOR', data);
+        return this.socketService.onMessage(`created_driver_offer/${idClientRequest}`, (data: any) => {
             callback(idClientRequest);
         });
     }

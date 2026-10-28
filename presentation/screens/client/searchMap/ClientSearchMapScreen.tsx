@@ -20,6 +20,7 @@ import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import { DriverOfferItem } from "./DriverOfferItem";
 import { StackScreenProps } from "@react-navigation/stack";
 import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
+import { formatCOP } from "../../../utils/Formatters";
 
 const DEFAULT_REGION: Region = {
     latitude: 19.4326,
@@ -39,6 +40,7 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
     const [shouldDrawRoute, setShouldDrawRoute] = useState<boolean>(false);
     const [isInteractingWithMap, setIsInteractingWithMap] = useState<boolean>(false);
     const [timeAndDistance, setTimeAndDistance] = useState<TimeAndDistanceValues>();
+    const recommendedFare = Math.round((timeAndDistance?.recommended_value ?? 0) / 100) * 100;
     const [isOriginModalVisible, setIsOriginModalVisible] = useState(false);
     const [isDestinationModalVisible, setIsDestinationModalVisible] = useState(false);
     const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
@@ -73,6 +75,8 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
     const placeAutocompleteDestinationRef = useRef<GooglePlacesAutocompleteRef>(null);
     const mapRef = useRef<MapView>(null);
     const animatedValue = useRef(new Animated.Value(0)).current;
+    const socketListeners = useRef<(() => void)[]>([]);
+    const timeAndDistanceRequestId = useRef(0);
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('beforeRemove', () => {
@@ -84,9 +88,6 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
 
     useEffect(() => {
         if (originPlace != undefined && destinationPlace !== undefined && shouldDrawRoute) {
-            console.log("Ya selecciono lo datos de ubicacion");
-            console.log("Origin:", originPlace);
-            console.log("Destination:", destinationPlace);
             handleGetDirections();
         }
     }, [originPlace, destinationPlace, shouldDrawRoute]);
@@ -101,11 +102,12 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
     const startRealTimeLocation = async () => {
         if (!locationSubscription.current) {
 
+            // El cliente solo necesita su ubicación para centrar el mapa: no hace falta GPS de navegación cada segundo
             locationSubscription.current = await Location.watchPositionAsync(
                 {
-                    accuracy: Location.Accuracy.BestForNavigation,
-                    timeInterval: 1000,
-                    distanceInterval: 1
+                    accuracy: Location.Accuracy.High,
+                    timeInterval: 5000,
+                    distanceInterval: 10
                 },
                 (newLocation) => {
                     const currentCoords = {
@@ -128,7 +130,6 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
 
 
     const stopRealTimeLocation = () => {
-        console.log('Locacion detenida');
         if (locationSubscription.current) {
             locationSubscription.current.remove();
             locationSubscription.current = null;
@@ -150,13 +151,12 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
     }
 
     const handleGetDriverTripOffers = async (idClientRequest: number) => {
-        viewModel.listenerNewDriverOffer(idClientRequest, async (data: number) => {
+        const off = viewModel.listenerNewDriverOffer(idClientRequest, async (data: number) => {
             const response = await viewModel.getDriverTripOffers(data);
             setIsDriverOfferModalVisible(true);
             setDriverTripOffers(response as DriverTripOffer[]);
-            console.log("Response DriverTripOffers", response);
         });
-
+        socketListeners.current.push(off);
     }
 
     const handleCreateClientRequest = async () => {
@@ -207,6 +207,8 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
     }
 
     const handleGetTimeAndDistance = async () => {
+        // Se pide un precio por cada tecla; si una respuesta vieja llega tarde no debe pisar a la más reciente
+        const requestId = ++timeAndDistanceRequestId.current;
         const weight = cargoWeight !== '' ? parseFloat(cargoWeight) : undefined;
         const l = parseFloat(cargoLargo), a = parseFloat(cargoAncho), h = parseFloat(cargoAlto);
         // dimensions are in cm, convert to m³ before sending
@@ -223,12 +225,10 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
             weight,
             size
         );
+        if (requestId !== timeAndDistanceRequestId.current) return;
         if ('distance' in response) {
             const result = response as TimeAndDistanceValues;
             setTimeAndDistance(result);
-        }
-        else {
-            const error = response as ErrorResponse;
         }
     }
 
@@ -316,7 +316,7 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
 
                 startRealTimeLocation();
                 viewModel.initSocket();
-                viewModel.listenerDriverPositionSocket((data: any) => {
+                const offPosition = viewModel.listenerDriverPositionSocket((data: any) => {
                     const newMarker = {
                         id: data.id,
                         lat: data.lat,
@@ -333,15 +333,22 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                         }
                     });
                 });
-                viewModel.listenerDriverDisconnectSocket((idSocket: string) => {
+                const offDisconnect = viewModel.listenerDriverDisconnectSocket((idSocket: string) => {
                     setDriverMarkers((prevMarkers) => prevMarkers.filter(marker => marker.idSocket !== idSocket));
                 });
+                socketListeners.current.push(offPosition, offDisconnect);
 
                 setHasLocation(true);
             } catch (error) {
                 console.log('No se pudo obtener la ubicacion actual', error);
             }
         })();
+
+        return () => {
+            socketListeners.current.forEach((off) => off());
+            socketListeners.current = [];
+            stopRealTimeLocation();
+        };
     }, []);
 
     const toggleView = (isInteractingWithMap: boolean) => {
@@ -538,7 +545,7 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                     />
 
                     <TouchableOpacity style={styles.infoContainer} onPress={() => setIsOfferModalVisible(true)}>
-                        <Text>{offer === "" ? "Oferta" : `Oferta: ${offer}`}</Text>
+                        <Text>{offer === "" ? "Oferta" : `Oferta: ${formatCOP(Number(offer))}`}</Text>
                     </TouchableOpacity>
 
                     <Modal
@@ -643,6 +650,21 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                                     textColor="black"
                                     placeholderTextColor="gray"
                                 />
+                                <View style={{ marginHorizontal: 30, marginBottom: 20 }}>
+                                    {
+                                        recommendedFare > 0 &&
+                                        <DefaultRoundedButton
+                                            onPress={() => setOffer(recommendedFare.toString())}
+                                            text={`Usar precio sugerido (${formatCOP(recommendedFare)})`}
+                                            backgroundColor="gray"
+                                        />
+                                    }
+                                    <DefaultRoundedButton
+                                        onPress={() => setIsOfferModalVisible(false)}
+                                        text="Confirmar oferta"
+                                        backgroundColor="black"
+                                    />
+                                </View>
 
                             </Pressable>
                         </Pressable>
@@ -651,8 +673,18 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
 
 
                     <View style={styles.timeAndDistanceView}>
-                        <Text style={styles.timeAndDistanceText}>Precio recomendado: ${Math.round((timeAndDistance?.recommended_value ?? 0) / 100) * 100}</Text>
-                        <Text style={styles.timeAndDistanceText}>Tiempo y distancia: {timeAndDistance?.duration.text} {timeAndDistance?.distance.text}</Text>
+                        {
+                            timeAndDistance
+                                ? <>
+                                    <Text style={styles.timeAndDistanceText}>Precio recomendado: {formatCOP(recommendedFare)}</Text>
+                                    <Text style={styles.timeAndDistanceText}>Tiempo y distancia: {timeAndDistance.duration.text} · {timeAndDistance.distance.text}</Text>
+                                </>
+                                : <Text style={styles.timeAndDistanceText}>
+                                    {destinationPlace === undefined
+                                        ? 'Elige el destino para calcular el precio recomendado'
+                                        : 'Completa largo, ancho, alto y peso para ver el precio recomendado'}
+                                </Text>
+                        }
                     </View>
 
                     <DefaultRoundedButton

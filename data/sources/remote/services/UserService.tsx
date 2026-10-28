@@ -6,10 +6,8 @@ import mime from 'mime';
 export class UserService {
 
     async update(user: User) {
-        console.log('Enviando usuario al servidor', user);
         try {
             const response = await ApiRequestHandler.put<User>(`/users/upload/${user.id}`, user);
-            console.log('Response', response.data);
 
             return response.data;
         } catch (error: any) {
@@ -47,7 +45,6 @@ export class UserService {
                     'Content-Type': 'multipart/form-data',
                 }
             });
-            console.log('Response', response.data);
 
             return response.data;
         } catch (error: any) {

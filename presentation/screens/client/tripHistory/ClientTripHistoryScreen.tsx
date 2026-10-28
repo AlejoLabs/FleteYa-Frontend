@@ -22,7 +22,6 @@ export function ClientTripHistoryScreen() {
         if(authResponse !== null){
             const response = await viewModel.getByClientAssigned(authResponse?.user.id!);
             setClientRequests(response as ClientRequestResponse[]);
-            console.log('HISTORIAL DE VIAJES', response);
         }  
     }
     return(

@@ -12,6 +12,7 @@ import * as Location from "expo-location";
 import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { decode } from "@googlemaps/polyline-codec";
 import { Status } from "../../../../domain/repository/ClientRequestRepository";
+import { formatCOP, getTripFare } from "../../../utils/Formatters";
 
 interface Props extends StackScreenProps<DriverMapStackParamList, 'DriverTripMapScreen'> { };
 export function DriverTripMapScreen({ navigation, route }: Props) {
@@ -29,7 +30,6 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
 
     const handleGetClientRequestById = async () => {
         const response = await viewModel.getClientRequestById(idClientRequest);
-        console.log('getClientRequestById', response);
         if ('id' in response) {
             setClientRequest(response);
 
@@ -39,7 +39,6 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
     const handleUpdateStatusToArrived = async (status: Status) => {
         const response = await viewModel.updateStatus(idClientRequest, Status.ARRIVED);
         if (typeof response === 'boolean') {
-            console.log('ESTADO ACTUALIZADO CORRECTAMENTE');
             ToastAndroid.show('Estado actualizado', ToastAndroid.LONG);
             setCurrentStatus(Status.ARRIVED);
             viewModel.emitUpdateStatus(idClientRequest, Status.ARRIVED);
@@ -60,7 +59,6 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
     const handleUpdateStatusToFinished = async (status: Status) => {
         const response = await viewModel.updateStatus(idClientRequest, Status.FINISHED);
         if (typeof response === 'boolean') {
-            console.log('ESTADO ACTUALIZADO CORRECTAMENTE');
             setCurrentStatus(Status.FINISHED);
             viewModel.emitUpdateStatus(idClientRequest, Status.FINISHED);
             navigation.replace('DriverTripRatingScreen', { 
@@ -95,6 +93,11 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
 
     useEffect(() => {
         handleGetClientRequestById();
+        // Al terminar el viaje la pantalla se reemplaza: el GPS debe dejar de enviar la posición al cliente
+        return () => {
+            locationSubscription.current?.remove();
+            locationSubscription.current = null;
+        };
     }, []);
 
     useEffect(() => {
@@ -153,14 +156,14 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
     const startRealTimeLocation = async () => {
         if (!locationSubscription.current) {
 
+            // Durante el viaje el cliente sigue al conductor en el mapa: cada 3 s o 5 m se ve fluido sin saturar el teléfono
             locationSubscription.current = await Location.watchPositionAsync(
                 {
-                    accuracy: Location.Accuracy.BestForNavigation,
-                    timeInterval: 1000,
-                    distanceInterval: 1
+                    accuracy: Location.Accuracy.High,
+                    timeInterval: 3000,
+                    distanceInterval: 5
                 },
                 (newLocation) => {
-                    console.log('MI UBICACION', newLocation);
                     const currentCoords = {
                         latitude: newLocation.coords.latitude,
                         longitude: newLocation.coords.longitude,
@@ -187,7 +190,6 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
     }
 
     const stopRealTimeLocation = () => {
-        console.log('Locacion detenida');
         if (locationSubscription.current) {
             viewModel.discconectSocket();
             locationSubscription.current.remove();
@@ -364,11 +366,7 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                         <View style={styles.tripContainer}>
                             <Text>Valor del viaje</Text>
                             <Text style={styles.textPrice}>
-                                {clientRequest?.fare_offered?.toLocaleString('es-CO', {
-                                    style: 'currency',
-                                    currency: 'COP',
-                                    minimumFractionDigits: 0,
-                                })}
+                                {clientRequest && formatCOP(getTripFare(clientRequest))}
                             </Text>
                         </View>
                     </View>

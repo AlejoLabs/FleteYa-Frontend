@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, Image } from "react-native";
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { Ionicons } from "@expo/vector-icons";
+import { formatCOP, formatTripDate, getTripFare } from "../../../utils/Formatters";
 
 interface Props {
     clientRequest: ClientRequestResponse;
@@ -42,7 +43,7 @@ export function ClientTripHistoryItem({ clientRequest }: Props) {
             <View style={styles.rowContainer}>
                 <View style={styles.infoContainer}>
                     <Text style={styles.textDescription}>Tarifa del viaje</Text>
-                    <Text style={styles.textValue}>${clientRequest.fare_offered}</Text>
+                    <Text style={styles.textValue}>{formatCOP(getTripFare(clientRequest))}</Text>
                 </View>
                 <Ionicons
                     name="cash"
@@ -52,7 +53,7 @@ export function ClientTripHistoryItem({ clientRequest }: Props) {
             <View style={styles.rowContainer}>
                 <View style={styles.infoContainer}>
                     <Text style={styles.textDescription}>Fecha del Viaje</Text>
-                    <Text style={styles.textValue}>{clientRequest.update_at.toLocaleString()}</Text>
+                    <Text style={styles.textValue}>{formatTripDate(clientRequest.update_at)}</Text>
                 </View>
                 <Ionicons
                     name="calendar"

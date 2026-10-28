@@ -11,7 +11,6 @@ export class DriverPositionService {
     async create(driverPosition: DriverPosition): Promise<boolean | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.post<boolean>(`/drivers-position`, driverPosition);
-            console.log('Response', response.data);
             return response.data;
         } catch (error: any) {
             if (error.response) {
@@ -34,7 +33,6 @@ export class DriverPositionService {
     async getDriverPosition(idDriver: number): Promise<DriverPosition | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.get<DriverPosition>(`/drivers-position/${idDriver}`);
-            console.log('Response', response.data);
 
             return response.data;
         } catch (error: any) {

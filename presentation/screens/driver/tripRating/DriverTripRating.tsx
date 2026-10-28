@@ -9,6 +9,7 @@ import { container } from "../../../../di/container";
 import { DriverTripRatingViewModel } from "./DriverTripRatingViewModel";
 import { useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigator/MainStackNavigator";
+import { formatCOP, getTripFare } from "../../../utils/Formatters";
 
 interface Props extends StackScreenProps<DriverMapStackParamList, 'DriverTripRatingScreen'> { }
 
@@ -18,7 +19,6 @@ export function DriverTripRatingScreen({ navigation, route }: Props) {
     const viewModel : DriverTripRatingViewModel = container.resolve('driverTripRatingViewModel');
     const [rating, setRating] = useState(0);
     const rootNavigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-    console.log('CONDUCTOR PARAMETRO CLIENT REQUEST:', clientRequest);
 
     const handleUpdateClientRating = async () => {
         const response = await viewModel.updateClientRating(clientRequest.id, rating);
@@ -57,7 +57,7 @@ export function DriverTripRatingScreen({ navigation, route }: Props) {
                 </View>
             </View>
             <Text style={styles.textFare}>VALOR DEL VIAJE</Text>
-            <Text style={styles.textFareValue}>${clientRequest.fare_offered}</Text>
+            <Text style={styles.textFareValue}>{formatCOP(getTripFare(clientRequest))}</Text>
             <Text style={styles.textRating}>CALIFICA A TU CLIENTE</Text>
             <StarRating
                 style={styles.starRating}

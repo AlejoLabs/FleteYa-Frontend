@@ -16,6 +16,14 @@ export default function DriverMyLocationMapScreen() {
     const {authResponse} = useAuth();
     const locationSubscription = useRef<Location.LocationSubscription | null>(null);
 
+    // Al cerrar sesión la pantalla se desmonta: sin esto el GPS sigue enviando la posición sin token
+    useEffect(() => {
+        return () => {
+            locationSubscription.current?.remove();
+            locationSubscription.current = null;
+        };
+    }, []);
+
     useEffect(() => {
         (async () => {
             try {
@@ -54,24 +62,24 @@ export default function DriverMyLocationMapScreen() {
 
     const handleCreateDriverPosition = async (coords: { latitude: number; longitude: number }) => {
         if (authResponse?.user && coords) {
-            const response = await viewModel.createDriverPosition({
+            await viewModel.createDriverPosition({
                 id_driver: authResponse.user.id!,
                 lat: coords.latitude,
                 lng: coords.longitude
             });
-
-            console.log('Response Driver Position:', response);
         }
     }
 
     const startRealTimeLocation = async () => {
         if (!locationSubscription.current) {
 
+            // Cada lectura guarda la posición en la BD y la emite por socket. Va por tiempo (cada 4 s) y sin distancia mínima:
+            // así un conductor quieto sigue apareciendo a los clientes que abren el mapa después
             locationSubscription.current = await Location.watchPositionAsync(
             {
-                accuracy: Location.Accuracy.BestForNavigation,
-                timeInterval: 1000,
-                distanceInterval: 1
+                accuracy: Location.Accuracy.High,
+                timeInterval: 4000,
+                distanceInterval: 0
             },
             (newLocation) => {
                 const currentCoords = {
@@ -102,7 +110,6 @@ export default function DriverMyLocationMapScreen() {
     }
 
     const stopRealTimeLocation = () => {
-        console.log('Locacion detenida');
         if (locationSubscription.current) {
             viewModel.discconectSocket();
             locationSubscription.current.remove();

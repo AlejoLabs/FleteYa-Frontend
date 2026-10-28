@@ -17,6 +17,7 @@ import { DriverMapStackNavigator } from "./DriverMapStackNavigator";
 import { ClientTripHistoryScreen } from "../screens/client/tripHistory/ClientTripHistoryScreen";
 import { DriverTripHistoryScreen } from "../screens/driver/tripHistory/DriverTripHistoryScreen";
 import { DriverCarInfoScreen } from "../screens/driver/carInfo/DriverCarInfoScreen";
+import { AppDrawerContent } from "./AppDrawerContent";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -94,7 +95,7 @@ export const MainStackNavigator = () => {
 
 const ClientDrawerNavigator = () => {
     return (
-        <Drawer.Navigator initialRouteName="ClientMapStackNavigator">
+        <Drawer.Navigator initialRouteName="ClientMapStackNavigator" drawerContent={(props) => <AppDrawerContent {...props} />}>
             <Drawer.Screen name="ClientMapStackNavigator" options={{title:'Mi Ubicación'}} component={ClientMapStackNavigator} />
             <Drawer.Screen name="ProfileStackNavigator" options={{title:'Perfil'}} component={ProfileStackNavigator} />
             <Drawer.Screen name="ClientTripHistoryScreen" options={{title:'Historial de Viajes'}} component={ClientTripHistoryScreen} />
@@ -104,11 +105,12 @@ const ClientDrawerNavigator = () => {
 
 const DriverDrawerNavigator = () => {
     return (
-        <Drawer.Navigator initialRouteName="DriverMyLocationMapScreen">
+        <Drawer.Navigator initialRouteName="DriverMyLocationMapScreen" drawerContent={(props) => <AppDrawerContent {...props} />}>
             <Drawer.Screen name="DriverMyLocationMapScreen" options={{title:'Mi Ubicación'}} component={DriverMyLocationMapScreen} />
             <Drawer.Screen name="DriverMapStackNavigator" options={{title: 'Solicitudes de carga'}} component={DriverMapStackNavigator} />
             <Drawer.Screen name="DriverTripHistoryScreen" options={{title:'Historial de cargas'}} component={DriverTripHistoryScreen} />
-            <Drawer.Screen name="DriverCarInfoScreen" options={{title:'Datos del Vehiculo'}} component={DriverCarInfoScreen} />
+            <Drawer.Screen name="DriverCarInfoScreen" options={{title:'Datos del Vehículo'}} component={DriverCarInfoScreen} />
+            <Drawer.Screen name="ProfileStackNavigator" options={{title:'Perfil'}} component={ProfileStackNavigator} />
         </Drawer.Navigator>
     )
 }

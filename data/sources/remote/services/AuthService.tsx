@@ -10,7 +10,6 @@ export class AuthService {
         email: email,
         password: password
       });
-      console.log('Response', response.data);
 
       return response.data;
     } catch (error: any) {
@@ -34,7 +33,6 @@ export class AuthService {
   async register(user: User): Promise<AuthResponse | ErrorResponse>{
     try {
       const response = await ApiRequestHandler.post<AuthResponse>('/auth/register', user);
-      console.log('Response', response.data);
 
       return response.data;
     } catch (error: any) {

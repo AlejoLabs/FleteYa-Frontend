@@ -12,7 +12,6 @@ export class DriverTripOfferService {
     async create(driverTripOffer: DriverTripOffer): Promise<DriverTripOffer | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.post<DriverTripOffer>(`/driver-trip-offers`, driverTripOffer);
-            console.log('Response', response.data);
             return response.data;
         } catch (error: any) {
             if (error.response) {
@@ -35,7 +34,6 @@ export class DriverTripOfferService {
     async getDriverTripOffers(idClientRequest: number): Promise<DriverTripOffer[] | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.get<DriverTripOffer[]>(`/driver-trip-offers/findByClientRequest/${idClientRequest}`);
-            console.log('Response', response.data);
 
             return response.data;
         } catch (error: any) {

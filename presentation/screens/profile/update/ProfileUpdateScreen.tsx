@@ -36,7 +36,6 @@ export default function ProfileUpdateScreen({ navigation, route }: Props) {
             quality: 1,
         });
 
-        console.log(result);
 
         if (!result.canceled) {
             setImage(result.assets[0].uri);
@@ -58,7 +57,6 @@ export default function ProfileUpdateScreen({ navigation, route }: Props) {
             quality: 1,
         });
 
-        console.log(result);
 
         if (!result.canceled) {
             setImage(result.assets[0].uri);

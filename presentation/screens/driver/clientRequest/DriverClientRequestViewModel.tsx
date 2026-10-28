@@ -45,13 +45,13 @@ export class DriverClientRequestViewModel {
     }
 
     listenerNewClientRequestSocket(callback: (data: any) => void){
-        this.socketService.onMessage('created_client_request', (data: any) => {
+        return this.socketService.onMessage('created_client_request', (data: any) => {
             callback(data);
         });
     }
 
     listenerNewDriverAssignedSocket(idDriver: number, callback: (data: any) => void){
-        this.socketService.onMessage(`driver_assigned/${idDriver}`, (data: any) => {
+        return this.socketService.onMessage(`driver_assigned/${idDriver}`, (data: any) => {
             callback(data);
         });
     }

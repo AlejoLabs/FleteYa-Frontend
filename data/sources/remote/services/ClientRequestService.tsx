@@ -11,7 +11,6 @@ export class ClientRequestService {
     async create(clientRequest: ClientRequest): Promise<number | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.post<number>(`/client-requests`, clientRequest);
-            console.log('Response', response.data);
 
             return response.data;
         } catch (error: any) {
@@ -39,7 +38,6 @@ export class ClientRequestService {
             if (size !== undefined) params.push(`size=${size}`);
             const query = params.length > 0 ? `?${params.join('&')}` : '';
             const response = await ApiRequestHandler.get<TimeAndDistanceValues>(`/client-requests/${origin.latitude}/${origin.longitude}/${destination.latitude}/${destination.longitude}${query}`);
-            console.log('Response', response.data);
 
             return response.data;
         } catch (error: any) {
@@ -63,7 +61,6 @@ export class ClientRequestService {
     async getNearbyTripRequest(driverPosition: LatLng): Promise<ClientRequestResponse[] | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.get<ClientRequestResponse[]>(`/client-requests/${driverPosition.latitude}/${driverPosition.longitude}`);
-            console.log('Response', response.data);
 
             return response.data;
         } catch (error: any) {
@@ -87,7 +84,6 @@ export class ClientRequestService {
     async getByClientAssigned(idClient: number): Promise<ClientRequestResponse[] | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.get<ClientRequestResponse[]>(`/client-requests/client/assigned/${idClient}`);
-            console.log('Response', response.data);
 
             return response.data;
         } catch (error: any) {
@@ -111,7 +107,6 @@ export class ClientRequestService {
     async getByDriverAssigned(idDriver: number): Promise<ClientRequestResponse[] | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.get<ClientRequestResponse[]>(`/client-requests/driver/assigned/${idDriver}`);
-            console.log('Response', response.data);
 
             return response.data;
         } catch (error: any) {
@@ -135,7 +130,6 @@ export class ClientRequestService {
     async getClientRequestById(idClientRequest: number): Promise<ClientRequestResponse | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.get<ClientRequestResponse>(`/client-requests/${idClientRequest}`);
-            console.log('Response', response.data);
 
             return response.data;
         } catch (error: any) {
@@ -163,7 +157,6 @@ export class ClientRequestService {
                 'id_driver_assigned': idDriver,
                 'fare_assigned': fareAssigned
             });
-            console.log('Response', response.data);
 
             return response.data;
         } catch (error: any) {
@@ -190,7 +183,6 @@ export class ClientRequestService {
                 'id': idClientRequest,
                 'status': status
             });
-            console.log('Response', response.data);
 
             return Boolean(response.data);
         } catch (error: any) {
@@ -217,7 +209,6 @@ export class ClientRequestService {
                 'id': idClientRequest,
                 'driver_rating': rating
             });
-            console.log('Response', response.data);
 
             return Boolean(response.data);
         } catch (error: any) {
@@ -244,7 +235,6 @@ export class ClientRequestService {
                 'id': idClientRequest,
                 'client_rating': rating
             });
-            console.log('Response', response.data);
 
             return Boolean(response.data);
         } catch (error: any) {

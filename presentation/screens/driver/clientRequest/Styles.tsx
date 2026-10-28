@@ -10,7 +10,6 @@ const styles = StyleSheet.create({
         borderRadius: 50
     },
     itemContainer: {
-        height: 260,
         backgroundColor: 'white',
         elevation: 2,
         marginTop: 10,
@@ -42,7 +41,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     modalContent: {
-        height: '27%',
         backgroundColor: "white",
         borderRadius: 20,
         marginLeft: 20,

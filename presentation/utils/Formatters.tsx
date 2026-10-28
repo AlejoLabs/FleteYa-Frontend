@@ -1,0 +1,26 @@
+export const formatCOP = (value?: number | null): string => {
+  const amount = typeof value === 'number' && !isNaN(value) ? value : 0;
+  return amount.toLocaleString('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+}
+
+export const formatTripDate = (value?: string | Date | null): string => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleString('es-CO', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+// El valor del viaje es el acordado al aceptar una oferta; mientras no haya, se muestra la oferta del cliente
+export const getTripFare = (clientRequest: { fare_offered: number; fare_assigned?: number | null }): number =>
+  clientRequest.fare_assigned ?? clientRequest.fare_offered;
