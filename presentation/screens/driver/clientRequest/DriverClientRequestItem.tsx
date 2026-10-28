@@ -8,6 +8,8 @@ import { AuthResponse } from "../../../../domain/models/AuthResponse";
 import { formatCOP, formatErrorMessage } from "../../../utils/Formatters";
 import CargoInfo from "../../../components/CargoInfo";
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
+import { Photo } from "../../../../domain/models/Photo";
+import PhotoStrip from "../../../components/PhotoStrip";
 
 interface Props {
     clientRequestResponse: ClientRequestResponse;
@@ -27,6 +29,22 @@ export function DriverClientRequestItem({ clientRequestResponse, viewModel, auth
     const [counterFare, setCounterFare] = useState<number>(clientFare);
     const [isSending, setIsSending] = useState(false);
     const myOffer = clientRequestResponse.my_offer ?? null;
+    const cargoPhotos = clientRequestResponse.cargo_photos ?? 0;
+    // Las fotos se piden solo cuando el conductor quiere verlas, para no cargar todas las de la lista
+    const [photos, setPhotos] = useState<Photo[] | null>(null);
+
+    const togglePhotos = async () => {
+        if (photos) {
+            setPhotos(null);
+            return;
+        }
+        const response = await viewModel.getTripPhotos(clientRequestResponse.id);
+        if (Array.isArray(response)) {
+            setPhotos(response);
+        } else {
+            ToastAndroid.show(formatErrorMessage(response.message), ToastAndroid.LONG);
+        }
+    }
 
     const sendOffer = async (fare: number) => {
         if (isSending) return;
@@ -77,6 +95,13 @@ export function DriverClientRequestItem({ clientRequestResponse, viewModel, auth
             <Text>Recoger en: {clientRequestResponse.pickup_description}</Text>
             <Text>Llevar a: {clientRequestResponse.destination_description}</Text>
             <CargoInfo request={clientRequestResponse} />
+            {cargoPhotos > 0 &&
+                <TouchableOpacity style={{ paddingVertical: 6 }} onPress={togglePhotos}>
+                    <Text style={{ color: '#0a66c2', fontWeight: 'bold' }}>
+                        {photos ? 'Ocultar fotos' : `Ver fotos de la carga (${cargoPhotos})`}
+                    </Text>
+                </TouchableOpacity>}
+            {photos && <PhotoStrip items={photos.map((photo) => ({ key: String(photo.id), path: photo.url }))} />}
             <Text style={{ marginTop: 2 }}>Cliente: {clientRequestResponse.client.name} {clientRequestResponse.client.lastname}</Text>
 
             <View style={styles.actionsRow}>

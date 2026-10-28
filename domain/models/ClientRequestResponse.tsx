@@ -41,6 +41,10 @@ export interface ClientRequestResponse {
     cancel_reason?:          string | null;
     // Precio de la oferta pendiente del conductor que consulta la lista, si ya ofertó
     my_offer?:               number | null;
+    // Cuántas fotos de la carga subió el cliente (lista del conductor)
+    cargo_photos?:           number;
+    // Código de 4 dígitos para cerrar la entrega; solo llega cuando consulta el cliente
+    delivery_code?:          string | null;
 }
 
 // Búsqueda o viaje en curso del usuario (GET /client-requests/me/active)

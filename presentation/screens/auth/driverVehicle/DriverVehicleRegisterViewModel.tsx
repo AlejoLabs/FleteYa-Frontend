@@ -3,12 +3,14 @@ import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { User } from "../../../../domain/models/User";
 import { VehicleType } from "../../../../domain/models/ClientRequest";
 import { AuthUseCases } from "../../../../domain/useCases/auth/AuthUseCases";
+import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 import { parseDayMonthYear } from "../../../utils/Formatters";
 
 export const LICENSE_CATEGORIES = ['B1', 'B2', 'B3', 'C1', 'C2', 'C3'];
 // Igual que el backend: B1/C1 sirven hasta furgón liviano (tipo NHR); el camión pide B2/C2 o superior
 export const HEAVY_CATEGORIES = ['B2', 'B3', 'C2', 'C3'];
 const PLATE_REGEX = /^[A-Z]{3}\d{3}$/;
+export const MAX_VEHICLE_PHOTOS = 4;
 
 // Lo que la persona escribe en el formulario, tal cual, antes de validar
 export interface DriverVehicleForm {
@@ -24,6 +26,8 @@ export interface DriverVehicleForm {
     soatExpires: string;
     technoExpires: string;
     propertyCard: string;
+    // Fotos ya comprimidas en el teléfono; se suben con el token que devuelve el registro
+    photos: string[];
 }
 
 export const EMPTY_DRIVER_VEHICLE_FORM: DriverVehicleForm = {
@@ -39,6 +43,7 @@ export const EMPTY_DRIVER_VEHICLE_FORM: DriverVehicleForm = {
     soatExpires: '',
     technoExpires: '',
     propertyCard: '',
+    photos: [],
 };
 
 export const isHeavyVehicle = (vehicleType: VehicleType | null) => vehicleType === 'CAMION';
@@ -48,9 +53,11 @@ const normalizePlate = (plate: string) => plate.toUpperCase().replace(/[\s-]/g, 
 export class DriverVehicleRegisterViewModel {
 
     private authUseCases: AuthUseCases;
+    private photoUseCases: PhotoUseCases;
 
-    constructor({ authUseCases }: { authUseCases: AuthUseCases }) {
+    constructor({ authUseCases, photoUseCases }: { authUseCases: AuthUseCases, photoUseCases: PhotoUseCases }) {
         this.authUseCases = authUseCases;
+        this.photoUseCases = photoUseCases;
     }
 
     // Todos los problemas a la vez, para que la persona los corrija de una
@@ -68,12 +75,13 @@ export class DriverVehicleRegisterViewModel {
             !parseDayMonthYear(form.soatExpires) && 'La fecha de vencimiento del SOAT debe ser DD/MM/AAAA',
             form.technoExpires.trim() !== '' && !parseDayMonthYear(form.technoExpires) && 'La fecha de la revisión técnico-mecánica debe ser DD/MM/AAAA',
             form.propertyCard.trim().length < 5 && 'Escribe el número de la tarjeta de propiedad',
+            form.photos.length === 0 && 'Agrega al menos una foto del vehículo',
         ].filter(Boolean) as string[];
     }
 
     // Llamar solo después de validate() sin problemas
     async registerDriver(account: User, form: DriverVehicleForm): Promise<AuthResponse | ErrorResponse> {
-        return await this.authUseCases.registerDriver.execute(account, {
+        const response = await this.authUseCases.registerDriver.execute(account, {
             vehicle_type: form.vehicleType!,
             brand: form.brand.trim(),
             color: form.color.trim(),
@@ -87,5 +95,12 @@ export class DriverVehicleRegisterViewModel {
             techno_expires_at: form.technoExpires.trim() ? parseDayMonthYear(form.technoExpires)! : undefined,
             property_card_number: form.propertyCard.trim(),
         });
+        if ('token' in response) {
+            // La cuenta ya existe: si una foto falla, puede volver a subirla desde "Mi vehículo"
+            for (const uri of form.photos) {
+                await this.photoUseCases.uploadVehiclePhoto.execute(uri, response.token);
+            }
+        }
+        return response;
     }
 }

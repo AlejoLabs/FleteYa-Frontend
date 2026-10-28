@@ -72,6 +72,19 @@ import { DriverCarInfoViewModel } from "../presentation/screens/driver/carInfo/D
 import { RaiseFareUseCase } from "../domain/useCases/clientRequest/RaiseFareUseCase";
 import { CancelClientRequestUseCase } from "../domain/useCases/clientRequest/CancelClientRequestUseCase";
 import { DismissClientRequestUseCase } from "../domain/useCases/clientRequest/DismissClientRequestUseCase";
+import { DeliverClientRequestUseCase } from "../domain/useCases/clientRequest/DeliverClientRequestUseCase";
+import { ConfirmDeliveryUseCase } from "../domain/useCases/clientRequest/ConfirmDeliveryUseCase";
+import { GetMyDocumentsUseCase } from "../domain/useCases/driverCarInfo/GetMyDocumentsUseCase";
+import { SaveNotificationTokenUseCase } from "../domain/useCases/user/SaveNotificationTokenUseCase";
+import { PhotoService } from "../data/sources/remote/services/PhotoService";
+import { PhotoRepositoryImpl } from "../data/repository/PhotoRepositoryImpl";
+import { UploadTripPhotoUseCase } from "../domain/useCases/photo/UploadTripPhotoUseCase";
+import { GetTripPhotosUseCase } from "../domain/useCases/photo/GetTripPhotosUseCase";
+import { DeleteTripPhotoUseCase } from "../domain/useCases/photo/DeleteTripPhotoUseCase";
+import { UploadVehiclePhotoUseCase } from "../domain/useCases/photo/UploadVehiclePhotoUseCase";
+import { GetVehiclePhotosUseCase } from "../domain/useCases/photo/GetVehiclePhotosUseCase";
+import { DeleteVehiclePhotoUseCase } from "../domain/useCases/photo/DeleteVehiclePhotoUseCase";
+import { PhotoUseCases } from "../domain/useCases/photo/PhotoUseCases";
 import { GetMyActiveTripsUseCase } from "../domain/useCases/clientRequest/GetMyActiveTripsUseCase";
 import { ChangeDriverTripOfferStatusUseCase } from "../domain/useCases/driverTripOffer/ChangeDriverTripOfferStatusUseCase";
 import { UpcomingTripsViewModel } from "../presentation/screens/upcoming/UpcomingTripsViewModel";
@@ -103,10 +116,22 @@ const authUseCases = new AuthUseCases({
     getAuthSessionUseCase,
     removeAuthSessionUseCase
 });
+// Las fotos las usan varias pantallas (registro, solicitud, viaje): se crean antes que sus ViewModels
+// Las fotos las usan varias pantallas (registro, solicitud, viaje): se crean antes que sus ViewModels
+const photoService = new PhotoService();
+const photoRepository = new PhotoRepositoryImpl({ photoService });
+const photoUseCases = new PhotoUseCases({
+    uploadTripPhotoUseCase: new UploadTripPhotoUseCase({ photoRepository }),
+    getTripPhotosUseCase: new GetTripPhotosUseCase({ photoRepository }),
+    deleteTripPhotoUseCase: new DeleteTripPhotoUseCase({ photoRepository }),
+    uploadVehiclePhotoUseCase: new UploadVehiclePhotoUseCase({ photoRepository }),
+    getVehiclePhotosUseCase: new GetVehiclePhotosUseCase({ photoRepository }),
+    deleteVehiclePhotoUseCase: new DeleteVehiclePhotoUseCase({ photoRepository }),
+});
 const loginViewModel = new LoginViewModel({ authUseCases });
 const registerViewModel = new RegisterViewModel({ authUseCases });
 const forgotPasswordViewModel = new ForgotPasswordViewModel({ authUseCases });
-const driverVehicleRegisterViewModel = new DriverVehicleRegisterViewModel({ authUseCases });
+const driverVehicleRegisterViewModel = new DriverVehicleRegisterViewModel({ authUseCases, photoUseCases });
 const changePasswordViewModel = new ChangePasswordViewModel({ authUseCases });
 
 const googlePlaceService = new GooglePlaceServices();
@@ -130,8 +155,10 @@ const updateClientRatingUseCase = new UpdateClientRatingUseCase({ clientRequestR
 const raiseFareUseCase = new RaiseFareUseCase({ clientRequestRepository });
 const cancelClientRequestUseCase = new CancelClientRequestUseCase({ clientRequestRepository });
 const dismissClientRequestUseCase = new DismissClientRequestUseCase({ clientRequestRepository });
+const deliverClientRequestUseCase = new DeliverClientRequestUseCase({ clientRequestRepository });
+const confirmDeliveryUseCase = new ConfirmDeliveryUseCase({ clientRequestRepository });
 const getMyActiveTripsUseCase = new GetMyActiveTripsUseCase({ clientRequestRepository });
-const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, getClientRequestByIdUseCase, createClientRequestUseCase, updateDriverAssignedUseCase, updateStatusUseCase, updateDriverRatingUseCase, updateClientRatingUseCase, getByClientAssignedUseCase, getByDriverAssignedUseCase, raiseFareUseCase, cancelClientRequestUseCase, dismissClientRequestUseCase, getMyActiveTripsUseCase });
+const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, getClientRequestByIdUseCase, createClientRequestUseCase, updateDriverAssignedUseCase, updateStatusUseCase, updateDriverRatingUseCase, updateClientRatingUseCase, getByClientAssignedUseCase, getByDriverAssignedUseCase, raiseFareUseCase, cancelClientRequestUseCase, dismissClientRequestUseCase, getMyActiveTripsUseCase, deliverClientRequestUseCase, confirmDeliveryUseCase });
 const upcomingTripsViewModel = new UpcomingTripsViewModel({ clientRequestUseCases });
 const socketService = new SocketService({} as any);
 const driverPositionService = new DriverPositionService();
@@ -143,14 +170,16 @@ const driverCarInfoService = new DriverCarInfoService();
 const driverCarInfoRepository = new DriverCarInfoRepositoryImpl({ driverCarInfoService });
 const createDriverCarInfoUseCase = new CreateDriverCarInfoUseCase({ driverCarInfoRepository });
 const getDriverCarInfoUseCase = new GetDriverCarInfoUseCase({ driverCarInfoRepository });
-const driverCarInfoUseCases = new DriverCarInfoUseCases({ createDriverCarInfoUseCase, getDriverCarInfoUseCase });
-const driverCarInfoViewModel = new DriverCarInfoViewModel({ driverCarInfoUseCases });
+const getMyDocumentsUseCase = new GetMyDocumentsUseCase({ driverCarInfoRepository });
+const driverCarInfoUseCases = new DriverCarInfoUseCases({ createDriverCarInfoUseCase, getDriverCarInfoUseCase, getMyDocumentsUseCase });
+const driverCarInfoViewModel = new DriverCarInfoViewModel({ driverCarInfoUseCases, photoUseCases });
 const userService = new UserService();
 const driverMyLocationMapViewModel = new DriverMyLocationMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverPositionUseCases });
 const userRepository = new UserRepositoryImpl(userService);
 const updateUserUseCase = new UpdateUserUseCase(userRepository);
 const updateImageUserUseCase = new UpdateImageUserUseCase(userRepository);
-const userUseCases = new UserUseCases({ updateUserUseCase, updateImageUserUseCase });
+const saveNotificationTokenUseCase = new SaveNotificationTokenUseCase(userRepository);
+const userUseCases = new UserUseCases({ updateUserUseCase, updateImageUserUseCase, saveNotificationTokenUseCase });
 const profileUpdateViewModel = new ProfileUpdateViewModel(userUseCases);
 const driverTripOfferService = new DriverTripOfferService();
 const driverTripOfferRepository = new DriverTripOfferRepositoryImpl({ driverTripOfferService });
@@ -158,14 +187,14 @@ const createDriverTripOfferUseCase = new CreateDriverTripOfferUseCase({ driverTr
 const getDriverTripOfferUseCase = new GetDriverTripOfferUseCase({ driverTripOfferRepository });
 const changeDriverTripOfferStatusUseCase = new ChangeDriverTripOfferStatusUseCase({ driverTripOfferRepository });
 const driverTripOfferUseCases = new DriverTripOfferUseCases({ createDriverTripOfferUseCase, getDriverTripOfferUseCase, changeDriverTripOfferStatusUseCase });
-const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverTripOfferUseCases, driverCarInfoUseCases });
-const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, driverCarInfoUseCases });
-const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases });
+const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverTripOfferUseCases, driverCarInfoUseCases, photoUseCases });
+const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, driverCarInfoUseCases, photoUseCases });
+const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, photoUseCases });
 const driverTripRatingViewModel = new DriverTripRatingViewModel({ clientRequestUseCases });
 const clientTripRatingViewModel = new ClientTripRatingViewModel({ clientRequestUseCases });
 const clientTripHistoryViewModel = new ClientTripHistoryViewModel({ clientRequestUseCases });
 const driverTripHistoryViewModel = new DriverTripHistoryViewModel({ clientRequestUseCases });
-const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases, driverPositionUseCases, driverTripOfferUseCases, socketService });
+const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRequestUseCases, driverPositionUseCases, driverTripOfferUseCases, socketService, photoUseCases });
 
 
 type ContainerDeps = {

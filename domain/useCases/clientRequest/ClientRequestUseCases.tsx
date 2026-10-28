@@ -1,3 +1,5 @@
+import { DeliverClientRequestUseCase } from "./DeliverClientRequestUseCase";
+import { ConfirmDeliveryUseCase } from "./ConfirmDeliveryUseCase";
 import { CreateClientRequestUseCase } from "./CreateClientRequestUseCase";
 import { GetByClientAssignedUseCase } from "./GetByClientAssignedUseCase";
 import { GetByDriverAssignedUseCase } from "./GetByDriverAssignedUseCase";
@@ -27,6 +29,8 @@ export class ClientRequestUseCases {
     raiseFare: RaiseFareUseCase;
     cancel: CancelClientRequestUseCase;
     dismiss: DismissClientRequestUseCase;
+    deliver: DeliverClientRequestUseCase;
+    confirmDelivery: ConfirmDeliveryUseCase;
     getMyActiveTrips: GetMyActiveTripsUseCase;
 
     constructor(
@@ -44,6 +48,8 @@ export class ClientRequestUseCases {
             raiseFareUseCase,
             cancelClientRequestUseCase,
             dismissClientRequestUseCase,
+            deliverClientRequestUseCase,
+            confirmDeliveryUseCase,
             getMyActiveTripsUseCase
         }: {
             getTimeAndDistanceUseCase: GetTimeAndDistanceUseCase;
@@ -59,6 +65,8 @@ export class ClientRequestUseCases {
             raiseFareUseCase: RaiseFareUseCase;
             cancelClientRequestUseCase: CancelClientRequestUseCase;
             dismissClientRequestUseCase: DismissClientRequestUseCase;
+            deliverClientRequestUseCase: DeliverClientRequestUseCase;
+            confirmDeliveryUseCase: ConfirmDeliveryUseCase;
             getMyActiveTripsUseCase: GetMyActiveTripsUseCase;
         }
     ) {
@@ -75,6 +83,8 @@ export class ClientRequestUseCases {
         this.raiseFare = raiseFareUseCase;
         this.cancel = cancelClientRequestUseCase;
         this.dismiss = dismissClientRequestUseCase;
+        this.deliver = deliverClientRequestUseCase;
+        this.confirmDelivery = confirmDeliveryUseCase;
         this.getMyActiveTrips = getMyActiveTripsUseCase;
         
     }

@@ -45,6 +45,24 @@ export class ClientRequestService {
         }
     }
 
+    async deliver(idClientRequest: number, code: string): Promise<boolean | ErrorResponse> {
+        try {
+            await ApiRequestHandler.post(`/client-requests/${idClientRequest}/deliver`, { code });
+            return true;
+        } catch (error: any) {
+            return this.toErrorResponse(error);
+        }
+    }
+
+    async confirmDelivery(idClientRequest: number): Promise<boolean | ErrorResponse> {
+        try {
+            await ApiRequestHandler.put(`/client-requests/${idClientRequest}/confirm-delivery`, {});
+            return true;
+        } catch (error: any) {
+            return this.toErrorResponse(error);
+        }
+    }
+
     async getMyActiveTrips(): Promise<ActiveTrip[] | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.get<ActiveTrip[]>(`/client-requests/me/active`);

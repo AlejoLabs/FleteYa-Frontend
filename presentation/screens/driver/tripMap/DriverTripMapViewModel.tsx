@@ -4,28 +4,50 @@ import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { ClientRequestUseCases } from "../../../../domain/useCases/clientRequest/ClientRequestUseCases";
 import { GooglePlaceUseCases } from "../../../../domain/useCases/GooglePlaces/GooglePlacesUseCases";
 import { Status } from "../../../../domain/repository/ClientRequestRepository";
+import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
+import { TripPhotoKind } from "../../../../domain/models/Photo";
 
 export class DriverTripMapViewModel {
     
     private clientRequestUseCases: ClientRequestUseCases;
     private socketService: SocketService;
     private googlePlaceUseCases: GooglePlaceUseCases;
+    private photoUseCases: PhotoUseCases;
 
     constructor(
         {
             clientRequestUseCases,
             socketService,
-            googlePlaceUseCases
+            googlePlaceUseCases,
+            photoUseCases
         }: 
         {
             clientRequestUseCases: ClientRequestUseCases
             socketService: SocketService,
-            googlePlaceUseCases: GooglePlaceUseCases
+            googlePlaceUseCases: GooglePlaceUseCases,
+            photoUseCases: PhotoUseCases
         }
     ) {
         this.clientRequestUseCases = clientRequestUseCases;
         this.socketService = socketService;
         this.googlePlaceUseCases = googlePlaceUseCases;
+        this.photoUseCases = photoUseCases;
+    }
+
+    // Prueba de entrega: foto al cargar (PICKUP) y al entregar (DELIVERY)
+    async uploadTripPhoto(idClientRequest: number, kind: TripPhotoKind, uri: string) {
+        return await this.photoUseCases.uploadTripPhoto.execute(idClientRequest, kind, uri);
+    }
+
+    async deliver(idClientRequest: number, code: string) {
+        return await this.clientRequestUseCases.deliver.execute(idClientRequest, code);
+    }
+
+    // El cliente puede confirmar la entrega desde su app; el servidor avisa con el estado nuevo
+    listenerTripFinished(idClientRequest: number, callback: () => void) {
+        return this.socketService.onMessage(`new_status_trip/${idClientRequest}`, (data: any) => {
+            if (data?.status === 'FINISHED') callback();
+        });
     }
 
     initSocket(){

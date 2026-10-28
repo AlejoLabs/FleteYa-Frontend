@@ -5,6 +5,7 @@ import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { G } from "react-native-svg";
 import { GooglePlaceUseCases } from "../../../../domain/useCases/GooglePlaces/GooglePlacesUseCases";
 import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
+import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 
 export class ClientTripMapViewModel {
     
@@ -12,25 +13,42 @@ export class ClientTripMapViewModel {
     private socketService: SocketService;
     private googlePlaceUseCases: GooglePlaceUseCases;
     private driverCarInfoUseCases: DriverCarInfoUseCases;
+    private photoUseCases: PhotoUseCases;
 
     constructor(
         {
             clientRequestUseCases,
             socketService,
             googlePlaceUseCases,
-            driverCarInfoUseCases
-        }: 
+            driverCarInfoUseCases,
+            photoUseCases
+        }:
         {
             clientRequestUseCases: ClientRequestUseCases,
             socketService: SocketService,
             googlePlaceUseCases: GooglePlaceUseCases,
-            driverCarInfoUseCases: DriverCarInfoUseCases
+            driverCarInfoUseCases: DriverCarInfoUseCases,
+            photoUseCases: PhotoUseCases
         }
     ) {
         this.clientRequestUseCases = clientRequestUseCases;
         this.socketService = socketService;
         this.googlePlaceUseCases = googlePlaceUseCases;
         this.driverCarInfoUseCases = driverCarInfoUseCases;
+        this.photoUseCases = photoUseCases;
+    }
+
+    async getTripPhotos(idClientRequest: number) {
+        return await this.photoUseCases.getTripPhotos.execute(idClientRequest);
+    }
+
+    async confirmDelivery(idClientRequest: number) {
+        return await this.clientRequestUseCases.confirmDelivery.execute(idClientRequest);
+    }
+
+    // El conductor tomó una foto al cargar o al entregar: se recarga la lista
+    listenerTripPhoto(idClientRequest: number, callback: () => void) {
+        return this.socketService.onMessage(`trip_photo/${idClientRequest}`, () => callback());
     }
 
     initSocket(){

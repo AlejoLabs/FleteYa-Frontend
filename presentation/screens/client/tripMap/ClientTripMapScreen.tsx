@@ -1,4 +1,4 @@
-import { View, Image, Animated, Dimensions, Text, TouchableOpacity, ToastAndroid, ScrollView } from "react-native"
+import { View, Image, Animated, Dimensions, Text, TouchableOpacity, ToastAndroid, ScrollView, Alert } from "react-native"
 import { StackScreenProps } from "@react-navigation/stack";
 import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
 import { container } from "../../../../di/container";
@@ -19,6 +19,8 @@ import TripProgress from "../../../components/TripProgress";
 import CargoInfo from "../../../components/CargoInfo";
 import CancelReasonModal from "../../../components/CancelReasonModal";
 import { CLIENT_CANCEL_REASONS, DRIVER_STATUS_LABELS } from "../../../utils/Cargo";
+import { Photo } from "../../../../domain/models/Photo";
+import DeliveryProofSection from "./DeliveryProofSection";
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientTripMapScreen'> { };
 export function ClientTripMapScreen({ navigation, route }: Props) {
@@ -39,6 +41,29 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     const [etaMinutesFromRoute, setEtaMinutesFromRoute] = useState<number | null>(null);
     const socketListeners = useRef<(() => void)[]>([]);
     const [isCancelVisible, setIsCancelVisible] = useState(false);
+    const [tripPhotos, setTripPhotos] = useState<Photo[]>([]);
+
+    const loadTripPhotos = async () => {
+        const response = await viewModel.getTripPhotos(idClientRequest);
+        if (Array.isArray(response)) setTripPhotos(response);
+    }
+
+    // Para cuando el cliente mismo recibe la carga o el conductor agotó los intentos del código
+    const handleConfirmDelivery = () => {
+        Alert.alert('¿Ya recibiste la carga?', 'Se cerrará el viaje como entregado.', [
+            { text: 'Todavía no', style: 'cancel' },
+            {
+                text: 'Sí, la recibí', onPress: async () => {
+                    const response = await viewModel.confirmDelivery(idClientRequest);
+                    if (response === true) {
+                        setCurrentStatus(Status.FINISHED);
+                    } else {
+                        ToastAndroid.show(formatErrorMessage((response as ErrorResponse).message), ToastAndroid.LONG);
+                    }
+                }
+            },
+        ]);
+    }
 
     const leaveTrip = () => {
         // reset: si el viaje se abrió desde "Próximos fletes" no hay pantalla anterior en este stack
@@ -63,7 +88,9 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
             ToastAndroid.show(`El conductor canceló el viaje${reason ? `: ${reason}` : ''}`, ToastAndroid.LONG);
             leaveTrip();
         });
-        socketListeners.current.push(offCanceled);
+        const offPhoto = viewModel.listenerTripPhoto(idClientRequest, loadTripPhotos);
+        socketListeners.current.push(offCanceled, offPhoto);
+        loadTripPhotos();
         return () => {
             socketListeners.current.forEach((off) => off());
             socketListeners.current = [];
@@ -291,6 +318,14 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
 
                     <TripProgress status={currentStatus} />
                     <Text style={styles.statusText}>{DRIVER_STATUS_LABELS[currentStatus] ?? ''}</Text>
+
+                    <DeliveryProofSection
+                        deliveryCode={currentStatus !== Status.FINISHED ? clientRequest?.delivery_code : null}
+                        receiverName={clientRequest?.receiver_name}
+                        photos={tripPhotos}
+                        canConfirm={currentStatus === Status.TRAVELING}
+                        onConfirm={handleConfirmDelivery}
+                    />
 
                     <Text style={styles.textTitle}>TU CONDUCTOR</Text>
                     <View style={styles.rowContainer}>

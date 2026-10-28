@@ -29,6 +29,17 @@ export class UserService {
         }
     }
 
+    async saveNotificationToken(token: string | null): Promise<boolean | ErrorResponse> {
+        try {
+            await ApiRequestHandler.put('/users/me/notification-token', { token });
+            return true;
+        } catch (error: any) {
+            if (error.response) return error.response.data;
+            console.log('Error en la peticion', error.message);
+            return defaultErrorResponse;
+        }
+    }
+
     async updateWithImage(user: User, image: string) {
         try {
             const formData = new FormData();

@@ -7,7 +7,7 @@ const styles = StyleSheet.create({
     },
     boxBackground: {
         width: '100%',
-        height: 300,
+        height: 240,
         backgroundColor: '#018786',
         alignItems: 'center',
     },
@@ -19,10 +19,9 @@ const styles = StyleSheet.create({
     },
     cardUserInfo: {
        backgroundColor: 'white',
-       position: 'absolute',
-       width: '80%',
-       height: '45%',
-       top: 150,
+       width: '85%',
+       marginTop: -140,
+       paddingBottom: 20,
        borderRadius: 15,
        alignSelf: 'center',
        elevation: 3,
@@ -48,8 +47,7 @@ const styles = StyleSheet.create({
 
     },
     viewActions: {
-        position: 'absolute',
-        bottom: 50,
+        marginTop: 20,
     },
     iconContainer: {
         flexDirection: 'row',

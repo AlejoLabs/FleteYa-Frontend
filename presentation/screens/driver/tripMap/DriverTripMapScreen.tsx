@@ -18,13 +18,17 @@ import CargoInfo from "../../../components/CargoInfo";
 import CancelReasonModal from "../../../components/CancelReasonModal";
 import { DRIVER_CANCEL_REASONS } from "../../../utils/Cargo";
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
+import { pickPhoto } from "../../../utils/PhotoPicker";
+import { PhotoItem } from "../../../components/PhotoStrip";
+import DeliveryModal from "./DeliveryModal";
 
 // Siguiente paso del viaje para el conductor: llegar al origen, recoger la carga y entregarla
 const NEXT_STEP: Partial<Record<Status, { status: Status; label: string }>> = {
     [Status.ACCEPTED]: { status: Status.ARRIVED, label: 'NOTIFICAR LLEGADA' },
     [Status.ON_THE_WAY]: { status: Status.ARRIVED, label: 'NOTIFICAR LLEGADA' },
-    [Status.ARRIVED]: { status: Status.TRAVELING, label: 'CARGA RECOGIDA' },
-    [Status.TRAVELING]: { status: Status.FINISHED, label: 'FINALIZAR VIAJE' },
+    // Recoger pide una foto de la carga; entregar abre la prueba de entrega (foto y código)
+    [Status.ARRIVED]: { status: Status.TRAVELING, label: 'FOTO Y CARGA RECOGIDA' },
+    [Status.TRAVELING]: { status: Status.FINISHED, label: 'ENTREGAR CARGA' },
 };
 const CANCELABLE = [Status.ACCEPTED, Status.ON_THE_WAY, Status.ARRIVED];
 
@@ -43,6 +47,9 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
     const [currentStatus, setCurrentStatus] = useState(Status.ACCEPTED);
     const [isCancelVisible, setIsCancelVisible] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [isDeliveryVisible, setIsDeliveryVisible] = useState(false);
+    const [deliveryPhotos, setDeliveryPhotos] = useState<PhotoItem[]>([]);
+    const [deliveryMessage, setDeliveryMessage] = useState<string | null>(null);
 
     const handleGetClientRequestById = async () => {
         const response = await viewModel.getClientRequestById(idClientRequest);
@@ -53,10 +60,60 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
         }
     }
 
+    // Foto con la cámara y subida al viaje; devuelve null si se canceló o falló
+    const takeTripPhoto = async (kind: 'PICKUP' | 'DELIVERY'): Promise<PhotoItem | null> => {
+        const photo = await pickPhoto('camera');
+        if (!photo.ok) {
+            if (!photo.cancelled) ToastAndroid.show(photo.message, ToastAndroid.LONG);
+            return null;
+        }
+        const response = await viewModel.uploadTripPhoto(idClientRequest, kind, photo.uri);
+        if ('statusCode' in response) {
+            ToastAndroid.show(formatErrorMessage(response.message), ToastAndroid.LONG);
+            return null;
+        }
+        return { key: String(response.id), localUri: photo.uri };
+    }
+
+    // El servidor avisa FINISHED a los dos: si el conductor cerró con el código, ese aviso no debe repetir el cierre
+    const isFinished = useRef(false);
+    const finishTrip = () => {
+        if (isFinished.current) return;
+        isFinished.current = true;
+        setIsDeliveryVisible(false);
+        stopRealTimeLocation();
+        navigation.replace('DriverTripRatingScreen', { clientRequest: clientRequest! });
+    }
+
+    const handleDeliver = async (code: string) => {
+        setIsUpdating(true);
+        setDeliveryMessage(null);
+        const response = await viewModel.deliver(idClientRequest, code);
+        setIsUpdating(false);
+        if (response === true) {
+            ToastAndroid.show('Entrega confirmada', ToastAndroid.SHORT);
+            finishTrip();
+        } else {
+            setDeliveryMessage(formatErrorMessage((response as ErrorResponse).message));
+        }
+    }
+
     const handleNextStep = async () => {
         const next = NEXT_STEP[currentStatus];
         if (!next || isUpdating) return;
+        if (next.status === Status.FINISHED) {
+            setIsDeliveryVisible(true);
+            return;
+        }
         setIsUpdating(true);
+        if (next.status === Status.TRAVELING) {
+            ToastAndroid.show('Toma una foto de la carga ya subida al vehículo', ToastAndroid.SHORT);
+            const photo = await takeTripPhoto('PICKUP');
+            if (!photo) {
+                setIsUpdating(false);
+                return;
+            }
+        }
         const response = await viewModel.updateStatus(idClientRequest, next.status);
         setIsUpdating(false);
         if (typeof response !== 'boolean') {
@@ -71,8 +128,6 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                 { latitude: location!.latitude, longitude: location!.longitude },
                 { latitude: clientRequest!.destination_position.y, longitude: clientRequest!.destination_position.x }
             );
-        } else if (next.status === Status.FINISHED) {
-            navigation.replace('DriverTripRatingScreen', { clientRequest: clientRequest! });
         } else {
             ToastAndroid.show('Estado actualizado', ToastAndroid.SHORT);
         }
@@ -100,8 +155,16 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
             ToastAndroid.show(`El cliente canceló el viaje${reason ? `: ${reason}` : ''}`, ToastAndroid.LONG);
             leaveTrip();
         });
-        return off;
-    }, [idClientRequest]);
+        const offFinished = viewModel.listenerTripFinished(idClientRequest, () => {
+            if (isFinished.current) return;
+            ToastAndroid.show('El cliente confirmó que recibió la carga', ToastAndroid.LONG);
+            finishTrip();
+        });
+        return () => {
+            off();
+            offFinished();
+        };
+    }, [idClientRequest, clientRequest]);
 
     const moveCameraToLocation = (lat: number, lng: number) => {
         const camera: Camera = {
@@ -427,6 +490,18 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
 
                 </ScrollView>
             </Animated.View>
+            <DeliveryModal
+                visible={isDeliveryVisible}
+                photos={deliveryPhotos}
+                isSending={isUpdating}
+                message={deliveryMessage}
+                onTakePhoto={async () => {
+                    const photo = await takeTripPhoto('DELIVERY');
+                    if (photo) setDeliveryPhotos((photos) => [...photos, photo]);
+                }}
+                onSubmit={handleDeliver}
+                onClose={() => setIsDeliveryVisible(false)}
+            />
             <CancelReasonModal
                 visible={isCancelVisible}
                 title="Cancelar el viaje"

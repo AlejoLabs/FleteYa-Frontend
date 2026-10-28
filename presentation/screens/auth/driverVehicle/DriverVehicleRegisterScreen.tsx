@@ -6,10 +6,12 @@ import { container } from "../../../../di/container";
 import { useAuth } from "../../../hooks/useAuth";
 import FormField, { formStyles } from "../../../components/FormField";
 import ChipGroup from "../../../components/ChipGroup";
+import PhotoStrip from "../../../components/PhotoStrip";
+import { choosePhoto } from "../../../utils/PhotoPicker";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
 import { VEHICLES } from "../../../utils/Cargo";
 import { formatErrorMessage } from "../../../utils/Formatters";
-import { DriverVehicleForm, EMPTY_DRIVER_VEHICLE_FORM, HEAVY_CATEGORIES, LICENSE_CATEGORIES, isHeavyVehicle } from "./DriverVehicleRegisterViewModel";
+import { DriverVehicleForm, EMPTY_DRIVER_VEHICLE_FORM, HEAVY_CATEGORIES, LICENSE_CATEGORIES, MAX_VEHICLE_PHOTOS, isHeavyVehicle } from "./DriverVehicleRegisterViewModel";
 
 interface Props extends StackScreenProps<RootStackParamList, 'DriverVehicleRegisterScreen'> { };
 
@@ -23,6 +25,15 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
     const [isSending, setIsSending] = useState(false);
 
     const update = (changes: Partial<DriverVehicleForm>) => setForm((current) => ({ ...current, ...changes }));
+
+    const addPhoto = async () => {
+        const result = await choosePhoto('Foto del vehículo');
+        if (result.ok) {
+            setForm((current) => ({ ...current, photos: [...current.photos, result.uri] }));
+        } else if (!result.cancelled) {
+            Alert.alert('Foto', result.message);
+        }
+    }
     const isHeavy = isHeavyVehicle(form.vehicleType);
 
     const handleRegister = async () => {
@@ -96,6 +107,15 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
                     hint="Déjalo vacío si el vehículo es nuevo y todavía no la necesita."
                 />
                 <FormField label="Número de la tarjeta de propiedad" value={form.propertyCard} onChangeText={(propertyCard) => update({ propertyCard })} />
+
+                <Text style={formStyles.section}>Fotos del vehículo</Text>
+                <Text style={styles.label}>Al menos una donde se vea la placa. Los clientes las ven al comparar ofertas.</Text>
+                <PhotoStrip
+                    items={form.photos.map((uri) => ({ key: uri, localUri: uri }))}
+                    maxItems={MAX_VEHICLE_PHOTOS}
+                    onAdd={addPhoto}
+                    onRemove={(uri) => update({ photos: form.photos.filter((photo) => photo !== uri) })}
+                />
 
                 <DefaultRoundedButton
                     text={isSending ? 'Registrando...' : 'Crear mi cuenta de conductor'}

@@ -48,3 +48,6 @@ android/.gradle/
 android/build/
 android/app/build/
 android/app/release/
+
+# Configuración de Firebase del proyecto (cada quien descarga la suya desde la consola)
+android/app/google-services.json

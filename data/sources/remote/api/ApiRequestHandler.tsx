@@ -15,7 +15,8 @@ const ApiRequestHandler = axios.create({
 
 ApiRequestHandler.interceptors.request.use(async (config) => {
     const data = await new LocalStorage().getItem('auth');
-    if (data){
+    // Si la petición ya trae su token (por ejemplo, las fotos del vehículo justo después de registrarse), se respeta
+    if (data && !config.headers['Authorization']){
         const authResponse: AuthResponse = JSON.parse(data);
         config.headers['Authorization'] = authResponse.token;
     }

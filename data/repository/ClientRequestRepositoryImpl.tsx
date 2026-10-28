@@ -29,6 +29,14 @@ export class ClientRequestRepositoryImpl implements ClientRequestRepository {
     async dismiss(idClientRequest: number): Promise<boolean | ErrorResponse> {
         return await this.clientRequestService.dismiss(idClientRequest);
     }
+
+    async deliver(idClientRequest: number, code: string): Promise<boolean | ErrorResponse> {
+        return await this.clientRequestService.deliver(idClientRequest, code);
+    }
+
+    async confirmDelivery(idClientRequest: number): Promise<boolean | ErrorResponse> {
+        return await this.clientRequestService.confirmDelivery(idClientRequest);
+    }
     async getMyActiveTrips(): Promise<ActiveTrip[] | ErrorResponse> {
         return await this.clientRequestService.getMyActiveTrips();
     }

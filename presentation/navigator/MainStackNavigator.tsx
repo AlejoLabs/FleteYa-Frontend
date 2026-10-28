@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import LoginScreen from "../screens/auth/login/LoginScreen";
 import RegisterScreen from "../screens/auth/register/RegisterScreen";
 import { AuthProvider } from "../context/AuthContext";
+import { useNotificationNavigation } from "../hooks/useNotificationNavigation";
 import { container } from "../../di/container";
 import RolesScreen from "../screens/roles/RolesScreen";
 import ClientHomeScreen from "../screens/client/home/ClientHomeScreen";
@@ -50,9 +51,10 @@ export const MainStackNavigator = () => {
     
     const authUseCases = container.resolve("authUseCases");
     const socketService = container.resolve("socketService");
+    const userUseCases = container.resolve("userUseCases");
 
     return (
-        <AuthProvider authUseCases={authUseCases} socketService={socketService}>
+        <AuthProvider authUseCases={authUseCases} socketService={socketService} userUseCases={userUseCases}>
             <Stack.Navigator>
                 <Stack.Screen
                     options={{
@@ -114,6 +116,7 @@ export const MainStackNavigator = () => {
 }
 
 const ClientDrawerNavigator = () => {
+    useNotificationNavigation('CLIENT');
     return (
         <Drawer.Navigator initialRouteName="ClientMapStackNavigator" drawerContent={(props) => <AppDrawerContent {...props} />}>
             <Drawer.Screen name="ClientMapStackNavigator" options={{title:'Mi Ubicación'}} component={ClientMapStackNavigator} />
@@ -125,6 +128,7 @@ const ClientDrawerNavigator = () => {
 }
 
 const DriverDrawerNavigator = () => {
+    useNotificationNavigation('DRIVER');
     return (
         <Drawer.Navigator initialRouteName="DriverMyLocationMapScreen" drawerContent={(props) => <AppDrawerContent {...props} />}>
             <Drawer.Screen name="DriverMyLocationMapScreen" options={{title:'Mi Ubicación'}} component={DriverMyLocationMapScreen} />

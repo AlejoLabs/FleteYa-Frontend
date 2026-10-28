@@ -30,6 +30,9 @@ export interface ClientRequestRepository {
     raiseFare(idClientRequest: number, fare: number): Promise<boolean | ErrorResponse>;
     cancel(idClientRequest: number, reason: string): Promise<boolean | ErrorResponse>;
     dismiss(idClientRequest: number): Promise<boolean | ErrorResponse>;
+    // Prueba de entrega: el conductor escribe el código de quien recibe; el cliente puede confirmar desde su app
+    deliver(idClientRequest: number, code: string): Promise<boolean | ErrorResponse>;
+    confirmDelivery(idClientRequest: number): Promise<boolean | ErrorResponse>;
     getMyActiveTrips(): Promise<ActiveTrip[] | ErrorResponse>;
 
 }

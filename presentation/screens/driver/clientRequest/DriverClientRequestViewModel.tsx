@@ -4,6 +4,7 @@ import { DriverPositionUseCases } from "../../../../domain/useCases/driverPositi
 import { DriverTripOfferUseCases } from "../../../../domain/useCases/driverTripOffer/DriverTripOfferUseCases";
 import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import { SocketService } from "../../../../data/sources/remote/services/SocketService";
+import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 
 export class DriverClientRequestViewModel {
 
@@ -11,25 +12,33 @@ export class DriverClientRequestViewModel {
     private driverPositionUseCases: DriverPositionUseCases;
     private driverTripOfferUseCases: DriverTripOfferUseCases;
     private socketService: SocketService;
+    private photoUseCases: PhotoUseCases;
 
     constructor(
         {
             clientRequestUseCases,
             driverPositionUseCases,
             driverTripOfferUseCases,
-            socketService
-        }: 
+            socketService,
+            photoUseCases
+        }:
         {
             clientRequestUseCases: ClientRequestUseCases,
             driverPositionUseCases: DriverPositionUseCases,
             driverTripOfferUseCases: DriverTripOfferUseCases,
-            socketService: SocketService
+            socketService: SocketService,
+            photoUseCases: PhotoUseCases
         }
     ) {
         this.clientRequestUseCases = clientRequestUseCases;
         this.driverPositionUseCases = driverPositionUseCases;
         this.driverTripOfferUseCases = driverTripOfferUseCases;
         this.socketService = socketService;
+        this.photoUseCases = photoUseCases;
+    }
+
+    async getTripPhotos(idClientRequest: number) {
+        return await this.photoUseCases.getTripPhotos.execute(idClientRequest);
     }
 
     async getNearbyTripRequest(driverPosition: LatLng) {

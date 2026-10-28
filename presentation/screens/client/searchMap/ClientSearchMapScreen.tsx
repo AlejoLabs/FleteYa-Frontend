@@ -246,6 +246,12 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
             scheduled_at: details.scheduledAt ? details.scheduledAt.toISOString() : undefined,
         });
         if (typeof response === "number") {
+            // Las fotos se suben antes de avisar a los conductores, para que la solicitud les llegue con ellas
+            if (details.photos.length) {
+                ToastAndroid.show('Subiendo fotos de la carga...', ToastAndroid.SHORT);
+                const failed = await viewModel.uploadCargoPhotos(response, details.photos);
+                if (failed) ToastAndroid.show(`No se pudieron subir ${failed} fotos`, ToastAndroid.LONG);
+            }
             viewModel.emitNewClientRequest(response);
             setActiveSearchId(response);
         } else {

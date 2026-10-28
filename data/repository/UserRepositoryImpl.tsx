@@ -14,6 +14,10 @@ export class UserRepositoryImpl implements UserRepository {
     async update(user: User): Promise<User | ErrorResponse> {
         return await this.userService.update(user);
     }
+    async saveNotificationToken(token: string | null): Promise<boolean | ErrorResponse> {
+        return await this.userService.saveNotificationToken(token);
+    }
+
     async updateWithImage(user: User, image: string): Promise<User | ErrorResponse> {
         return await this.userService.updateWithImage(user, image);
     }

@@ -1,6 +1,8 @@
-import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { CargoCategory, VehicleType } from "../../../../domain/models/ClientRequest";
 import ChipGroup from "../../../components/ChipGroup";
+import PhotoStrip from "../../../components/PhotoStrip";
+import { choosePhoto } from "../../../utils/PhotoPicker";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
 import { CARGO_CATEGORIES, VEHICLES, vehicleLabel, vehicleRank } from "../../../utils/Cargo";
 
@@ -24,7 +26,11 @@ export interface CargoDetails {
     // null = "Ahora"
     scheduledAt: Date | null;
     noProhibitedItems: boolean;
+    // Fotos ya comprimidas en el teléfono; se suben después de crear la solicitud
+    photos: string[];
 }
+
+export const MAX_CARGO_PHOTOS = 4;
 
 export const DEFAULT_CARGO_DETAILS: CargoDetails = {
     category: 'OTRO',
@@ -45,6 +51,7 @@ export const DEFAULT_CARGO_DETAILS: CargoDetails = {
     receiverPhone: '',
     scheduledAt: null,
     noProhibitedItems: false,
+    photos: [],
 };
 
 // Los fletes programados van de 1 hora a 30 días adelante; la app ofrece los próximos 7 días entre 6 a. m. y 8 p. m.
@@ -115,6 +122,15 @@ export default function CargoDetailsModal({ visible, value, suggestedVehicle, on
         if (hour !== undefined) onChange({ scheduledAt: scheduleDate(dayOffset, hour) });
     }
 
+    const addPhoto = async () => {
+        const result = await choosePhoto('Foto de la carga');
+        if (result.ok) {
+            onChange({ photos: [...value.photos, result.uri] });
+        } else if (!result.cancelled) {
+            Alert.alert('Foto', result.message);
+        }
+    }
+
     const firstDayWithHours = Array.from({ length: SCHEDULE_DAYS }, (_, i) => i).find((day) => SCHEDULE_HOURS.some((hour) => !isTooSoon(day, hour))) ?? 1;
 
     return (
@@ -167,6 +183,15 @@ export default function CargoDetailsModal({ visible, value, suggestedVehicle, on
                         </View>
                         <SwitchRow label="Es frágil" value={value.isFragile} onChange={(isFragile) => onChange({ isFragile })} />
                         <SwitchRow label="Debe ir cubierta (lluvia, polvo)" value={value.needsCover} onChange={(needsCover) => onChange({ needsCover })} />
+
+                        <Text style={styles.section}>Fotos de la carga (opcional)</Text>
+                        <Text style={styles.hint}>Con fotos los conductores ofertan mejor, porque ven qué van a llevar.</Text>
+                        <PhotoStrip
+                            items={value.photos.map((uri) => ({ key: uri, localUri: uri }))}
+                            maxItems={MAX_CARGO_PHOTOS}
+                            onAdd={addPhoto}
+                            onRemove={(uri) => onChange({ photos: value.photos.filter((photo) => photo !== uri) })}
+                        />
 
                         <Text style={styles.section}>Vehículo</Text>
                         <Text style={styles.hint}>

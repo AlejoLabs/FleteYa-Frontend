@@ -11,6 +11,7 @@ import { ClientRequest } from "../../../../domain/models/ClientRequest";
 import { DriverTripOfferUseCases } from "../../../../domain/useCases/driverTripOffer/DriverTripOfferUseCases";
 import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
+import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 
 export class ClientSearchMapViewModel {
     
@@ -19,6 +20,7 @@ export class ClientSearchMapViewModel {
     private socketService: SocketService;
     private driverTripOfferUseCases: DriverTripOfferUseCases;
     private driverCarInfoUseCases: DriverCarInfoUseCases;
+    private photoUseCases: PhotoUseCases;
 
     constructor(
         {
@@ -26,13 +28,15 @@ export class ClientSearchMapViewModel {
             clientRequestUseCases,
             socketService,
             driverTripOfferUseCases,
-            driverCarInfoUseCases
+            driverCarInfoUseCases,
+            photoUseCases
         }: {
             googlePlaceUseCases: GooglePlaceUseCases,
             clientRequestUseCases: ClientRequestUseCases,
             socketService: SocketService,
             driverTripOfferUseCases: DriverTripOfferUseCases,
-            driverCarInfoUseCases: DriverCarInfoUseCases
+            driverCarInfoUseCases: DriverCarInfoUseCases,
+            photoUseCases: PhotoUseCases
         }
     ) {
         this.googlePlaceUseCases = googlePlaceUseCases;
@@ -40,6 +44,7 @@ export class ClientSearchMapViewModel {
         this.socketService = socketService;
         this.driverTripOfferUseCases = driverTripOfferUseCases;
         this.driverCarInfoUseCases = driverCarInfoUseCases;
+        this.photoUseCases = photoUseCases;
     }
 
     initSocket(){
@@ -48,6 +53,16 @@ export class ClientSearchMapViewModel {
     
     async createClientRequest(clientRequest: ClientRequest): Promise<number | ErrorResponse> {
         return await this.clientRequestUseCases.create.execute(clientRequest);
+    }
+
+    // Sube las fotos de la carga una por una y devuelve cuántas fallaron (la solicitud ya quedó creada igual)
+    async uploadCargoPhotos(idClientRequest: number, uris: string[]): Promise<number> {
+        let failed = 0;
+        for (const uri of uris) {
+            const response = await this.photoUseCases.uploadTripPhoto.execute(idClientRequest, 'CARGO', uri);
+            if ('statusCode' in response) failed++;
+        }
+        return failed;
     }
 
     async updateDriverAssigned(idClientRequest: number, idDriver: number, fareAssigned: number) {
