@@ -258,7 +258,8 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
 
     const handlegetPlaceDetails = async (placeId: string, isOrigin: boolean) => {
         const response: PlaceDetail | null = await viewModel.getPlaceDetails(placeId);
-        if (response !== null) {
+        // Google responde 200 aunque falle (REQUEST_DENIED, NOT_FOUND...); sin result no hay coordenadas que usar
+        if (response !== null && response.status === 'OK' && response.result) {
             const lat = response.result.geometry.location.lat;
             const lng = response.result.geometry.location.lng;
             const address = response.result.formatted_address;
@@ -284,7 +285,8 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
 
     const handlegetPlaceDetailsByCoords = async (lat: number, lng: number) => {
         const response: PlaceGeocodeDetail | null = await viewModel.getPlaceDetailsByCoords(lat, lng);
-        if (response !== null) {
+        // Al iniciar, el mapa puede reportar una región sin dirección (ZERO_RESULTS); se ignora hasta tener una válida
+        if (response !== null && response.status === 'OK' && response.results.length > 0) {
             const address = response.results[0].formatted_address;
             placeAutocompleteRef.current?.setAddressText(address);
             if (originPlace === undefined) {
