@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
-import { KeyboardAvoidingView, ScrollView, TextInput, View } from "react-native";
+import { ScrollView, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "../../../navigator/MainStackNavigator";
 import { container } from "../../../../di/container";
 import { AuthResponse } from "../../../../domain/models/AuthResponse";
 import { useAuth } from "../../../hooks/useAuth";
-import { AppHeader, AppText, Button, OptionCard, TextField, useToast } from "../../../components/ui";
+import { AppHeader, AppText, Button, KeyboardArea, OptionCard, TextField, useToast } from "../../../components/ui";
 import { formatErrorMessage } from "../../../utils/Formatters";
 import { useGoogleSignIn } from "../google/useGoogleSignIn";
 import GoogleLinkDialog from "../google/GoogleLinkDialog";
@@ -76,7 +76,7 @@ export default function RegisterScreen({ navigation }: Props) {
                 onBack={() => navigation.goBack()}
                 right={isDriver ? <AppText variant="caption" color="textMuted">Paso 1 de 2</AppText> : undefined}
             />
-            <KeyboardAvoidingView behavior="padding" style={styles.flex}>
+            <KeyboardArea aboveBottomInset style={styles.flex}>
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                     <AppText variant="label" color="textMuted">¿Cómo vas a usar FleteYa?</AppText>
                     <View style={styles.options} accessibilityRole="radiogroup">
@@ -182,7 +182,7 @@ export default function RegisterScreen({ navigation }: Props) {
                         />
                     }
                 </View>
-            </KeyboardAvoidingView>
+            </KeyboardArea>
 
             <GoogleLinkDialog
                 link={google.link}

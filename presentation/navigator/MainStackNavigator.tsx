@@ -8,6 +8,7 @@ import RolesScreen from "../screens/roles/RolesScreen";
 import ClientHomeScreen from "../screens/client/home/ClientHomeScreen";
 import DriverHomeScreen from "../screens/driver/home/DriverHomeScreen";
 import { createDrawerNavigator } from "@react-navigation/drawer";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import ClientSearchMapScreen from "../screens/client/searchMap/ClientSearchMapScreen";
 import DriverMyLocationMapScreen from "../screens/driver/MyLocationMap/DriverMyLocationMapScreen";
 import ProfileInfoScreen from "../screens/profile/info/ProfileInfoScreen";
@@ -121,7 +122,15 @@ const ClientDrawerNavigator = () => {
     useNotificationNavigation('CLIENT');
     return (
         <Drawer.Navigator initialRouteName="ClientMapStackNavigator" drawerContent={(props) => <AppDrawerContent {...props} />}>
-            <Drawer.Screen name="ClientMapStackNavigator" options={{title:'Mi Ubicación'}} component={ClientMapStackNavigator} />
+            {/* Pedir el flete es un mapa a pantalla completa con su propio botón de menú; el resto del grupo conserva la barra */}
+            <Drawer.Screen
+                name="ClientMapStackNavigator"
+                options={({ route }) => ({
+                    title: 'Mi Ubicación',
+                    headerShown: (getFocusedRouteNameFromRoute(route) ?? 'ClientSearchMapScreen') !== 'ClientSearchMapScreen',
+                })}
+                component={ClientMapStackNavigator}
+            />
             <Drawer.Screen name="UpcomingTripsScreen" options={{title:'Próximos fletes'}} component={UpcomingTripsScreen} />
             <Drawer.Screen name="ProfileStackNavigator" options={{title:'Perfil'}} component={ProfileStackNavigator} />
             <Drawer.Screen name="ClientTripHistoryScreen" options={{title:'Historial de Viajes'}} component={ClientTripHistoryScreen} />

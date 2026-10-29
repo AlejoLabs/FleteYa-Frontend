@@ -24,6 +24,7 @@ import { GooglePlaceRepositoryImpl } from "../data/repository/GooglePlaceReposit
 import { GetDirectionsUseCase } from "../domain/useCases/GooglePlaces/GetDirectionsUseCase";
 import { GetPlaceDetailsByCoordsUseCase } from "../domain/useCases/GooglePlaces/GetPlaceDetailsByCoordsUseCase";
 import { GetPlaceDetailsUseCase } from "../domain/useCases/GooglePlaces/GetPlaceDetailsUseCase";
+import { SearchPlacesUseCase } from "../domain/useCases/GooglePlaces/SearchPlacesUseCase";
 import { GooglePlaceUseCases } from "../domain/useCases/GooglePlaces/GooglePlacesUseCases";
 import { ClientSearchMapViewModel } from "../presentation/screens/client/searchMap/ClientSearchMapViewModel";
 import { ClientRequestService } from "../data/sources/remote/services/ClientRequestService";
@@ -168,7 +169,8 @@ const googlePlaceRepository = new GooglePlaceRepositoryImpl({ googlePlaceService
 const getDirectionsUseCase = new GetDirectionsUseCase({ googlePlaceRepository });
 const getPlaceDetailsUseCase = new GetPlaceDetailsUseCase({ googlePlaceRepository });
 const getPlaceDetailsByCoordsUseCase = new GetPlaceDetailsByCoordsUseCase({ googlePlaceRepository });
-const googlePlaceUseCases = new GooglePlaceUseCases({ getPlaceDetailsUseCase, getPlaceDetailsByCoordsUseCase, getDirectionsUseCase });
+const searchPlacesUseCase = new SearchPlacesUseCase({ googlePlaceRepository });
+const googlePlaceUseCases = new GooglePlaceUseCases({ getPlaceDetailsUseCase, getPlaceDetailsByCoordsUseCase, getDirectionsUseCase, searchPlacesUseCase });
 const clientRequestService = new ClientRequestService();
 const clientRequestRepository = new ClientRequestRepositoryImpl({ clientRequestService });
 const getTimeAndDistanceUseCase = new GetTimeAndDistanceUseCase({ clientRequestRepository });

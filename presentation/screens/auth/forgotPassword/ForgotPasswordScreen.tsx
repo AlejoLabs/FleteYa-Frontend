@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "../../../navigator/MainStackNavigator";
 import { container } from "../../../../di/container";
-import { AppHeader, AppText, Button, CodeInput, Notice, TextField, useToast } from "../../../components/ui";
+import { AppHeader, AppText, Button, CodeInput, KeyboardArea, Notice, TextField, useToast } from "../../../components/ui";
 import { colors, spacing } from "../../../theme";
 import { formatCountdown, formatErrorMessage } from "../../../utils/Formatters";
 import { CODE_LENGTH, RESEND_WAIT_SECONDS, ResetErrors } from "./ForgotPasswordViewModel";
@@ -81,7 +81,7 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
                 onBack={handleBack}
                 right={<AppText variant="caption" color="textMuted">{codeSent ? '2 de 2' : '1 de 2'}</AppText>}
             />
-            <KeyboardAvoidingView behavior="padding" style={styles.flex}>
+            <KeyboardArea aboveBottomInset style={styles.flex}>
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                     {!codeSent ?
                         <>
@@ -150,7 +150,7 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
                         onPress={codeSent ? handleReset : handleSendCode}
                     />
                 </View>
-            </KeyboardAvoidingView>
+            </KeyboardArea>
         </SafeAreaView>
     );
 }

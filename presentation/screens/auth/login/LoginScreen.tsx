@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { StackScreenProps } from '@react-navigation/stack';
@@ -7,7 +7,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { RootStackParamList } from '../../../navigator/MainStackNavigator';
 import { container } from '../../../../di/container';
 import { useAuth } from '../../../hooks/useAuth';
-import { AppText, BrandMark, Button, TextField, useToast } from '../../../components/ui';
+import { AppText, BrandMark, Button, KeyboardArea, TextField, useToast } from '../../../components/ui';
 import { formatErrorMessage } from '../../../utils/Formatters';
 import { useGoogleSignIn } from '../google/useGoogleSignIn';
 import GoogleLinkDialog from '../google/GoogleLinkDialog';
@@ -58,7 +58,7 @@ export default function LoginScreen({ navigation }: Props) {
     <SafeAreaView style={styles.screen}>
       {/* Solo mientras se ve: registro y recuperar contraseña quedan encima y son blancos */}
       {isFocused && <StatusBar style="light" />}
-      <KeyboardAvoidingView behavior="padding" style={styles.flex}>
+      <KeyboardArea aboveBottomInset style={styles.flex}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.form}>
             <BrandMark />
@@ -117,7 +117,7 @@ export default function LoginScreen({ navigation }: Props) {
             </Pressable>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardArea>
 
       <GoogleLinkDialog link={google.link} loading={google.isBusy} onForgotPassword={goToForgotPassword} />
     </SafeAreaView>

@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing, touchTarget } from "../../theme";
 import AppText from "./AppText";
@@ -20,7 +20,9 @@ export default function AppHeader({ title, subtitle, onBack, right, tone = 'ligh
     return (
         <View style={[styles.container, { backgroundColor: dark ? colors.asphalt : colors.surface }, !dark && styles.divider]}>
             {onBack &&
-                <Pressable onPress={onBack} hitSlop={8} style={styles.back} accessibilityRole="button" accessibilityLabel="Volver">
+                // Cierra el teclado antes de salir: si la pantalla se va con él abierto, Android no avisa que se cerró
+                // y la pantalla de abajo queda con espacio de más
+                <Pressable onPress={() => { Keyboard.dismiss(); onBack(); }} hitSlop={8} style={styles.back} accessibilityRole="button" accessibilityLabel="Volver">
                     <Ionicons name="arrow-back" size={24} color={color} />
                 </Pressable>
             }

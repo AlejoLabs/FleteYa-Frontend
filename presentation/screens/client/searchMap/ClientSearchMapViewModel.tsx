@@ -12,6 +12,8 @@ import { DriverTripOfferUseCases } from "../../../../domain/useCases/driverTripO
 import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
 import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
+import { PlacePrediction } from "../../../../domain/models/PlacePrediction";
+import { DraftErrors, RequestDraft, toClientRequest, validateStep } from "./RequestDraft";
 
 export class ClientSearchMapViewModel {
     
@@ -51,6 +53,24 @@ export class ClientSearchMapViewModel {
         this.socketService.connect();
     }
     
+    validateStep(step: number, draft: RequestDraft): DraftErrors {
+        return validateStep(step, draft);
+    }
+
+    // El precio sugerido del backend redondeado a cientos, como se muestra y se ofrece
+    recommendedFare(values?: TimeAndDistanceValues): number {
+        return Math.round((values?.recommended_value ?? 0) / 100) * 100;
+    }
+
+    // Crea la solicitud, sube las fotos y solo entonces avisa a los conductores, para que les llegue con ellas
+    async publish(draft: RequestDraft, idClient: number): Promise<{ id: number; failedPhotos: number } | ErrorResponse> {
+        const response = await this.createClientRequest(toClientRequest(draft, idClient));
+        if (typeof response !== 'number') return response;
+        const failedPhotos = draft.photos.length ? await this.uploadCargoPhotos(response, draft.photos) : 0;
+        this.emitNewClientRequest(response);
+        return { id: response, failedPhotos };
+    }
+
     async createClientRequest(clientRequest: ClientRequest): Promise<number | ErrorResponse> {
         return await this.clientRequestUseCases.create.execute(clientRequest);
     }
@@ -67,6 +87,13 @@ export class ClientSearchMapViewModel {
 
     async updateDriverAssigned(idClientRequest: number, idDriver: number, fareAssigned: number) {
         return await this.clientRequestUseCases.updateDriverAssigned.execute(idClientRequest, idDriver, fareAssigned);
+    }
+
+    // Sugerencias para lo que se escribe; null si Google no respondió (sin conexión, llave rechazada)
+    async searchPlaces(input: string): Promise<PlacePrediction[] | null> {
+        const response = await this.googlePlaceUseCases.searchPlaces.execute(input.trim());
+        if (!response || (response.status !== 'OK' && response.status !== 'ZERO_RESULTS')) return null;
+        return response.predictions;
     }
 
     async getPlaceDetails(placeId: string): Promise<PlaceDetail | null> {

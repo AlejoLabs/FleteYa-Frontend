@@ -1,12 +1,13 @@
-import { Image, StyleSheet, Text, ToastAndroid, View } from "react-native";
-import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
-import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
-import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
 import { useState } from "react";
-import { formatCOP, formatErrorMessage, formatRating } from "../../../utils/Formatters";
+import { StyleSheet, View } from "react-native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
+import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
+import { Amount, Button, Card, PersonRow, useToast } from "../../../components/ui";
+import { spacing } from "../../../theme";
+import { formatCOP, formatErrorMessage } from "../../../utils/Formatters";
 import { vehicleLabel } from "../../../utils/Cargo";
+import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
 
 interface Props {
     viewModel: ClientSearchMapViewModel;
@@ -16,19 +17,20 @@ interface Props {
     onResolved: (accepted: boolean) => void;
 }
 
+// Oferta de un conductor, para comparar: calificación real, vehículo, cuánto tarda en llegar y su precio
 export function DriverOfferItem({ viewModel, driverTripOffer, navigation, onResolved }: Props) {
 
-    const [isBusy, setIsBusy] = useState(false);
+    const { showToast } = useToast();
+    const [busy, setBusy] = useState<'accept' | 'reject' | null>(null);
+    const { driver, car, fare_offered } = driverTripOffer;
+    const name = `${driver?.name ?? ''} ${driver?.lastname?.charAt(0) ?? ''}.`.trim();
+    const vehicle = [vehicleLabel(car?.vehicle_type), car?.brand].filter(Boolean).join(' ');
 
-    const handleUpdateDriverAssigned = async () => {
-        if (isBusy) return;
-        setIsBusy(true);
-        const response = await viewModel.updateDriverAssigned(
-            driverTripOffer.id_client_request,
-            driverTripOffer.id_driver,
-            driverTripOffer.fare_offered
-        );
-        setIsBusy(false);
+    const handleAccept = async () => {
+        if (busy) return;
+        setBusy('accept');
+        const response = await viewModel.updateDriverAssigned(driverTripOffer.id_client_request, driverTripOffer.id_driver, fare_offered);
+        setBusy(null);
         if (response === true || (response as any)?.id_driver_assigned === driverTripOffer.id_driver) {
             viewModel.emitNewDriverAssigned(driverTripOffer.id_client_request, driverTripOffer.id_driver);
             onResolved(true);
@@ -37,110 +39,49 @@ export function DriverOfferItem({ viewModel, driverTripOffer, navigation, onReso
                 idDriver: driverTripOffer.id_driver,
             });
         } else {
-            ToastAndroid.show(formatErrorMessage((response as any).message), ToastAndroid.LONG);
+            showToast(formatErrorMessage((response as any).message), 'error');
             onResolved(false);
         }
     }
 
     const handleReject = async () => {
-        if (isBusy) return;
-        setIsBusy(true);
+        if (busy) return;
+        setBusy('reject');
         const response = await viewModel.rejectDriverTripOffer(driverTripOffer.id!);
-        setIsBusy(false);
-        if (response !== true) {
-            ToastAndroid.show(formatErrorMessage((response as any).message), ToastAndroid.LONG);
-        }
+        setBusy(null);
+        if (response !== true) showToast(formatErrorMessage((response as any).message), 'error');
         onResolved(false);
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.row}>
-                <Image
-                    source={{ uri: driverTripOffer.driver?.image }}
-                    style={styles.imageDriver}
-                />
-                <View style={styles.infoDriver}>
-                    <Text style={styles.name}>{driverTripOffer.driver?.name} {driverTripOffer.driver?.lastname}</Text>
-                    <Text style={styles.rating}>{formatRating(driverTripOffer.driver?.rating)}</Text>
-                    <Text>{vehicleLabel(driverTripOffer.car?.vehicle_type)}{driverTripOffer.car ? ` · ${driverTripOffer.car.brand}` : ''}</Text>
-                </View>
-                <View>
-                    <Text style={styles.price}>{formatCOP(driverTripOffer.fare_offered)}</Text>
-                    <Text style={styles.time}>Llega en {Math.round(driverTripOffer.time)} min</Text>
-                    <Text style={styles.distance}>{driverTripOffer.distance.toFixed(1)} km</Text>
-                </View>
+        <Card variant="elevated" style={styles.card}>
+            <PersonRow
+                name={name}
+                imageUri={driver?.image}
+                rating={driver?.rating ?? null}
+                subtitle={`${vehicle} · llega en ${Math.max(1, Math.round(driverTripOffer.time))} min`}
+                right={<Amount value={fare_offered} />}
+            />
+            <View style={styles.actions}>
+                <Button title="Rechazar" variant="danger" size="sm" loading={busy === 'reject'} disabled={busy === 'accept'} onPress={handleReject} style={styles.reject} />
+                <Button title={`Aceptar ${formatCOP(fare_offered)}`} variant="success" size="sm" loading={busy === 'accept'} disabled={busy === 'reject'} onPress={handleAccept} style={styles.accept} />
             </View>
-            <View style={styles.rowButtons}>
-                <DefaultRoundedButton
-                    text="Rechazar"
-                    onPress={handleReject}
-                    backgroundColor="red"
-                    width={'48%'}
-                    height={45}
-                    marginTop={10}
-                />
-                <DefaultRoundedButton
-                    text={isBusy ? "..." : "Aceptar"}
-                    onPress={handleUpdateDriverAssigned}
-                    backgroundColor="green"
-                    width={'48%'}
-                    height={45}
-                    marginTop={10}
-                />
-            </View>
-        </View>
-    )
+        </Card>
+    );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        width: '100%',
-        backgroundColor: 'white',
-        borderRadius: 16,
-        elevation: 2,
-        marginTop: 10,
-        paddingVertical: 12,
+    card: {
+        gap: spacing.md,
     },
-    row: {
+    actions: {
         flexDirection: 'row',
-        marginHorizontal: 14,
-        alignItems: 'center',
+        gap: spacing.sm,
     },
-    imageDriver: {
-        height: 50,
-        width: 50,
-        borderRadius: 50,
-        backgroundColor: '#eee',
-    },
-    infoDriver: {
-        marginLeft: 10,
+    reject: {
         flex: 1,
     },
-    name: {
-        fontWeight: 'bold',
-        fontSize: 15,
+    accept: {
+        flex: 2,
     },
-    rating: {
-        color: '#b45309',
-        fontWeight: 'bold',
-    },
-    rowButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginHorizontal: 14,
-    },
-    price: {
-        color: 'green',
-        fontSize: 20,
-        fontWeight: 'bold',
-        textAlign: 'right',
-    },
-    time: {
-        textAlign: 'right',
-    },
-    distance: {
-        textAlign: 'right',
-        color: 'gray',
-    },
-})
+});

@@ -2,6 +2,7 @@
 import { LatLng } from "react-native-maps";
 import { GoogleDirections } from "../../domain/models/GoogleDirections";
 import { PlaceGeocodeDetail } from "../../domain/models/PlaceGeocodeDetail";
+import { PlaceAutocomplete } from "../../domain/models/PlacePrediction";
 import { GooglePlaceRepository } from "../../domain/repository/GooglePlaceRepository";
 import { GooglePlaceServices } from "../sources/remote/services/GooglePlacesService";
 
@@ -18,6 +19,10 @@ export class GooglePlaceRepositoryImpl implements GooglePlaceRepository{
     }
     getPlaceDetailsByCoords(lat: number, lng: number): Promise<PlaceGeocodeDetail | null> {
         return this.googlePlaceService.getPlaceDetailByCoords(lat, lng);
+    }
+
+    searchPlaces(input: string): Promise<PlaceAutocomplete | null> {
+        return this.googlePlaceService.searchPlaces(input);
     }
 
     async getPlaceDetails(placeId: string) {

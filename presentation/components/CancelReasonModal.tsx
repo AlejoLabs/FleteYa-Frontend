@@ -1,6 +1,7 @@
-import { Modal, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
-import DefaultRoundedButton from "./DefaultRoundedButton";
+import { ScrollView, StyleSheet } from "react-native";
+import { AppText, ConfirmDialog, OptionCard, TextField } from "./ui";
+import { spacing } from "../theme";
 
 interface Props {
     visible: boolean;
@@ -10,105 +11,75 @@ interface Props {
     onConfirm: (reason: string) => void;
 }
 
+const OTHER = 'OTRO';
+
 // Cancelar siempre pide un motivo: uno de la lista o uno escrito
 export default function CancelReasonModal({ visible, title, reasons, onClose, onConfirm }: Props) {
     const [selected, setSelected] = useState<string | null>(null);
     const [other, setOther] = useState('');
-    const reason = selected === 'OTRO' ? other.trim() : selected;
+    const [error, setError] = useState<string | null>(null);
+    const reason = selected === OTHER ? other.trim() : selected;
 
-    const close = () => {
+    const reset = () => {
         setSelected(null);
         setOther('');
+        setError(null);
+    }
+
+    const close = () => {
+        reset();
         onClose();
     }
 
+    const confirm = () => {
+        if (!reason || reason.length < 3) {
+            setError(selected === OTHER ? 'Escribe el motivo' : 'Elige un motivo');
+            return;
+        }
+        onConfirm(reason);
+        reset();
+    }
+
     return (
-        <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
-            <Pressable style={styles.overlay} onPress={close}>
-                <Pressable style={styles.content} onPress={() => { }}>
-                    <Text style={styles.title}>{title}</Text>
-                    <Text style={styles.subtitle}>¿Por qué cancelas?</Text>
-                    {[...reasons, 'OTRO'].map((item) => (
-                        <TouchableOpacity key={item} style={styles.option} onPress={() => setSelected(item)}>
-                            <View style={[styles.radio, selected === item && styles.radioSelected]} />
-                            <Text style={styles.optionText}>{item === 'OTRO' ? 'Otro motivo' : item}</Text>
-                        </TouchableOpacity>
-                    ))}
-                    {selected === 'OTRO' &&
-                        <TextInput
-                            value={other}
-                            onChangeText={setOther}
-                            placeholder="Escribe el motivo"
-                            placeholderTextColor="#888"
-                            style={styles.input}
-                            maxLength={255}
-                        />
-                    }
-                    <DefaultRoundedButton
-                        text="Cancelar flete"
-                        backgroundColor={reason && reason.length >= 3 ? 'red' : '#e7a0a0'}
-                        onPress={() => {
-                            if (!reason || reason.length < 3) return;
-                            onConfirm(reason);
-                            setSelected(null);
-                            setOther('');
-                        }}
+        <ConfirmDialog
+            visible={visible}
+            title={title}
+            message="¿Por qué cancelas?"
+            confirmLabel="Cancelar flete"
+            tone="danger"
+            onConfirm={confirm}
+            onCancel={close}
+        >
+            <ScrollView style={styles.options} contentContainerStyle={styles.optionsContent} keyboardShouldPersistTaps="handled">
+                {[...reasons, OTHER].map((item) => (
+                    <OptionCard
+                        key={item}
+                        title={item === OTHER ? 'Otro motivo' : item}
+                        selected={selected === item}
+                        onPress={() => { setSelected(item); setError(null); }}
                     />
-                    <DefaultRoundedButton text="Volver" backgroundColor="gray" marginTop={10} onPress={close} />
-                </Pressable>
-            </Pressable>
-        </Modal>
+                ))}
+                {selected === OTHER &&
+                    <TextField
+                        value={other}
+                        onChangeText={(value) => { setOther(value); setError(null); }}
+                        placeholder="Escribe el motivo"
+                        error={error}
+                        maxLength={255}
+                        autoFocus
+                    />
+                }
+                {error && selected !== OTHER && <AppText variant="caption" color="danger">{error}</AppText>}
+            </ScrollView>
+        </ConfirmDialog>
     );
 }
 
 const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        padding: 20,
+    options: {
+        maxHeight: 360,
     },
-    content: {
-        backgroundColor: 'white',
-        borderRadius: 20,
-        padding: 20,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    subtitle: {
-        color: 'gray',
-        marginTop: 4,
-        marginBottom: 10,
-    },
-    option: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 9,
-    },
-    radio: {
-        width: 18,
-        height: 18,
-        borderRadius: 9,
-        borderWidth: 2,
-        borderColor: '#999',
-        marginRight: 10,
-    },
-    radioSelected: {
-        borderColor: 'black',
-        backgroundColor: 'black',
-    },
-    optionText: {
-        fontSize: 15,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 10,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
-        marginBottom: 10,
-        backgroundColor: '#f7f7f7',
+    optionsContent: {
+        gap: spacing.sm,
     },
 });
