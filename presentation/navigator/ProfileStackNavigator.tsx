@@ -36,7 +36,7 @@ export const ProfileStackNavigator = () => {
             />
 
             <Stack.Screen
-                options={{ title: 'Contraseña' }}
+                options={{ headerShown: false }}
                 name="ChangePasswordScreen"
                 component={ChangePasswordScreen}
             />

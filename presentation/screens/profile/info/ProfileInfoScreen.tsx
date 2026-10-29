@@ -1,73 +1,92 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import styles from "./Styles";
-import { Ionicons } from "@expo/vector-icons";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
+import { CommonActions, useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../../hooks/useAuth";
 import { RootStackParamList } from "../../../navigator/MainStackNavigator";
-import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
 import { ProfileStackParamList } from "../../../navigator/ProfileStackNavigator";
-import { useNavigation } from "@react-navigation/native";
+import { AppText, Avatar, Card, ListItem } from "../../../components/ui";
+import { colors, spacing } from "../../../theme";
 
 interface Props extends StackScreenProps<ProfileStackParamList, 'ProfileInfoScreen'> {}
-export default function ProfileInfoScreen({navigation, route}: Props) {
+
+// Perfil: quién es, sus datos de contacto y las acciones de la cuenta
+export default function ProfileInfoScreen({ navigation }: Props) {
 
     const rootNavigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-    const {authResponse, removeAuthSession} = useAuth();
+    const { authResponse, removeAuthSession } = useAuth();
+    const user = authResponse?.user;
+    // El menú del conductor tiene "Mi vehículo": así se sabe con qué rol entró
+    const isDriver = navigation.getParent()?.getState()?.routeNames?.includes('DriverCarInfoScreen') ?? false;
+    const hasBothRoles = (user?.roles?.length ?? 0) > 1;
+
+    const handleLogout = async () => {
+        await removeAuthSession();
+        rootNavigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'LoginScreen' }] }));
+    }
+
+    if (!user) return null;
 
     return (
-        <View style={styles.container}>
-            <View style={styles.boxBackground}>
-                <Text style={styles.textBox}>PERFIL DE USUARIO</Text>
+        <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+            <View style={styles.person}>
+                {/* El parámetro t obliga a descargar la foto nueva después de cambiarla */}
+                <Avatar name={`${user.name} ${user.lastname}`} imageUri={user.image ? `${user.image}?t=${user.update_at}` : null} size={88} />
+                <AppText variant="title" align="center">{user.name} {user.lastname}</AppText>
+                <AppText variant="small" color="textMuted">{isDriver ? 'Conductor' : 'Cliente'}</AppText>
             </View>
-            <View style={styles.cardUserInfo}>
-                {
-                    authResponse?.user?.image !== null
-                    &&
-                    <Image 
-                    style={styles.imageUser}
-                    source={{ uri: `${authResponse?.user?.image}?t=${authResponse?.user?.update_at}` }}
+
+            <View style={styles.section}>
+                <AppText variant="label" color="textMuted">Tus datos</AppText>
+                <Card style={styles.card}>
+                    <ListItem icon="mail-outline" title={user.email} subtitle="Correo" />
+                    <ListItem icon="call-outline" title={user.phone ? `+57 ${user.phone}` : 'Sin celular'} subtitle="Celular" />
+                </Card>
+            </View>
+
+            <Card style={styles.card}>
+                <ListItem icon="create-outline" title="Editar perfil" subtitle="Nombre, celular y foto" onPress={() => navigation.navigate('ProfileUpdateScreen')} />
+                <ListItem
+                    icon="key-outline"
+                    // Una cuenta creada con Google no tiene contraseña: aquí la crea
+                    title={user.has_password === false ? 'Crear contraseña' : 'Cambiar contraseña'}
+                    onPress={() => navigation.navigate('ChangePasswordScreen')}
                 />
+                {hasBothRoles &&
+                    <ListItem
+                        icon="swap-horizontal-outline"
+                        title={isDriver ? 'Cambiar a cliente' : 'Cambiar a conductor'}
+                        subtitle="Tienes los dos roles"
+                        onPress={() => rootNavigation.replace(isDriver ? 'ClientHomeScreen' : 'DriverHomeScreen')}
+                    />
                 }
-                {
-                    authResponse?.user?.image === null
-                    &&
-                    <Image 
-                    style={styles.imageUser}
-                    source={require('../../../../assets/user_image.png')}
-                
-                />
-                }
-                <Text style={styles.textUsername}>{authResponse?.user?.name} {authResponse?.user?.lastname}</Text>
-                <Text style={styles.textEmail}>{authResponse?.user?.email}</Text>
-                <Text style={styles.textPhone}>{authResponse?.user?.phone}</Text>
-                
-            </View>
-            <View style={styles.viewActions}>
-                <TouchableOpacity style={styles.iconContainer} onPress={() => {
-                    navigation.navigate('ProfileUpdateScreen');
-                }}>
-                    <View style={styles.iconBox}>
-                        <Ionicons name='pencil' size={25} color='white' />
-                    </View>
-                    <Text style={styles.textAction}>EDITAR PERFIL</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('ChangePasswordScreen')}>
-                    <View style={styles.iconBox}>
-                        <Ionicons name='key-outline' size={25} color='white' />
-                    </View>
-                    <Text style={styles.textAction}>
-                        {authResponse?.user?.has_password === false ? 'CREAR CONTRASEÑA' : 'CAMBIAR CONTRASEÑA'}
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.iconContainer} onPress={async () => {
-                    await removeAuthSession();
-                    rootNavigation.replace('LoginScreen');
-                }}>
-                    <View style={styles.iconBox}>
-                        <Ionicons name='exit-outline' size={25} color='white' />
-                    </View>
-                    <Text style={styles.textAction}>CERRAR SESION</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+            </Card>
+
+            <Card style={styles.card}>
+                <ListItem icon="exit-outline" title="Cerrar sesión" tone="danger" onPress={handleLogout} showChevron={false} />
+            </Card>
+        </ScrollView>
     )
 }
+
+const styles = StyleSheet.create({
+    screen: {
+        flex: 1,
+        backgroundColor: colors.surfaceMuted,
+    },
+    content: {
+        padding: spacing.lg,
+        gap: spacing.xl,
+    },
+    person: {
+        alignItems: 'center',
+        gap: spacing.xs,
+    },
+    section: {
+        gap: spacing.sm,
+    },
+    card: {
+        paddingVertical: spacing.xs,
+        paddingHorizontal: spacing.sm,
+        gap: 0,
+    },
+});

@@ -1,186 +1,135 @@
-import { View, Text, Image, TouchableOpacity, Alert, ToastAndroid } from "react-native";
-import styles from "./Styles";
-import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../../../hooks/useAuth";
-import { RootStackParamList } from "../../../navigator/MainStackNavigator";
+import { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StackScreenProps } from "@react-navigation/stack";
-import DefaultTextInput from "../../../components/DefaultTextInput";
-import { useEffect, useState } from "react";
-import { ProfileStackParamList } from "../../../navigator/ProfileStackNavigator";
-import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from "@expo/vector-icons";
 import { container } from "../../../../di/container";
-import { ProfileUpdateViewModel } from "./ProfileUpdateViewModel";
+import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
+import { useAuth } from "../../../hooks/useAuth";
+import { ProfileStackParamList } from "../../../navigator/ProfileStackNavigator";
+import { AppHeader, AppText, Avatar, Button, KeyboardArea, TextField, useToast } from "../../../components/ui";
+import { choosePhoto } from "../../../utils/PhotoPicker";
+import { formatErrorMessage } from "../../../utils/Formatters";
+import { colors, spacing } from "../../../theme";
+import { ProfileErrors, ProfileForm, ProfileUpdateViewModel } from "./ProfileUpdateViewModel";
 
 interface Props extends StackScreenProps<ProfileStackParamList, 'ProfileUpdateScreen'> { }
-export default function ProfileUpdateScreen({ navigation, route }: Props) {
+
+// Editar el nombre, el celular y la foto de perfil. El correo no se cambia aquí: con él se entra a la cuenta
+export default function ProfileUpdateScreen({ navigation }: Props) {
 
     const viewModel: ProfileUpdateViewModel = container.resolve('profileUpdateViewModel');
-    const [name, setName] = useState('');
-    const [lastname, setLastname] = useState('');
-    const [phone, setPhone] = useState('');
-    const { authResponse, removeAuthSession, saveAuthSession } = useAuth();
+    const { authResponse, saveAuthSession } = useAuth();
+    const { showToast } = useToast();
+    const user = authResponse?.user;
+    const [form, setForm] = useState<ProfileForm>({ name: user?.name ?? '', lastname: user?.lastname ?? '', phone: user?.phone ?? '' });
+    const [errors, setErrors] = useState<ProfileErrors>({});
     const [image, setImage] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
 
-    const pickImage = async () => {
-        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-        if (!permissionResult.granted) {
-            Alert.alert('Permission required', 'Permission to access the media library is required.');
-            return;
-        }
-
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
-
-
-        if (!result.canceled) {
-            setImage(result.assets[0].uri);
-        }
-    };
-
-    const takePhoto = async () => {
-        const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-
-        if (!permissionResult.granted) {
-            Alert.alert('Permission required', 'Permission to access the camera is required.');
-            return;
-        }
-
-        let result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
-
-
-        if (!result.canceled) {
-            setImage(result.assets[0].uri);
-        }
-    };
-
-    useEffect(() => {
-        if (authResponse != null) {
-            setName(authResponse.user.name);
-            setLastname(authResponse.user.lastname);
-            setPhone(authResponse.user.phone);
-        }
-    }, [authResponse]);
-
-    const handleUpdateUser = async () => {
-        let response = null;
-        if (image !== null) {
-            response = await viewModel.updateWithImage({
-                id: authResponse?.user.id!,
-                name: name,
-                lastname: lastname,
-                phone: phone,
-                email: authResponse?.user.email!,
-                image: image ? image : authResponse?.user?.image
-            }, image);
-        }
-        else {
-            response = await viewModel.update({
-                id: authResponse?.user.id!,
-                name: name,
-                lastname: lastname,
-                phone: phone,
-                email: authResponse?.user.email!,
-                image: image ? image : authResponse?.user?.image
-            });
-        }
-
-
-        if ('id' in response) {
-            ToastAndroid.show('Datos actualizados correctamente', ToastAndroid.LONG);
-            saveAuthSession({
-                user: {...response, roles: authResponse?.user.roles},
-                token: authResponse?.token!
-            });
-        }
-
+    const update = (field: keyof ProfileForm) => (value: string) => {
+        setForm((current) => ({ ...current, [field]: value }));
+        setErrors((current) => ({ ...current, [field]: undefined }));
     }
 
+    const pickImage = async () => {
+        const result = await choosePhoto('Foto de perfil');
+        if (result.ok) setImage(result.uri);
+        else if (!result.cancelled) showToast(result.message, 'error');
+    }
+
+    const handleSave = async () => {
+        if (!user || !authResponse) return;
+        const problems = viewModel.validate(form);
+        setErrors(problems);
+        if (Object.keys(problems).length > 0) return;
+        setSaving(true);
+        const response = await viewModel.save(user, form, image);
+        setSaving(false);
+        if ('id' in response) {
+            showToast('Guardamos tus datos', 'success');
+            saveAuthSession({ user: { ...response, roles: user.roles }, token: authResponse.token });
+            navigation.goBack();
+        } else {
+            showToast(formatErrorMessage((response as ErrorResponse).message), 'error');
+        }
+    }
+
+    if (!user) return null;
+    const currentImage = image ?? (user.image ? `${user.image}?t=${user.update_at}` : null);
+
     return (
-        <View style={styles.container}>
-            <View style={styles.boxBackground}>
-                <Text style={styles.textBox}>ACTUALIZAR DATOS</Text>
-            </View>
-            <View style={styles.cardUserInfo}>
-                <TouchableOpacity onPress={() => { pickImage(); }}>
-                    {
-                            image !== null ?
-                            <Image
-                                style={styles.imageUser}
-                                source={{ uri: image }}
-                            />
-                            : authResponse?.user?.image !== null ?
-                            <Image
-                            style={styles.imageUser}
-                                source={{ uri: `${authResponse?.user?.image}?t=${authResponse?.user?.update_at}` }}
-                                /> :
-                            <Image
-                                style={styles.imageUser}
-                                source={require('../../../../assets/user_image.png')}
-                            />
-                    }
+        <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+            <AppHeader title="Editar perfil" onBack={() => navigation.goBack()} />
+            <KeyboardArea style={styles.flex} aboveBottomInset>
+                <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+                    <Pressable onPress={pickImage} style={styles.photo} accessibilityRole="button" accessibilityLabel="Cambiar la foto de perfil">
+                        <View>
+                            <Avatar name={`${form.name} ${form.lastname}`} imageUri={currentImage} size={96} />
+                            <View style={styles.camera}>
+                                <Ionicons name="camera" size={18} color={colors.asphalt} />
+                            </View>
+                        </View>
+                        <AppText variant="smallStrong">Cambiar foto</AppText>
+                    </Pressable>
 
-                </TouchableOpacity>
-
-
-                <View style={{ marginLeft: 20, marginRight: 30 }}>
-                    <DefaultTextInput
-                        placeholder="Nombre"
-                        value={name}
-                        onChangeText={setName}
-                        icon={require('../../../../assets/user_black.png')}
-                        placeholderTextColor="black"
-                        textColor="black"
-                        borderBottomColor="black"
-                    />
-                </View>
-                <View style={{ marginLeft: 20, marginRight: 30 }}>
-                    <DefaultTextInput
-                        placeholder="Apellido"
-                        value={lastname}
-                        onChangeText={setLastname}
-                        icon={require('../../../../assets/add_user_black.png')}
-                        placeholderTextColor="black"
-                        textColor="black"
-                        borderBottomColor="black"
-                    />
-                </View>
-                <View style={{ marginLeft: 20, marginRight: 30 }}>
-                    <DefaultTextInput
-                        placeholder="Telefono"
-                        value={phone}
-                        onChangeText={setPhone}
-                        keyboardType="number-pad"
-                        icon={require('../../../../assets/phone_black.png')}
-                        placeholderTextColor="black"
-                        textColor="black"
-                        borderBottomColor="black"
-                    />
-                </View>
-
-
-
-
-            </View>
-            <View style={styles.viewActions}>
-                <TouchableOpacity style={styles.iconContainer} onPress={() => {
-                    handleUpdateUser();
-                }}>
-                    <View style={styles.iconBox}>
-                        <Ionicons name='pencil' size={25} color='white' />
+                    <View style={styles.row}>
+                        <View style={styles.flex}>
+                            <TextField label="Nombre" value={form.name} onChangeText={update('name')} error={errors.name} autoCapitalize="words" />
+                        </View>
+                        <View style={styles.flex}>
+                            <TextField label="Apellido" value={form.lastname} onChangeText={update('lastname')} error={errors.lastname} autoCapitalize="words" />
+                        </View>
                     </View>
-                    <Text style={styles.textAction}>EDITAR PERFIL</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+                    <TextField label="Celular" prefix="+57" value={form.phone} onChangeText={update('phone')} error={errors.phone} keyboardType="phone-pad" maxLength={13} />
+                    <TextField label="Correo" value={user.email} editable={false} hint="Con tu correo entras a FleteYa: no se puede cambiar." />
+                </ScrollView>
+                <View style={styles.footer}>
+                    <Button title="Guardar cambios" loading={saving} onPress={handleSave} />
+                </View>
+            </KeyboardArea>
+        </SafeAreaView>
     )
 }
+
+const styles = StyleSheet.create({
+    screen: {
+        flex: 1,
+        backgroundColor: colors.background,
+    },
+    flex: {
+        flex: 1,
+    },
+    content: {
+        padding: spacing.lg,
+        gap: spacing.lg,
+    },
+    photo: {
+        alignSelf: 'center',
+        alignItems: 'center',
+        gap: spacing.sm,
+    },
+    camera: {
+        position: 'absolute',
+        right: 0,
+        bottom: 0,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.cargo,
+        borderWidth: 2,
+        borderColor: colors.surface,
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: spacing.md,
+    },
+    footer: {
+        padding: spacing.lg,
+        borderTopWidth: 1,
+        borderTopColor: colors.border,
+    },
+});
