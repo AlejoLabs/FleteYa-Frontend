@@ -21,7 +21,7 @@ export default function PriceStep({ state }: Props) {
 
     const cargoText = [
         cargoCategoryLabel(draft.category),
-        `${draft.packages} ${draft.packages === 1 ? 'bulto' : 'bultos'}`,
+        `${draft.packages} ${draft.packages === 1 ? 'artículo' : 'artículos'}`,
         vehicleLabel(draft.vehicleType ?? suggestedVehicle),
     ].join(' · ');
 

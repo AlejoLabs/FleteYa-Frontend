@@ -24,7 +24,7 @@ export interface RequestDraft {
     pickupElevator: boolean;
     destinationFloor: number;
     destinationElevator: boolean;
-    // Paso 3: medidas del bulto más grande, cuidados y vehículo
+    // Paso 3: medidas del artículo más grande, cuidados y vehículo
     lengthCm: string;
     widthCm: string;
     heightCm: string;
@@ -98,7 +98,7 @@ export const suggestedVehicleFor = (draft: RequestDraft): VehicleType | null => 
     ? suggestVehicle(toNumber(draft.weightKg), toNumber(draft.lengthCm), toNumber(draft.widthCm), toNumber(draft.heightCm), draft.packages)
     : null;
 
-// Volumen del bulto más grande en m³, como lo pide el cálculo del precio
+// Volumen del artículo más grande en m³, como lo pide el cálculo del precio
 export const sizeM3 = (draft: RequestDraft) =>
     (toNumber(draft.lengthCm) / 100) * (toNumber(draft.widthCm) / 100) * (toNumber(draft.heightCm) / 100);
 

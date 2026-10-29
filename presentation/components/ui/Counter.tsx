@@ -12,7 +12,7 @@ interface Props {
     hint?: string;
 }
 
-// Fila con un número que se sube o baja: bultos, ayudantes, piso
+// Fila con un número que se sube o baja: artículos, ayudantes, piso
 export default function Counter({ label, value, onChange, min = 0, max = 99, hint }: Props) {
     return (
         <View style={styles.row}>

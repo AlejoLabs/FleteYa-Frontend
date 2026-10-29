@@ -4,7 +4,7 @@ import { RequestDraftState } from "../hooks/useRequestDraft";
 import { shortAddress } from "../RequestDraft";
 import { SectionLabel, StepHeader, SummaryRow } from "../components/StepParts";
 
-// Paso 2: qué es la carga, cuánto pesa, cuántos bultos y si necesita ayuda para cargarla y descargarla
+// Paso 2: qué es la carga, cuánto pesa, cuántos artículos y si necesita ayuda para cargarla y descargarla
 export default function CargoStep({ state }: { state: RequestDraftState }) {
     const { draft, update, errors, step, goTo, routeSummary } = state;
     const routeText = `${shortAddress(draft.origin?.address)} → ${shortAddress(draft.destination?.address)}${routeSummary ? ` · ${routeSummary.distanceText}` : ''}`;
@@ -34,7 +34,7 @@ export default function CargoStep({ state }: { state: RequestDraftState }) {
                 keyboardType="decimal-pad"
                 hint="Aproximado está bien"
             />
-            <Counter label="Bultos" value={draft.packages} min={1} max={500} onChange={(packages) => update({ packages })} />
+            <Counter label="Artículos" hint="Un motor es 1; una nevera y 6 cajas son 7" value={draft.packages} min={1} max={500} onChange={(packages) => update({ packages })} />
 
             <SectionLabel>Cargue y descargue</SectionLabel>
             <SwitchRow

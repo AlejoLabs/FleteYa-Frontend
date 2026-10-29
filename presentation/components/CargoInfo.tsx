@@ -45,7 +45,7 @@ export default function CargoInfo({ request, showContacts = false, audience = 'd
         <View style={styles.box}>
             {request.scheduled_at && <StatusPill tone="cargo" label={`Programado: ${formatScheduledDate(request.scheduled_at)}`} />}
             <AppText variant="smallStrong">
-                {[cargoCategoryLabel(request.cargo_category), `${packages} ${packages === 1 ? 'bulto' : 'bultos'}`, request.weight_kg ? `${request.weight_kg} kg` : null]
+                {[cargoCategoryLabel(request.cargo_category), `${packages} ${packages === 1 ? 'artículo' : 'artículos'}`, request.weight_kg ? `${request.weight_kg} kg` : null]
                     .filter(Boolean).join(' · ')}
             </AppText>
             {request.cargo_description ? <AppText variant="small" color="textMuted">{request.cargo_description}</AppText> : null}

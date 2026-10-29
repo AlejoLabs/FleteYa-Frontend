@@ -11,7 +11,7 @@ export const VEHICLES: { type: VehicleType; label: string; maxWeightKg: number; 
 export const vehicleLabel = (type?: string | null) => VEHICLES.find((v) => v.type === type)?.label ?? 'Vehículo de carga';
 export const vehicleRank = (type: VehicleType) => VEHICLES.findIndex((v) => v.type === type);
 
-// Las medidas son las del bulto más grande; el volumen total se estima multiplicándolo por los bultos.
+// Las medidas son las del artículo más grande; el volumen total se estima multiplicándolo por los artículos.
 // Devuelve null si la carga no cabe ni en un camión
 export const suggestVehicle = (weightKg: number, lengthCm: number, widthCm: number, heightCm: number, packages: number): VehicleType | null => {
     const longest = Math.max(lengthCm, widthCm, heightCm);

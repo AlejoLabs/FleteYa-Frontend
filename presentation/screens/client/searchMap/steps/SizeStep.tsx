@@ -14,7 +14,7 @@ const MEASURES: { field: 'lengthCm' | 'widthCm' | 'heightCm'; label: string }[] 
     { field: 'heightCm', label: 'Alto' },
 ];
 
-// Paso 3: medidas del bulto más grande, el vehículo, los cuidados y las fotos
+// Paso 3: medidas del artículo más grande, el vehículo, los cuidados y las fotos
 export default function SizeStep({ state }: { state: RequestDraftState }) {
     const { draft, update, errors, step, suggestedVehicle } = state;
     const { showToast } = useToast();
@@ -30,7 +30,7 @@ export default function SizeStep({ state }: { state: RequestDraftState }) {
             <StepHeader title="Medidas y vehículo" step={step} />
 
             <View style={styles.measuresBlock}>
-                <AppText variant="smallStrong">Bulto más grande (cm)</AppText>
+                <AppText variant="smallStrong">Medidas del artículo más grande (cm)</AppText>
                 <View style={styles.measures}>
                     {MEASURES.map(({ field, label }) => (
                         <View key={field} style={styles.measure}>
