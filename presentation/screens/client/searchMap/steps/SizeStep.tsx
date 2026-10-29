@@ -6,7 +6,7 @@ import { VEHICLES, vehicleLabel, vehicleRank } from "../../../../utils/Cargo";
 import { choosePhoto } from "../../../../utils/PhotoPicker";
 import { RequestDraftState } from "../hooks/useRequestDraft";
 import { MAX_CARGO_PHOTOS, RequestDraft } from "../RequestDraft";
-import { SectionLabel, StepActions, StepHeader } from "../components/StepParts";
+import { SectionLabel, StepHeader } from "../components/StepParts";
 
 const MEASURES: { field: 'lengthCm' | 'widthCm' | 'heightCm'; label: string }[] = [
     { field: 'lengthCm', label: 'Largo' },
@@ -16,7 +16,7 @@ const MEASURES: { field: 'lengthCm' | 'widthCm' | 'heightCm'; label: string }[] 
 
 // Paso 3: medidas del bulto más grande, el vehículo, los cuidados y el cargue y descargue
 export default function SizeStep({ state }: { state: RequestDraftState }) {
-    const { draft, update, errors, step, next, back, suggestedVehicle } = state;
+    const { draft, update, errors, step, suggestedVehicle } = state;
     const { showToast } = useToast();
 
     const addPhoto = async () => {
@@ -84,8 +84,6 @@ export default function SizeStep({ state }: { state: RequestDraftState }) {
             <Counter label="Piso donde se entrega" value={draft.destinationFloor} min={1} max={60} onChange={(destinationFloor) => update({ destinationFloor })} />
             {draft.destinationFloor > 1 &&
                 <SwitchRow label="Hay ascensor en el destino" value={draft.destinationElevator} onChange={(destinationElevator) => update({ destinationElevator })} />}
-
-            <StepActions onBack={back} onNext={next} />
         </>
     );
 }

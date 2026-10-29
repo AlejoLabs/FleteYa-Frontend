@@ -20,10 +20,14 @@ import RouteStep from "./steps/RouteStep";
 import CargoStep from "./steps/CargoStep";
 import SizeStep from "./steps/SizeStep";
 import PriceStep from "./steps/PriceStep";
+import { StepActions } from "./components/StepParts";
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientSearchMapScreen'> { };
 
 type SearchTarget = 'origin' | 'destination' | null;
+
+// Alto máximo de la hoja en los pasos largos: deja arriba un tercio de mapa para ver la ruta; el formulario se desplaza
+const SHEET_MAX = 0.62;
 
 // Pedir un flete: mapa a pantalla completa y la solicitud en una hoja inferior de cuatro pasos
 export default function ClientSearchMapScreen({ navigation, route }: Props) {
@@ -42,22 +46,31 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
     const [publishing, setPublishing] = useState(false);
     // Búsqueda en curso: mientras exista se muestra el panel de ofertas
     const [activeSearchId, setActiveSearchId] = useState<number | null>(route.params?.idClientRequest ?? null);
-    // La cámara se movió por código (al buscar una dirección): ese movimiento no debe cambiar el origen
-    const skipNextGeocode = useRef(false);
+    // El origen solo sale del centro del mapa cuando el cliente lo arrastra (o al centrarse la primera vez).
+    // Los movimientos por código (buscar una dirección, encuadrar la ruta, cambiar el alto de la hoja) no lo tocan
+    const userDragged = useRef(false);
 
     useEffect(() => {
         if (route.params?.idClientRequest) setActiveSearchId(route.params.idClientRequest);
     }, [route.params?.idClientRequest]);
 
-    // Fuera del paso de la ruta, el mapa muestra el recorrido completo encima de la hoja. Se espera a que la hoja
-    // del paso nuevo tenga su alto, y no se reajusta cuando solo crece por un error: el mapa saltaría en cada aviso
-    const sheetHeightRef = useRef(0);
+    // Cuando llega la ubicación del teléfono el mapa se centra ahí: ese primer movimiento sí pone el origen,
+    // que hasta entonces estaba en el punto por defecto del mapa
+    const hadLocation = useRef(false);
     useEffect(() => {
-        if (step === 0) return;
+        if (!map.userLocation || hadLocation.current) return;
+        hadLocation.current = true;
+        if (step === 0) userDragged.current = true;
+    }, [map.userLocation]);
+
+    // Fuera del paso de la ruta, el mapa muestra el recorrido completo encima de la hoja. Se espera a que la hoja
+    // del paso nuevo tenga su alto y el mapa su margen; no se reajusta cuando la hoja solo crece por un error
+    // Al volver al paso de la ruta, el pin vuelve a quedar sobre el origen elegido
+    useEffect(() => {
         const timer = setTimeout(() => {
-            // Con una hoja muy alta queda una franja pequeña de mapa: se deja al menos un tercio para la ruta
-            map.fitRoute(request.route, Math.min(sheetHeightRef.current, windowHeight * 0.65));
-        }, 350);
+            if (step > 0) map.fitRoute(request.route);
+            else if (draft.origin) map.moveCamera(draft.origin.lat, draft.origin.lng);
+        }, 700);
         return () => clearTimeout(timer);
     }, [step, request.route]);
 
@@ -72,11 +85,8 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
     }, [step, activeSearchId]);
 
     const handleMapMoveEnd = async () => {
-        if (step !== 0) return;
-        if (skipNextGeocode.current) {
-            skipNextGeocode.current = false;
-            return;
-        }
+        if (step !== 0 || !userDragged.current) return;
+        userDragged.current = false;
         const center = await map.getCenter();
         if (center) request.setOriginFromMap(center.latitude, center.longitude);
     }
@@ -90,7 +100,6 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
             return;
         }
         if (target === 'origin') {
-            skipNextGeocode.current = true;
             map.moveCamera(place.lat, place.lng);
             request.update({ origin: place });
         } else {
@@ -122,7 +131,7 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                 destination={draft.destination}
                 route={request.route}
                 drivers={map.driverMarkers}
-                onMoveStart={() => { skipNextGeocode.current = false; }}
+                onMoveStart={() => { userDragged.current = true; }}
                 onMoveEnd={handleMapMoveEnd}
             />
 
@@ -133,17 +142,29 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
             <KeyboardArea style={styles.sheetArea} pointerEvents="box-none">
                 {step === 0 && map.userLocation &&
                     <View style={styles.locateRow} pointerEvents="box-none">
-                        <FloatingButton icon="locate" label="Ir a mi ubicación" onPress={map.centerOnUser} />
+                        <FloatingButton icon="locate" label="Ir a mi ubicación" onPress={() => { userDragged.current = true; map.centerOnUser(); }} />
                     </View>
                 }
-                <View onLayout={(event) => { sheetHeightRef.current = event.nativeEvent.layout.height; setSheetHeight(event.nativeEvent.layout.height); }}>
+                <View onLayout={(event) => setSheetHeight(event.nativeEvent.layout.height)}>
                     {/* key: al cambiar de paso la hoja vuelve arriba */}
-                    <Sheet key={step} scroll={step > 0} maxHeight={step > 0 ? windowHeight * 0.78 : undefined}>
+                    <Sheet
+                        key={step}
+                        scroll={step > 0}
+                        maxHeight={step > 0 ? windowHeight * SHEET_MAX : undefined}
+                        footer={
+                            <StepActions
+                                onBack={step > 0 ? request.back : undefined}
+                                onNext={step === 3 ? handlePublish : request.next}
+                                nextLabel={step < 3 ? 'Continuar' : draft.scheduledAt ? 'Programar flete' : 'Publicar flete'}
+                                loading={publishing}
+                            />
+                        }
+                    >
                         {step === 0 &&
-                            <RouteStep state={request} onSearchOrigin={() => setSearchTarget('origin')} onSearchDestination={() => setSearchTarget('destination')} />}
+                            <RouteStep state={request} locationUnavailable={map.permissionDenied} onSearchOrigin={() => setSearchTarget('origin')} onSearchDestination={() => setSearchTarget('destination')} />}
                         {step === 1 && <CargoStep state={request} />}
                         {step === 2 && <SizeStep state={request} />}
-                        {step === 3 && <PriceStep state={request} publishing={publishing} onPublish={handlePublish} />}
+                        {step === 3 && <PriceStep state={request} />}
                     </Sheet>
                 </View>
             </KeyboardArea>
@@ -167,6 +188,11 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                     onClose={() => {
                         setActiveSearchId(null);
                         navigation.setParams({ idClientRequest: undefined });
+                        // Con el panel cerrado el mapa vuelve a verse: el flete nuevo arranca desde la ubicación del teléfono
+                        if (!draft.origin && map.userLocation) {
+                            userDragged.current = true;
+                            setTimeout(map.centerOnUser, 300);
+                        }
                     }}
                 />
             }

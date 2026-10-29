@@ -2,11 +2,11 @@ import { ChipGroup, Counter, Notice, TextField } from "../../../../components/ui
 import { CARGO_CATEGORIES } from "../../../../utils/Cargo";
 import { RequestDraftState } from "../hooks/useRequestDraft";
 import { shortAddress } from "../RequestDraft";
-import { SectionLabel, StepActions, StepHeader, SummaryRow } from "../components/StepParts";
+import { SectionLabel, StepHeader, SummaryRow } from "../components/StepParts";
 
 // Paso 2: qué es la carga, cuánto pesa, cuántos bultos y si hacen falta ayudantes
 export default function CargoStep({ state }: { state: RequestDraftState }) {
-    const { draft, update, errors, step, next, back, goTo, routeSummary } = state;
+    const { draft, update, errors, step, goTo, routeSummary } = state;
     const routeText = `${shortAddress(draft.origin?.address)} → ${shortAddress(draft.destination?.address)}${routeSummary ? ` · ${routeSummary.distanceText}` : ''}`;
 
     return (
@@ -37,8 +37,6 @@ export default function CargoStep({ state }: { state: RequestDraftState }) {
             <Counter label="Bultos" value={draft.packages} min={1} max={500} onChange={(packages) => update({ packages })} />
             <Counter label="Ayudantes" hint="Para cargar y descargar" value={draft.helpers} min={0} max={6} onChange={(helpers) => update({ helpers })} />
             <Notice tone="cargo" message="En el siguiente paso pides las medidas del bulto más grande y te sugerimos el vehículo." />
-
-            <StepActions onBack={back} onNext={next} />
         </>
     );
 }

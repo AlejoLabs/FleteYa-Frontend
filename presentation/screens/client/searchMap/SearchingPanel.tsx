@@ -35,11 +35,18 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
     const [isCancelVisible, setIsCancelVisible] = useState(false);
     const [isRaising, setIsRaising] = useState(false);
     const [newFare, setNewFare] = useState(0);
+    // Fin de la búsqueda en el reloj del teléfono. El del teléfono puede ir adelantado o atrasado frente al
+    // del servidor: se toma lo que falta al recibir la solicitud (máximo 10 minutos) y se cuenta desde ahí
+    const [deadline, setDeadline] = useState<number | null>(null);
 
     const loadRequest = useCallback(async () => {
         const response = await viewModel.getClientRequestById(idClientRequest);
         if ('id' in response) {
             setRequest(response);
+            if (response.expires_at) {
+                const left = Math.min(new Date(response.expires_at).getTime() - Date.now(), SEARCH_DURATION_MS);
+                setDeadline(Date.now() + Math.max(0, left));
+            }
             setNewFare(response.fare_offered + FARE_STEP);
             if (response.status !== 'CREATED') setIsExpired(response.status === 'EXPIRED');
         }
@@ -76,8 +83,7 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
         return () => subscription.remove();
     }, [isExpired]);
 
-    // El reloj del teléfono puede ir unos segundos distinto al del servidor: una búsqueda "Ahora" nunca muestra más de 10 minutos
-    const remainingMs = request?.expires_at ? Math.max(0, Math.min(new Date(request.expires_at).getTime() - now, SEARCH_DURATION_MS)) : 0;
+    const remainingMs = deadline ? Math.max(0, deadline - now) : 0;
     const isScheduled = Boolean(request?.scheduled_at);
     const currentFare = request?.fare_offered ?? 0;
 
@@ -146,6 +152,8 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
                         actionLabel="Volver a pedir"
                         onAction={onClose}
                     />
+                    // Hasta que llega la solicitud no se muestra el precio: saldría "$ 0" y "Subir a $ 0"
+                    : !request ? <StateView kind="loading" message="Cargando tu flete…" />
                     : <>
                         <FlatList
                             data={offers}

@@ -35,10 +35,11 @@ export function useClientMap(viewModel: ClientSearchMapViewModel) {
         if (userLocation) moveCamera(userLocation.latitude, userLocation.longitude);
     }
 
-    const fitRoute = (points: LatLng[], bottomPadding: number) => {
+    // El mapa ya deja libre el alto de la hoja (mapPadding): aquí solo va el aire alrededor de la ruta
+    const fitRoute = (points: LatLng[]) => {
         if (points.length < 2) return;
         mapRef.current?.fitToCoordinates(points, {
-            edgePadding: { top: 120, right: 60, bottom: bottomPadding + 60, left: 60 },
+            edgePadding: { top: 80, right: 40, bottom: 30, left: 40 },
             animated: true,
         });
     }
@@ -58,37 +59,46 @@ export function useClientMap(viewModel: ClientSearchMapViewModel) {
         let active = true;
         const offListeners: (() => void)[] = [];
 
-        (async () => {
-            const { status } = await Location.requestForegroundPermissionsAsync();
-            if (!active) return;
-            if (status !== 'granted') {
-                setPermissionDenied(true);
-                return;
-            }
-            // Solo se necesita para centrar el mapa: no hace falta GPS de navegación cada segundo
-            subscription = await Location.watchPositionAsync(
-                { accuracy: Location.Accuracy.High, timeInterval: 5000, distanceInterval: 10 },
-                ({ coords }) => {
-                    setUserLocation({ latitude: coords.latitude, longitude: coords.longitude });
-                    if (!hasCentered.current) {
-                        hasCentered.current = true;
-                        moveCamera(coords.latitude, coords.longitude);
-                    }
-                },
-            );
+        // El socket no depende de la ubicación: sin él no llegan los conductores cercanos ni las ofertas
+        viewModel.initSocket();
+        offListeners.push(
+            viewModel.listenerDriverPositionSocket((data: any) => {
+                const marker = { id: data.id, idSocket: data.id_socket, lat: data.lat, lng: data.lng };
+                setDriverMarkers((prev) => prev.some((m) => m.idSocket === marker.idSocket)
+                    ? prev.map((m) => m.idSocket === marker.idSocket ? marker : m)
+                    : [...prev, marker]);
+            }),
+            viewModel.listenerDriverDisconnectSocket((idSocket: string) => {
+                setDriverMarkers((prev) => prev.filter((m) => m.idSocket !== idSocket));
+            }),
+        );
 
-            viewModel.initSocket();
-            offListeners.push(
-                viewModel.listenerDriverPositionSocket((data: any) => {
-                    const marker = { id: data.id, idSocket: data.id_socket, lat: data.lat, lng: data.lng };
-                    setDriverMarkers((prev) => prev.some((m) => m.idSocket === marker.idSocket)
-                        ? prev.map((m) => m.idSocket === marker.idSocket ? marker : m)
-                        : [...prev, marker]);
-                }),
-                viewModel.listenerDriverDisconnectSocket((idSocket: string) => {
-                    setDriverMarkers((prev) => prev.filter((m) => m.idSocket !== idSocket));
-                }),
-            );
+        (async () => {
+            try {
+                const { status } = await Location.requestForegroundPermissionsAsync();
+                if (!active) return;
+                if (status !== 'granted') {
+                    setPermissionDenied(true);
+                    return;
+                }
+                // Solo se necesita para centrar el mapa: no hace falta GPS de navegación cada segundo
+                subscription = await Location.watchPositionAsync(
+                    { accuracy: Location.Accuracy.High, timeInterval: 5000, distanceInterval: 10 },
+                    ({ coords }) => {
+                        setUserLocation({ latitude: coords.latitude, longitude: coords.longitude });
+                        if (!hasCentered.current) {
+                            hasCentered.current = true;
+                            moveCamera(coords.latitude, coords.longitude);
+                        }
+                    },
+                );
+                if (!active) subscription.remove();
+            } catch (error) {
+                // Ubicación apagada o sin precisión en los ajustes del teléfono: el mapa queda en Bogotá
+                // y el origen se puede buscar o marcar moviendo el mapa
+                console.log('No se pudo obtener la ubicación', error);
+                setPermissionDenied(true);
+            }
         })();
 
         return () => {

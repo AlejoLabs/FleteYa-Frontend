@@ -7,17 +7,15 @@ import { formatCOP } from "../../../../utils/Formatters";
 import { RequestDraftState } from "../hooks/useRequestDraft";
 import { FARE_STEP, RequestDraft } from "../RequestDraft";
 import SchedulePicker from "../components/SchedulePicker";
-import { SectionLabel, StepActions, StepHeader, SummaryRow } from "../components/StepParts";
+import { SectionLabel, StepHeader, SummaryRow } from "../components/StepParts";
 
 interface Props {
     state: RequestDraftState;
-    publishing: boolean;
-    onPublish: () => void;
 }
 
 // Paso 4: cuándo, cuánto ofrece el cliente, quién entrega y recibe, y la confirmación de que la carga se puede llevar
-export default function PriceStep({ state, publishing, onPublish }: Props) {
-    const { draft, update, errors, step, back, goTo, recommendedFare, suggestedVehicle, pricing } = state;
+export default function PriceStep({ state }: Props) {
+    const { draft, update, errors, step, goTo, recommendedFare, suggestedVehicle, pricing } = state;
     const [isTyping, setIsTyping] = useState(false);
     const [typedFare, setTypedFare] = useState('');
 
@@ -76,8 +74,6 @@ export default function PriceStep({ state, publishing, onPublish }: Props) {
                 onChange={(noProhibitedItems) => update({ noProhibitedItems })}
                 error={errors.noProhibitedItems}
             />
-
-            <StepActions onBack={back} onNext={onPublish} nextLabel={draft.scheduledAt ? 'Programar flete' : 'Publicar flete'} loading={publishing} />
 
             <ConfirmDialog
                 visible={isTyping}

@@ -7,20 +7,23 @@ interface Props {
     // scroll: el contenido puede ser más alto que la hoja (formulario de la solicitud)
     scroll?: boolean;
     maxHeight?: number | `${number}%`;
+    // Botones fijos abajo, siempre visibles aunque el contenido se desplace
+    footer?: React.ReactNode;
     style?: StyleProp<ViewStyle>;
 }
 
 // Hoja inferior sobre el mapa: esquinas redondeadas arriba, agarradera y respeto de la barra de gestos
-export default function Sheet({ children, scroll = false, maxHeight, style }: Props) {
+export default function Sheet({ children, scroll = false, maxHeight, footer, style }: Props) {
     const insets = useSafeAreaInsets();
-    const padding = { paddingBottom: spacing.lg + insets.bottom };
+    const bottom = { paddingBottom: spacing.lg + insets.bottom };
 
     return (
         <View style={[styles.sheet, maxHeight !== undefined && { maxHeight }, style]}>
             <View style={styles.grab} />
             {scroll
-                ? <ScrollView contentContainerStyle={[styles.content, padding]} keyboardShouldPersistTaps="handled">{children}</ScrollView>
-                : <View style={[styles.content, padding]}>{children}</View>}
+                ? <ScrollView style={styles.scroll} contentContainerStyle={[styles.content, !footer && bottom]} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+                : <View style={[styles.content, !footer && bottom]}>{children}</View>}
+            {footer && <View style={[styles.footer, bottom]}>{footer}</View>}
         </View>
     );
 }
@@ -40,9 +43,18 @@ const styles = StyleSheet.create({
         backgroundColor: colors.borderStrong,
         marginTop: spacing.sm,
     },
+    scroll: {
+        flexGrow: 0,
+        flexShrink: 1,
+    },
     content: {
         paddingHorizontal: spacing.lg,
         paddingTop: spacing.md,
+        paddingBottom: spacing.md,
         gap: spacing.md,
+    },
+    footer: {
+        paddingHorizontal: spacing.lg,
+        paddingTop: spacing.sm,
     },
 });
