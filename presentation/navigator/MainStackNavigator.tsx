@@ -23,6 +23,7 @@ import { UpcomingTripsScreen } from "../screens/upcoming/UpcomingTripsScreen";
 import ForgotPasswordScreen from "../screens/auth/forgotPassword/ForgotPasswordScreen";
 import DriverVehicleRegisterScreen from "../screens/auth/driverVehicle/DriverVehicleRegisterScreen";
 import { User } from "../../domain/models/User";
+import DesignSystemScreen from "../screens/dev/designSystem/DesignSystemScreen";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -42,6 +43,7 @@ export type RootStackParamList = {
     UpcomingTripsScreen: undefined,
     ForgotPasswordScreen: { email?: string } | undefined,
     DriverVehicleRegisterScreen: { account: User },
+    DesignSystemScreen: undefined,
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -123,6 +125,7 @@ const ClientDrawerNavigator = () => {
             <Drawer.Screen name="UpcomingTripsScreen" options={{title:'Próximos fletes'}} component={UpcomingTripsScreen} />
             <Drawer.Screen name="ProfileStackNavigator" options={{title:'Perfil'}} component={ProfileStackNavigator} />
             <Drawer.Screen name="ClientTripHistoryScreen" options={{title:'Historial de Viajes'}} component={ClientTripHistoryScreen} />
+            {__DEV__ && <Drawer.Screen name="DesignSystemScreen" options={{title:'Sistema de diseño'}} component={DesignSystemScreen} />}
         </Drawer.Navigator>
     )
 }
@@ -137,6 +140,7 @@ const DriverDrawerNavigator = () => {
             <Drawer.Screen name="DriverTripHistoryScreen" options={{title:'Historial de cargas'}} component={DriverTripHistoryScreen} />
             <Drawer.Screen name="DriverCarInfoScreen" options={{title:'Datos del Vehículo'}} component={DriverCarInfoScreen} />
             <Drawer.Screen name="ProfileStackNavigator" options={{title:'Perfil'}} component={ProfileStackNavigator} />
+            {__DEV__ && <Drawer.Screen name="DesignSystemScreen" options={{title:'Sistema de diseño'}} component={DesignSystemScreen} />}
         </Drawer.Navigator>
     )
 }

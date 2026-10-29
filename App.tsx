@@ -1,10 +1,22 @@
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useFonts } from 'expo-font';
 import { MainStackNavigator } from './presentation/navigator/MainStackNavigator';
+import { ToastProvider } from './presentation/components/ui';
+import { fontAssets } from './presentation/theme';
 
 export default function App() {
+  // Si las fuentes no cargan, la app sigue con las del sistema en vez de quedarse en blanco
+  const [fontsLoaded, fontError] = useFonts(fontAssets);
+  if (!fontsLoaded && !fontError) return null;
+
   return (
-    <NavigationContainer>
-      <MainStackNavigator />
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <ToastProvider>
+        <NavigationContainer>
+          <MainStackNavigator />
+        </NavigationContainer>
+      </ToastProvider>
+    </SafeAreaProvider>
   );
 }
