@@ -21,6 +21,18 @@ export const formatTripDate = (value?: string | Date | null): string => {
   });
 }
 
+// Hora de un mensaje, por ejemplo "3:05 p. m."
+export const formatTime = (value?: string | Date | null): string => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' });
+}
+
+// Calificación de un usuario, por ejemplo "★ 4.6 (12)"; sin votos todavía sale "Nuevo"
+export const formatRating = (rating?: { average: number | null; count: number } | null): string =>
+  rating && rating.average !== null ? `★ ${rating.average.toFixed(1)} (${rating.count})` : 'Nuevo';
+
 // Tiempo restante de una búsqueda, por ejemplo "9:05"
 export const formatCountdown = (ms: number): string => {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));

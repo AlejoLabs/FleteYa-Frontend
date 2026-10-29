@@ -5,7 +5,7 @@ import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
 import { useState } from "react";
-import { formatCOP, formatErrorMessage } from "../../../utils/Formatters";
+import { formatCOP, formatErrorMessage, formatRating } from "../../../utils/Formatters";
 import { vehicleLabel } from "../../../utils/Cargo";
 
 interface Props {
@@ -62,6 +62,7 @@ export function DriverOfferItem({ viewModel, driverTripOffer, navigation, onReso
                 />
                 <View style={styles.infoDriver}>
                     <Text style={styles.name}>{driverTripOffer.driver?.name} {driverTripOffer.driver?.lastname}</Text>
+                    <Text style={styles.rating}>{formatRating(driverTripOffer.driver?.rating)}</Text>
                     <Text>{vehicleLabel(driverTripOffer.car?.vehicle_type)}{driverTripOffer.car ? ` · ${driverTripOffer.car.brand}` : ''}</Text>
                 </View>
                 <View>
@@ -119,6 +120,10 @@ const styles = StyleSheet.create({
     name: {
         fontWeight: 'bold',
         fontSize: 15,
+    },
+    rating: {
+        color: '#b45309',
+        fontWeight: 'bold',
     },
     rowButtons: {
         flexDirection: 'row',

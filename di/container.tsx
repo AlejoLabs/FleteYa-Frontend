@@ -88,6 +88,19 @@ import { PhotoUseCases } from "../domain/useCases/photo/PhotoUseCases";
 import { GetMyActiveTripsUseCase } from "../domain/useCases/clientRequest/GetMyActiveTripsUseCase";
 import { ChangeDriverTripOfferStatusUseCase } from "../domain/useCases/driverTripOffer/ChangeDriverTripOfferStatusUseCase";
 import { UpcomingTripsViewModel } from "../presentation/screens/upcoming/UpcomingTripsViewModel";
+import { TripMessageService } from "../data/sources/remote/services/TripMessageService";
+import { TripMessageRepositoryImpl } from "../data/repository/TripMessageRepositoryImpl";
+import { GetTripMessagesUseCase } from "../domain/useCases/tripMessage/GetTripMessagesUseCase";
+import { SendTripMessageUseCase } from "../domain/useCases/tripMessage/SendTripMessageUseCase";
+import { MarkTripMessagesReadUseCase } from "../domain/useCases/tripMessage/MarkTripMessagesReadUseCase";
+import { TripMessageUseCases } from "../domain/useCases/tripMessage/TripMessageUseCases";
+import { IncidentService } from "../data/sources/remote/services/IncidentService";
+import { IncidentRepositoryImpl } from "../data/repository/IncidentRepositoryImpl";
+import { CreateIncidentReportUseCase } from "../domain/useCases/incident/CreateIncidentReportUseCase";
+import { GetMyIncidentReportsUseCase } from "../domain/useCases/incident/GetMyIncidentReportsUseCase";
+import { IncidentUseCases } from "../domain/useCases/incident/IncidentUseCases";
+import { TripChatViewModel } from "../presentation/screens/trip/chat/TripChatViewModel";
+import { IncidentReportViewModel } from "../presentation/screens/trip/incident/IncidentReportViewModel";
 
 const authService = new AuthService();
 const localStorage = new LocalStorage();
@@ -117,7 +130,6 @@ const authUseCases = new AuthUseCases({
     removeAuthSessionUseCase
 });
 // Las fotos las usan varias pantallas (registro, solicitud, viaje): se crean antes que sus ViewModels
-// Las fotos las usan varias pantallas (registro, solicitud, viaje): se crean antes que sus ViewModels
 const photoService = new PhotoService();
 const photoRepository = new PhotoRepositoryImpl({ photoService });
 const photoUseCases = new PhotoUseCases({
@@ -128,6 +140,21 @@ const photoUseCases = new PhotoUseCases({
     getVehiclePhotosUseCase: new GetVehiclePhotosUseCase({ photoRepository }),
     deleteVehiclePhotoUseCase: new DeleteVehiclePhotoUseCase({ photoRepository }),
 });
+// Chat e incidentes: los usan las pantallas del viaje de los dos roles
+const tripMessageService = new TripMessageService();
+const tripMessageRepository = new TripMessageRepositoryImpl({ tripMessageService });
+const tripMessageUseCases = new TripMessageUseCases({
+    getTripMessagesUseCase: new GetTripMessagesUseCase({ tripMessageRepository }),
+    sendTripMessageUseCase: new SendTripMessageUseCase({ tripMessageRepository }),
+    markTripMessagesReadUseCase: new MarkTripMessagesReadUseCase({ tripMessageRepository }),
+});
+const incidentService = new IncidentService();
+const incidentRepository = new IncidentRepositoryImpl({ incidentService });
+const incidentUseCases = new IncidentUseCases({
+    createIncidentReportUseCase: new CreateIncidentReportUseCase({ incidentRepository }),
+    getMyIncidentReportsUseCase: new GetMyIncidentReportsUseCase({ incidentRepository }),
+});
+const incidentReportViewModel = new IncidentReportViewModel({ incidentUseCases });
 const loginViewModel = new LoginViewModel({ authUseCases });
 const registerViewModel = new RegisterViewModel({ authUseCases });
 const forgotPasswordViewModel = new ForgotPasswordViewModel({ authUseCases });
@@ -188,8 +215,9 @@ const getDriverTripOfferUseCase = new GetDriverTripOfferUseCase({ driverTripOffe
 const changeDriverTripOfferStatusUseCase = new ChangeDriverTripOfferStatusUseCase({ driverTripOfferRepository });
 const driverTripOfferUseCases = new DriverTripOfferUseCases({ createDriverTripOfferUseCase, getDriverTripOfferUseCase, changeDriverTripOfferStatusUseCase });
 const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverTripOfferUseCases, driverCarInfoUseCases, photoUseCases });
-const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, driverCarInfoUseCases, photoUseCases });
-const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, photoUseCases });
+const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, driverCarInfoUseCases, photoUseCases, tripMessageUseCases });
+const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, photoUseCases, tripMessageUseCases });
+const tripChatViewModel = new TripChatViewModel({ tripMessageUseCases, socketService });
 const driverTripRatingViewModel = new DriverTripRatingViewModel({ clientRequestUseCases });
 const clientTripRatingViewModel = new ClientTripRatingViewModel({ clientRequestUseCases });
 const clientTripHistoryViewModel = new ClientTripHistoryViewModel({ clientRequestUseCases });
@@ -260,6 +288,8 @@ type ContainerDeps = {
     getDriverTripOfferUseCase: GetDriverTripOfferUseCase;
     driverTripOfferUseCases: DriverTripOfferUseCases;
     upcomingTripsViewModel: UpcomingTripsViewModel;
+    tripChatViewModel: TripChatViewModel;
+    incidentReportViewModel: IncidentReportViewModel;
 };
 
 const container = {
@@ -326,7 +356,9 @@ const container = {
             createDriverTripOfferUseCase,
             getDriverTripOfferUseCase,
             driverTripOfferUseCases,
-            upcomingTripsViewModel
+            upcomingTripsViewModel,
+            tripChatViewModel,
+            incidentReportViewModel
         };
         return deps[name];
     }

@@ -9,7 +9,7 @@ import { container } from "../../../../di/container";
 import { ClientTripRatingViewModel } from "./ClientTripRatingViewModel";
 import { useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigator/MainStackNavigator";
-import { formatCOP, getTripFare } from "../../../utils/Formatters";
+import { formatCOP, formatErrorMessage, getTripFare } from "../../../utils/Formatters";
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientTripRatingScreen'>{}
 
@@ -22,11 +22,20 @@ export function ClientTripRatingScreen({navigation, route}: Props){
     const [rating, setRating] = useState(0);
 
     const handleUpdateDriverRating = async () => {
-        const response = await viewModel.updateDriverRating(clientRequest.id, rating);
-        if(typeof response === 'boolean' ){
-            ToastAndroid.show('Calificación actualizada', ToastAndroid.LONG);
-            rootNavigation.replace('ClientHomeScreen');
+        const error = viewModel.validate(rating);
+        if (error) {
+            ToastAndroid.show(error, ToastAndroid.SHORT);
+            return;
         }
+        const response = await viewModel.updateDriverRating(clientRequest.id, rating);
+        if (typeof response === 'boolean') {
+            ToastAndroid.show('¡Gracias por calificar!', ToastAndroid.LONG);
+        } else {
+            ToastAndroid.show(formatErrorMessage(response.message), ToastAndroid.LONG);
+            // 409: ya estaba calificado, así que igual se sale
+            if (response.statusCode !== 409) return;
+        }
+        rootNavigation.replace('ClientHomeScreen');
     }
 
     return (
@@ -66,6 +75,9 @@ export function ClientTripRatingScreen({navigation, route}: Props){
                 rating={rating}
                 onChange={setRating}
             />
+            <TouchableOpacity style={{ alignSelf: 'center', padding: 12 }} onPress={() => navigation.navigate('IncidentReportScreen', { idClientRequest: clientRequest.id })}>
+                <Text style={{ color: '#b45309', fontWeight: 'bold' }}>¿Algo salió mal? Reportar un problema</Text>
+            </TouchableOpacity>
             <View style={{flex: 1}}></View>
             <TouchableOpacity style={styles.iconContainer} onPress={() => {
                 handleUpdateDriverRating();

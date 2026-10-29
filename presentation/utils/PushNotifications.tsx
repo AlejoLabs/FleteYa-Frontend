@@ -1,14 +1,19 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
+// Chat que la persona tiene abierto: sus mensajes ya se ven en pantalla, no hace falta el aviso
+let openChatTrip: number | null = null;
+export const setOpenChat = (idClientRequest: number | null) => {
+    openChatTrip = idClientRequest;
+}
+
 // Con la app abierta también se muestra el aviso: la persona puede estar en otra pantalla (perfil, historial)
 Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowBanner: true,
-        shouldShowList: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-    }),
+    handleNotification: async (notification) => {
+        const data = readNotificationData(notification);
+        const show = !(data.type === 'CHAT_MESSAGE' && Number(data.id_client_request) === openChatTrip);
+        return { shouldShowBanner: show, shouldShowList: show, shouldPlaySound: show, shouldSetBadge: false };
+    },
 });
 
 // Mismo id que usa el backend en android.notification.channelId
@@ -40,8 +45,10 @@ export const getPushToken = async (): Promise<string | null> => {
 export type PushData = { type?: string; id_client_request?: string };
 
 // El backend manda type e id_client_request como datos de la notificación
-export const readPushData = (response: Notifications.NotificationResponse): PushData => {
-    const content = response.notification.request.content;
-    const trigger: any = response.notification.request.trigger;
+function readNotificationData(notification: Notifications.Notification): PushData {
+    const content = notification.request.content;
+    const trigger: any = notification.request.trigger;
     return { ...(trigger?.remoteMessage?.data ?? {}), ...(content.data ?? {}) } as PushData;
 }
+
+export const readPushData = (response: Notifications.NotificationResponse): PushData => readNotificationData(response.notification);

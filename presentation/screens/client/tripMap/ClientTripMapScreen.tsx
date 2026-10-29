@@ -13,7 +13,7 @@ import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { decode } from "@googlemaps/polyline-codec";
 import { Status } from "../../../../domain/repository/ClientRequestRepository";
 import { DriverCarInfo } from "../../../../domain/models/DriverCarInfo";
-import { formatCOP, formatErrorMessage, getTripFare } from "../../../utils/Formatters";
+import { formatCOP, formatErrorMessage, formatRating, getTripFare } from "../../../utils/Formatters";
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import TripProgress from "../../../components/TripProgress";
 import CargoInfo from "../../../components/CargoInfo";
@@ -21,6 +21,8 @@ import CancelReasonModal from "../../../components/CancelReasonModal";
 import { CLIENT_CANCEL_REASONS, DRIVER_STATUS_LABELS } from "../../../utils/Cargo";
 import { Photo } from "../../../../domain/models/Photo";
 import DeliveryProofSection from "./DeliveryProofSection";
+import TripActions from "../../../components/TripActions";
+import { useUnreadMessages } from "../../../hooks/useUnreadMessages";
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientTripMapScreen'> { };
 export function ClientTripMapScreen({ navigation, route }: Props) {
@@ -42,6 +44,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     const socketListeners = useRef<(() => void)[]>([]);
     const [isCancelVisible, setIsCancelVisible] = useState(false);
     const [tripPhotos, setTripPhotos] = useState<Photo[]>([]);
+    const unreadMessages = useUnreadMessages(viewModel, idClientRequest, authResponse?.user.id);
 
     const loadTripPhotos = async () => {
         const response = await viewModel.getTripPhotos(idClientRequest);
@@ -331,13 +334,18 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                     <View style={styles.rowContainer}>
                         <View style={styles.dataContainer}>
                             <Text>{clientRequest?.driver.name} {clientRequest?.driver.lastname}</Text>
-                            <Text>Cel: {clientRequest?.driver.phone}</Text>
+                            <Text style={styles.rating}>{formatRating(clientRequest?.driver.rating)}</Text>
                         </View>
                         <Image
                             source={{ uri: clientRequest?.driver.image }}
                             style={styles.userImage}
                         />
                     </View>
+                    <TripActions
+                        unread={unreadMessages}
+                        onChat={() => navigation.navigate('TripChatScreen', { idClientRequest, otherName: clientRequest?.driver.name })}
+                        onReport={() => navigation.navigate('IncidentReportScreen', { idClientRequest })}
+                    />
                     <View style={styles.rowContainer}>
                         <View style={styles.dataContainer}>
                             <Text>{carInfo?.brand ?? 'Sin marca registrada'}</Text>

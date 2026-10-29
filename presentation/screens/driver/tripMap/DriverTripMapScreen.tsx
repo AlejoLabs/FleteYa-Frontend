@@ -12,7 +12,7 @@ import * as Location from "expo-location";
 import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
 import { decode } from "@googlemaps/polyline-codec";
 import { Status } from "../../../../domain/repository/ClientRequestRepository";
-import { formatCOP, formatErrorMessage, getTripFare } from "../../../utils/Formatters";
+import { formatCOP, formatErrorMessage, formatRating, getTripFare } from "../../../utils/Formatters";
 import TripProgress from "../../../components/TripProgress";
 import CargoInfo from "../../../components/CargoInfo";
 import CancelReasonModal from "../../../components/CancelReasonModal";
@@ -21,6 +21,9 @@ import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { pickPhoto } from "../../../utils/PhotoPicker";
 import { PhotoItem } from "../../../components/PhotoStrip";
 import DeliveryModal from "./DeliveryModal";
+import TripActions from "../../../components/TripActions";
+import { useUnreadMessages } from "../../../hooks/useUnreadMessages";
+import { useAuth } from "../../../hooks/useAuth";
 
 // Siguiente paso del viaje para el conductor: llegar al origen, recoger la carga y entregarla
 const NEXT_STEP: Partial<Record<Status, { status: Status; label: string }>> = {
@@ -41,6 +44,8 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
     const [isInteractingWithMap, setIsInteractingWithMap] = useState<boolean>(false);
     const [location, setLocation] = useState<Region | undefined>(undefined);
     const [clientRequest, setClientRequest] = useState<ClientRequestResponse | null>(null);
+    const { authResponse } = useAuth();
+    const unreadMessages = useUnreadMessages(viewModel, idClientRequest, authResponse?.user.id);
     const [tracking, setTracking] = useState<boolean>(true);
     const locationSubscription = useRef<Location.LocationSubscription | null>(null);
     const [directionsRoute, setDirectionsRoute] = useState<LatLng[]>([]);
@@ -435,13 +440,18 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                     <View style={styles.rowContainer}>
                         <View style={styles.dataContainer}>
                             <Text>{clientRequest?.client.name} {clientRequest?.client.lastname}</Text>
-                            <Text>Cel: {clientRequest?.client.phone}</Text>
+                            <Text style={styles.rating}>{formatRating(clientRequest?.client.rating)}</Text>
                         </View>
                         <Image
                             source={{ uri: clientRequest?.client.image }}
                             style={styles.userImage}
                         />
                     </View>
+                    <TripActions
+                        unread={unreadMessages}
+                        onChat={() => navigation.navigate('TripChatScreen', { idClientRequest, otherName: clientRequest?.client.name })}
+                        onReport={() => navigation.navigate('IncidentReportScreen', { idClientRequest })}
+                    />
 
                     <Text style={styles.textTitle}>DATOS DEL VIAJE</Text>
                     <View style={styles.rowContainer}>

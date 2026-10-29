@@ -1,6 +1,10 @@
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
+    rating: {
+        color: '#b45309',
+        fontWeight: 'bold',
+    },
     container: {
         flex: 1,
         justifyContent: "center",

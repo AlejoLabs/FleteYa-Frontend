@@ -6,6 +6,7 @@ import { G } from "react-native-svg";
 import { GooglePlaceUseCases } from "../../../../domain/useCases/GooglePlaces/GooglePlacesUseCases";
 import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
 import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
+import { TripMessageUseCases } from "../../../../domain/useCases/tripMessage/TripMessageUseCases";
 
 export class ClientTripMapViewModel {
     
@@ -14,6 +15,7 @@ export class ClientTripMapViewModel {
     private googlePlaceUseCases: GooglePlaceUseCases;
     private driverCarInfoUseCases: DriverCarInfoUseCases;
     private photoUseCases: PhotoUseCases;
+    private tripMessageUseCases: TripMessageUseCases;
 
     constructor(
         {
@@ -21,14 +23,16 @@ export class ClientTripMapViewModel {
             socketService,
             googlePlaceUseCases,
             driverCarInfoUseCases,
-            photoUseCases
+            photoUseCases,
+            tripMessageUseCases
         }:
         {
             clientRequestUseCases: ClientRequestUseCases,
             socketService: SocketService,
             googlePlaceUseCases: GooglePlaceUseCases,
             driverCarInfoUseCases: DriverCarInfoUseCases,
-            photoUseCases: PhotoUseCases
+            photoUseCases: PhotoUseCases,
+            tripMessageUseCases: TripMessageUseCases
         }
     ) {
         this.clientRequestUseCases = clientRequestUseCases;
@@ -36,6 +40,17 @@ export class ClientTripMapViewModel {
         this.googlePlaceUseCases = googlePlaceUseCases;
         this.driverCarInfoUseCases = driverCarInfoUseCases;
         this.photoUseCases = photoUseCases;
+        this.tripMessageUseCases = tripMessageUseCases;
+    }
+
+    // Mensajes del chat que le llegaron a esta persona y todavía no abre
+    async countUnreadMessages(idClientRequest: number, myId: number) {
+        const response = await this.tripMessageUseCases.getMessages.execute(idClientRequest);
+        return Array.isArray(response) ? response.filter((message) => message.id_sender !== myId && !message.read_at).length : 0;
+    }
+
+    listenerTripMessage(idClientRequest: number, callback: () => void) {
+        return this.socketService.onMessage(`trip_message/${idClientRequest}`, () => callback());
     }
 
     async getTripPhotos(idClientRequest: number) {

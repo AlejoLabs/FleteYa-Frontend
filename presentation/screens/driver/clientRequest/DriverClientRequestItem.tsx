@@ -5,7 +5,7 @@ import { useState } from "react";
 import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
 import { DriverClientRequestViewModel } from "./DriverClientRequestViewModel";
 import { AuthResponse } from "../../../../domain/models/AuthResponse";
-import { formatCOP, formatErrorMessage } from "../../../utils/Formatters";
+import { formatCOP, formatErrorMessage, formatRating } from "../../../utils/Formatters";
 import CargoInfo from "../../../components/CargoInfo";
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { Photo } from "../../../../domain/models/Photo";
@@ -102,7 +102,7 @@ export function DriverClientRequestItem({ clientRequestResponse, viewModel, auth
                     </Text>
                 </TouchableOpacity>}
             {photos && <PhotoStrip items={photos.map((photo) => ({ key: String(photo.id), path: photo.url }))} />}
-            <Text style={{ marginTop: 2 }}>Cliente: {clientRequestResponse.client.name} {clientRequestResponse.client.lastname}</Text>
+            <Text style={{ marginTop: 2 }}>Cliente: {clientRequestResponse.client.name} {clientRequestResponse.client.lastname} · {formatRating(clientRequestResponse.client.rating)}</Text>
 
             <View style={styles.actionsRow}>
                 <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'green' }]} onPress={() => sendOffer(clientFare)}>

@@ -21,6 +21,10 @@ const targetFor = (role: Role, type?: string, idClientRequest?: number): [string
         }
         if (type === 'DOCUMENTS_EXPIRING') return ['DriverCarInfoScreen', {}];
     }
+    if (type === 'CHAT_MESSAGE' && idClientRequest) {
+        const stack = role === 'CLIENT' ? 'ClientMapStackNavigator' : 'DriverMapStackNavigator';
+        return [stack, { screen: 'TripChatScreen', params: { idClientRequest } }];
+    }
     if (type === 'SCHEDULED_REMINDER') return ['UpcomingTripsScreen', {}];
     return null;
 }

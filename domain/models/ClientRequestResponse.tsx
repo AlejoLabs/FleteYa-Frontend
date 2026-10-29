@@ -1,4 +1,5 @@
 import { CargoCategory, VehicleType } from "./ClientRequest";
+import { Rating } from "./Rating";
 
 export interface ClientRequestResponse {
     id:                      number;
@@ -69,15 +70,15 @@ export interface ActiveTrip {
 export interface Client {
     name:     string;
     image:    string;
-    phone:    string;
     lastname: string;
+    rating?:  Rating;
 }
 
 export interface Driver {
     name:     string;
     image:    string;
-    phone:    string;
     lastname: string;
+    rating?:  Rating;
 }
 
 export interface Position {

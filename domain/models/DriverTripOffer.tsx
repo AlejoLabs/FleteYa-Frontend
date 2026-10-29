@@ -1,3 +1,5 @@
+import { Rating } from "./Rating";
+
 export interface DriverTripOffer {
     id?: number;
     id_driver: number;
@@ -19,5 +21,5 @@ export interface Driver {
     name: string;
     lastname: string;
     image: string;
-    phone: string;
+    rating?: Rating;
 }
