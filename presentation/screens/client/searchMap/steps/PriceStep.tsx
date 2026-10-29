@@ -52,7 +52,11 @@ export default function PriceStep({ state }: Props) {
                 {recommendedFare > 0
                     ? <View style={styles.recommended}>
                         <AppText variant="small" color="textMuted" style={styles.flex}>
-                            Sugerido {formatCOP(recommendedFare)}{pricing ? ` por ${pricing.distance.text}` : ''}. Toca el precio para escribirlo.
+                            Sugerido {formatCOP(recommendedFare)}{pricing ? ` por ${pricing.distance.text}` : ''}
+                            {draft.needsHelp
+                                ? ', solo por el transporte. Súbelo si quieres que incluya la ayuda para cargar y descargar.'
+                                : '. Cubre solo el transporte de la carga.'}
+                            {' '}Toca el precio para escribirlo.
                         </AppText>
                         {draft.fare !== recommendedFare && <Chip label="Usar sugerido" onPress={() => update({ fare: recommendedFare })} />}
                     </View>

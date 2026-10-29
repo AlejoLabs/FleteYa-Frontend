@@ -78,7 +78,7 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
                 <Notice tone="success" message={`Tu oferta: ${formatCOP(myOffer)} · esperando al cliente`} />}
 
             <TripPlaces pickup={request.pickup_description} destination={request.destination_description} pickupDone={false} />
-            <CargoInfo request={request} />
+            <CargoInfo request={request} offerHint />
             {cargoPhotos > 0 &&
                 <View style={styles.photos}>
                     <Button

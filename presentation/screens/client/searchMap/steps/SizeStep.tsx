@@ -1,5 +1,5 @@
 import { StyleSheet, View } from "react-native";
-import { AppText, ChipGroup, Counter, Notice, SwitchRow, TextField, useToast } from "../../../../components/ui";
+import { AppText, ChipGroup, Notice, SwitchRow, TextField, useToast } from "../../../../components/ui";
 import PhotoStrip from "../../../../components/PhotoStrip";
 import { spacing } from "../../../../theme";
 import { VEHICLES, vehicleLabel, vehicleRank } from "../../../../utils/Cargo";
@@ -14,7 +14,7 @@ const MEASURES: { field: 'lengthCm' | 'widthCm' | 'heightCm'; label: string }[] 
     { field: 'heightCm', label: 'Alto' },
 ];
 
-// Paso 3: medidas del bulto más grande, el vehículo, los cuidados y el cargue y descargue
+// Paso 3: medidas del bulto más grande, el vehículo, los cuidados y las fotos
 export default function SizeStep({ state }: { state: RequestDraftState }) {
     const { draft, update, errors, step, suggestedVehicle } = state;
     const { showToast } = useToast();
@@ -76,14 +76,6 @@ export default function SizeStep({ state }: { state: RequestDraftState }) {
                 onAdd={addPhoto}
                 onRemove={(uri) => update({ photos: draft.photos.filter((photo) => photo !== uri) })}
             />
-
-            <SectionLabel>Cargue y descargue</SectionLabel>
-            <Counter label="Piso donde se recoge" value={draft.pickupFloor} min={1} max={60} onChange={(pickupFloor) => update({ pickupFloor })} />
-            {draft.pickupFloor > 1 &&
-                <SwitchRow label="Hay ascensor en el origen" value={draft.pickupElevator} onChange={(pickupElevator) => update({ pickupElevator })} />}
-            <Counter label="Piso donde se entrega" value={draft.destinationFloor} min={1} max={60} onChange={(destinationFloor) => update({ destinationFloor })} />
-            {draft.destinationFloor > 1 &&
-                <SwitchRow label="Hay ascensor en el destino" value={draft.destinationElevator} onChange={(destinationElevator) => update({ destinationElevator })} />}
         </>
     );
 }

@@ -55,7 +55,7 @@ export default function ClientTripSheet({ request, status, title, hint, vehicleT
                 photos={photos}
             />
             <TripPlaces pickup={request.pickup_description} destination={request.destination_description} pickupDone={isCargoOnBoard(status)} />
-            <CargoInfo request={request} showContacts />
+            <CargoInfo request={request} showContacts audience="client" />
         </>
     );
 }

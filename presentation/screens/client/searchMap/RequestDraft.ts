@@ -16,7 +16,14 @@ export interface RequestDraft {
     description: string;
     weightKg: string;
     packages: number;
+    // Lo normal es que el cliente suba y reciba la carga y el precio cubra solo el transporte.
+    // Si pide ayuda, los ayudantes y los pisos le dicen al conductor qué incluir en su oferta
+    needsHelp: boolean;
     helpers: number;
+    pickupFloor: number;
+    pickupElevator: boolean;
+    destinationFloor: number;
+    destinationElevator: boolean;
     // Paso 3: medidas del bulto más grande, cuidados y vehículo
     lengthCm: string;
     widthCm: string;
@@ -27,10 +34,6 @@ export interface RequestDraft {
     photos: string[];
     // null = el sugerido por peso y medidas
     vehicleType: VehicleType | null;
-    pickupFloor: number;
-    pickupElevator: boolean;
-    destinationFloor: number;
-    destinationElevator: boolean;
     // Paso 4: cuándo, precio y contactos. scheduledAt null = "Ahora"
     scheduledAt: Date | null;
     fare: number;
@@ -50,7 +53,8 @@ export const EMPTY_DRAFT: RequestDraft = {
     description: '',
     weightKg: '',
     packages: 1,
-    helpers: 0,
+    needsHelp: false,
+    helpers: 1,
     lengthCm: '',
     widthCm: '',
     heightCm: '',
@@ -155,11 +159,12 @@ export const toClientRequest = (draft: RequestDraft, idClient: number): ClientRe
     needs_cover: draft.needsCover,
     vehicle_type: draft.vehicleType ?? undefined,
     no_prohibited_items: draft.noProhibitedItems,
-    helpers: draft.helpers,
-    pickup_floor: draft.pickupFloor,
-    pickup_has_elevator: draft.pickupFloor > 1 ? draft.pickupElevator : undefined,
-    destination_floor: draft.destinationFloor,
-    destination_has_elevator: draft.destinationFloor > 1 ? draft.destinationElevator : undefined,
+    // Sin ayuda no se mandan ayudantes ni pisos: el conductor ve "Solo transporte"
+    helpers: draft.needsHelp ? draft.helpers : 0,
+    pickup_floor: draft.needsHelp ? draft.pickupFloor : undefined,
+    pickup_has_elevator: draft.needsHelp && draft.pickupFloor > 1 ? draft.pickupElevator : undefined,
+    destination_floor: draft.needsHelp ? draft.destinationFloor : undefined,
+    destination_has_elevator: draft.needsHelp && draft.destinationFloor > 1 ? draft.destinationElevator : undefined,
     sender_name: draft.otherSender ? draft.senderName.trim() : undefined,
     sender_phone: draft.otherSender ? draft.senderPhone : undefined,
     receiver_name: draft.otherReceiver ? draft.receiverName.trim() : undefined,
