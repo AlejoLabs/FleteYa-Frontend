@@ -75,7 +75,7 @@ export const MainStackNavigator = () => {
                 />
 
                 <Stack.Screen
-                    options={{ title: 'Recuperar contraseña' }}
+                    options={{ headerShown: false }}
                     name="ForgotPasswordScreen"
                     component={ForgotPasswordScreen}
                 />

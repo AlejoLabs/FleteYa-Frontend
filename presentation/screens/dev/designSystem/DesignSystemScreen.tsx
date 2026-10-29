@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import {
-    Amount, AppHeader, AppText, Button, Card, Chip, ChipGroup, ConfirmDialog, CountBadge, ListItem, Notice,
+    Amount, AppHeader, AppText, BrandMark, Button, Card, Chip, ChipGroup, ConfirmDialog, CountBadge, ListItem, Notice,
     OptionCard, PersonRow, PriceStepper, ProgressSteps, ReceiptCard, SegmentedTabs, Sheet, StateView, StatusPill,
-    TextField, useToast,
+    CodeInput, TextField, useToast,
 } from "../../../components/ui";
 import { colors, radius, spacing } from "../../../theme";
 
@@ -24,6 +24,7 @@ export default function DesignSystemScreen() {
     const [payment, setPayment] = useState<'CASH' | 'NEQUI'>('CASH');
     const [dialog, setDialog] = useState(false);
     const [email, setEmail] = useState('');
+    const [code, setCode] = useState('12');
 
     return (
         <View style={styles.screen}>
@@ -31,7 +32,7 @@ export default function DesignSystemScreen() {
 
                 <Section title="Marca y tipografía">
                     <View style={styles.brandBox}>
-                        <AppText variant="brand" color="textOnDark">Flete<Text style={{ color: colors.cargo }}>Ya</Text></AppText>
+                        <BrandMark />
                         <AppText variant="body" color="textOnDarkMuted">Mueve cualquier carga. Tú pones el precio.</AppText>
                     </View>
                     <AppText variant="display">Display 32</AppText>
@@ -73,6 +74,8 @@ export default function DesignSystemScreen() {
                     <TextField label="Correo" placeholder="tu@correo.com" keyboardType="email-address" icon="mail-outline" value={email} onChangeText={setEmail} hint="Te enviamos el código aquí" />
                     <TextField label="Contraseña" placeholder="Mínimo 6 caracteres" secureTextEntry icon="lock-closed-outline" />
                     <TextField label="Placa" placeholder="ABC123" error="La placa debe tener 3 letras y 3 números" />
+                    <TextField label="Celular" prefix="+57" placeholder="300 123 4567" keyboardType="phone-pad" />
+                    <CodeInput label="Código" length={6} value={code} onChangeText={setCode} />
                     <View style={styles.darkBox}>
                         <TextField tone="dark" placeholder="Correo" icon="mail-outline" />
                         <Button title="Entrar" onPress={() => { }} />

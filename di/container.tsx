@@ -15,6 +15,7 @@ import { LoginWithGoogleUseCase } from "../domain/useCases/auth/LoginWithGoogleU
 import { LinkGoogleUseCase } from "../domain/useCases/auth/LinkGoogleUseCase";
 import { LoginViewModel } from "../presentation/screens/auth/login/LoginViewModel";
 import { RegisterViewModel } from "../presentation/screens/auth/register/RegisterViewModel";
+import { GoogleSignInViewModel } from "../presentation/screens/auth/google/GoogleSignInViewModel";
 import { ForgotPasswordViewModel } from "../presentation/screens/auth/forgotPassword/ForgotPasswordViewModel";
 import { DriverVehicleRegisterViewModel } from "../presentation/screens/auth/driverVehicle/DriverVehicleRegisterViewModel";
 import { ChangePasswordViewModel } from "../presentation/screens/profile/changePassword/ChangePasswordViewModel";
@@ -157,6 +158,7 @@ const incidentUseCases = new IncidentUseCases({
 const incidentReportViewModel = new IncidentReportViewModel({ incidentUseCases });
 const loginViewModel = new LoginViewModel({ authUseCases });
 const registerViewModel = new RegisterViewModel({ authUseCases });
+const googleSignInViewModel = new GoogleSignInViewModel({ authUseCases });
 const forgotPasswordViewModel = new ForgotPasswordViewModel({ authUseCases });
 const driverVehicleRegisterViewModel = new DriverVehicleRegisterViewModel({ authUseCases, photoUseCases });
 const changePasswordViewModel = new ChangePasswordViewModel({ authUseCases });
@@ -228,6 +230,7 @@ const driverClientRequestViewModel = new DriverClientRequestViewModel({ clientRe
 type ContainerDeps = {
     loginViewModel: LoginViewModel;
     registerViewModel: RegisterViewModel;
+    googleSignInViewModel: GoogleSignInViewModel;
     forgotPasswordViewModel: ForgotPasswordViewModel;
     driverVehicleRegisterViewModel: DriverVehicleRegisterViewModel;
     changePasswordViewModel: ChangePasswordViewModel;
@@ -297,6 +300,7 @@ const container = {
         const deps: ContainerDeps = {
             loginViewModel,
             registerViewModel,
+            googleSignInViewModel,
             forgotPasswordViewModel,
             driverVehicleRegisterViewModel,
             changePasswordViewModel,

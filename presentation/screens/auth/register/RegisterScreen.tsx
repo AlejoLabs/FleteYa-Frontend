@@ -1,312 +1,194 @@
-import { View, Text, Image, TouchableOpacity, Alert, Platform, UIManager } from "react-native";
-import styles from "./Styles";
-import DefaultTextInput from "../../../components/DefaultTextInput";
-import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
+import { useRef, useState } from "react";
+import { KeyboardAvoidingView, ScrollView, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "../../../navigator/MainStackNavigator";
-import { useState } from "react";
-import EmailValidator from "../../../utils/EmailValidator";
-import { KeyboardAvoidingView } from "react-native";
-import { ScrollView } from "react-native";
 import { container } from "../../../../di/container";
-import { RegisterViewModel } from "./RegisterViewModel";
-import { Shadow } from "react-native-shadow-2";
-import LottieView from "lottie-react-native";
-
+import { AuthResponse } from "../../../../domain/models/AuthResponse";
+import { useAuth } from "../../../hooks/useAuth";
+import { AppHeader, AppText, Button, OptionCard, TextField, useToast } from "../../../components/ui";
+import { formatErrorMessage } from "../../../utils/Formatters";
+import { useGoogleSignIn } from "../google/useGoogleSignIn";
+import GoogleLinkDialog from "../google/GoogleLinkDialog";
+import { AccountType, RegisterErrors, RegisterForm, RegisterViewModel } from "./RegisterViewModel";
+import styles from "./Styles";
 
 interface Props extends StackScreenProps<RootStackParamList, 'RegisterScreen'> { };
-export default function RegisterScreen({ navigation, route }: Props) {
 
-    const [name, setName] = useState('');
-    const [lastname, setLastname] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    // Cliente envía carga; conductor la transporta y además registra su vehículo
-    const [accountType, setAccountType] = useState<'CLIENT' | 'DRIVER'>('CLIENT');
+const EMPTY_FORM: RegisterForm = { name: '', lastname: '', phone: '', email: '', password: '' };
 
-    const hasLottieNativeView = (() => {
-        if (Platform.OS !== 'android') return true;
-        try {
-            return Boolean(UIManager.getViewManagerConfig?.('LottieAnimationView'))
-                || Boolean(UIManager.getViewManagerConfig?.('RCTLottieAnimationView'));
-        } catch {
-            return false;
-        }
-    })();
+export default function RegisterScreen({ navigation }: Props) {
 
     const registerViewModel: RegisterViewModel = container.resolve('registerViewModel');
+    const { saveAuthSession } = useAuth();
+    const { showToast } = useToast();
 
-    const handleRegister = async () => {
-        if (name.trim() === "") {
-            Alert.alert("Error", "El nombre no puede estar vacio");
-            return;
-        }
-        if (lastname.trim() === "") {
-            Alert.alert("Error", "El apellido no puede estar vacio");
-            return;
-        }
-        if (email.trim() === "") {
-            Alert.alert("Error", "El correo no puede estar vacio");
-            return;
-        }
-        if (phone.trim() === "") {
-            Alert.alert("Error", "El telefono no puede estar vacio");
-            return;
-        }
-        if (password === "") {
-            Alert.alert("Error", "El password no puede estar vacio");
-            return;
-        }
-        if (confirmPassword === "") {
-            Alert.alert("Error", "La confirmacion no puede estar vacia");
-            return;
-        }
-        if (!EmailValidator(email.trim())) {
-            Alert.alert("Error", "El email no es valido");
-            return;
-        }
-        if (confirmPassword !== password) {
-            Alert.alert("Error", "Las contraseñas no coinciden");
-            return;
-        }
+    const [accountType, setAccountType] = useState<AccountType>('CLIENT');
+    const [form, setForm] = useState<RegisterForm>(EMPTY_FORM);
+    const [errors, setErrors] = useState<RegisterErrors>({});
+    const [isSending, setIsSending] = useState(false);
+    const lastnameRef = useRef<TextInput>(null);
+    const phoneRef = useRef<TextInput>(null);
+    const emailRef = useRef<TextInput>(null);
+    const passwordRef = useRef<TextInput>(null);
 
-        // "Quiero transportar": la cuenta se crea en el paso siguiente, junto con el vehículo y sus documentos
-        if (accountType === 'DRIVER') {
-            navigation.navigate('DriverVehicleRegisterScreen', {
-                account: { name: name.trim(), lastname: lastname.trim(), email: email.trim(), phone: phone.trim(), password }
-            });
-            return;
-        }
+    // El login ya decide a dónde ir según el rol al ver la sesión nueva
+    const enter = (response: AuthResponse) => {
+        navigation.popToTop();
+        saveAuthSession(response);
+    }
+    const google = useGoogleSignIn(enter);
 
-        const response = await registerViewModel.register({
-            name: name.trim(),
-            lastname: lastname.trim(),
-            email: email.trim(),
-            phone: phone.trim(),
-            password: password
-        });
-
-        if ('token' in response) {
-            Alert.alert(
-                'Exito',
-                'Usuario creado exitosamente',
-                [{ text: 'OK', onPress: () => navigation.replace('LoginScreen') }]
-            );
-            return;
-        }
-
-        const errorMessage = Array.isArray(response.message)
-            ? response.message.join(', ')
-            : response.message;
-        Alert.alert('Error', errorMessage);
+    const update = (field: keyof RegisterForm) => (value: string) => {
+        setForm({ ...form, [field]: value });
+        setErrors({ ...errors, [field]: undefined });
     }
 
+    const handleRegister = async () => {
+        const problems = registerViewModel.validate(form);
+        setErrors(problems);
+        if (Object.keys(problems).length > 0) return;
+
+        const account = registerViewModel.toAccount(form);
+        // "Quiero transportar": la cuenta se crea en el paso siguiente, junto con el vehículo y sus documentos
+        if (accountType === 'DRIVER') {
+            navigation.navigate('DriverVehicleRegisterScreen', { account });
+            return;
+        }
+
+        setIsSending(true);
+        const response = await registerViewModel.register(account);
+        setIsSending(false);
+        if ('token' in response) {
+            showToast(`Cuenta creada. ¡Hola, ${account.name}!`, 'success');
+            enter(response);
+            return;
+        }
+        showToast(formatErrorMessage(response.message), 'error');
+    }
+
+    const isDriver = accountType === 'DRIVER';
+
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
-        >
+        <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+            <AppHeader
+                title="Crear cuenta"
+                onBack={() => navigation.goBack()}
+                right={isDriver ? <AppText variant="caption" color="textMuted">Paso 1 de 2</AppText> : undefined}
+            />
+            <KeyboardAvoidingView behavior="padding" style={styles.flex}>
+                <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+                    <AppText variant="label" color="textMuted">¿Cómo vas a usar FleteYa?</AppText>
+                    <View style={styles.options} accessibilityRole="radiogroup">
+                        <OptionCard
+                            title="Quiero mover una carga"
+                            description="Mudanzas, mercancía, materiales y más"
+                            selected={!isDriver}
+                            onPress={() => setAccountType('CLIENT')}
+                        />
+                        <OptionCard
+                            title="Quiero transportar"
+                            description="Tengo carry, estacas, furgón o camión"
+                            selected={isDriver}
+                            onPress={() => setAccountType('DRIVER')}
+                        />
+                    </View>
 
-            <ScrollView
-                contentContainerStyle={{ flexGrow: 1 }}
-                keyboardShouldPersistTaps='handled'
-            >
-                <View style={styles.container}>
-                    <Image
-                        source={require('../../../../assets/city.jpg')}
-                        style={styles.ImageBackground}
+                    <View style={styles.row}>
+                        <View style={styles.flex}>
+                            <TextField
+                                label="Nombre"
+                                value={form.name}
+                                onChangeText={update('name')}
+                                error={errors.name}
+                                autoCapitalize="words"
+                                autoComplete="name-given"
+                                returnKeyType="next"
+                                onSubmitEditing={() => lastnameRef.current?.focus()}
+                            />
+                        </View>
+                        <View style={styles.flex}>
+                            <TextField
+                                ref={lastnameRef}
+                                label="Apellido"
+                                value={form.lastname}
+                                onChangeText={update('lastname')}
+                                error={errors.lastname}
+                                autoCapitalize="words"
+                                autoComplete="name-family"
+                                returnKeyType="next"
+                                onSubmitEditing={() => phoneRef.current?.focus()}
+                            />
+                        </View>
+                    </View>
+                    <TextField
+                        ref={phoneRef}
+                        label="Celular"
+                        prefix="+57"
+                        placeholder="300 123 4567"
+                        value={form.phone}
+                        onChangeText={update('phone')}
+                        error={errors.phone}
+                        keyboardType="phone-pad"
+                        autoComplete="tel"
+                        maxLength={13}
+                        returnKeyType="next"
+                        onSubmitEditing={() => emailRef.current?.focus()}
                     />
-                    <Image
-                        style={styles.topImage}
-                        source={require('../../../../assets/city_background.jpg')}
+                    <TextField
+                        ref={emailRef}
+                        label="Correo"
+                        placeholder="tu@correo.com"
+                        value={form.email}
+                        onChangeText={update('email')}
+                        error={errors.email}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoComplete="email"
+                        returnKeyType="next"
+                        onSubmitEditing={() => passwordRef.current?.focus()}
                     />
+                    <TextField
+                        ref={passwordRef}
+                        label="Contraseña"
+                        placeholder="Mínimo 6 caracteres"
+                        hint="Toca el ojo para revisar lo que escribiste"
+                        value={form.password}
+                        onChangeText={update('password')}
+                        error={errors.password}
+                        secureTextEntry
+                        autoComplete="new-password"
+                        returnKeyType="done"
+                        onSubmitEditing={handleRegister}
+                    />
+                </ScrollView>
 
-                    <TouchableOpacity
-                        style={styles.containerBack}
-                        onPress={() => navigation.pop()}>
-                        <Image
-                            style={styles.back}
-                            source={require('../../../../assets/left_arrow.png')}
+                <View style={styles.footer}>
+                    <Button
+                        title={isDriver ? 'Siguiente: mi vehículo' : 'Crear cuenta'}
+                        loading={isSending}
+                        disabled={google.isBusy}
+                        onPress={handleRegister}
+                    />
+                    {/* Google crea cuentas de cliente; el conductor necesita registrar su vehículo */}
+                    {!isDriver &&
+                        <Button
+                            title="Registrarme con Google"
+                            variant="google"
+                            icon="logo-google"
+                            loading={google.isBusy && !google.link.visible}
+                            disabled={isSending}
+                            onPress={google.start}
                         />
-                    </TouchableOpacity>
-
-                    <Shadow containerStyle={styles.shadowForm} distance={15} startColor={'#717171'} >
-                        {<View style={styles.form}>
-                            {hasLottieNativeView ? (
-                                <LottieView style={styles.lottie} source={require('../../../../assets/sign_in.json')} autoPlay loop />
-                            ) : (
-                                <Text style={{ color: '#fff', marginBottom: 12 }}>Cargando animacion...</Text>
-                            )}
-
-
-                            <View style={{ flexDirection: 'row', gap: 8, marginHorizontal: 15, marginBottom: 6 }}>
-                                {([['CLIENT', 'Quiero enviar'], ['DRIVER', 'Quiero transportar']] as const).map(([value, label]) => (
-                                    <TouchableOpacity
-                                        key={value}
-                                        onPress={() => setAccountType(value)}
-                                        style={{
-                                            flex: 1, paddingVertical: 10, borderRadius: 20, alignItems: 'center',
-                                            backgroundColor: accountType === value ? 'orange' : '#eee',
-                                        }}
-                                    >
-                                        <Text style={{ color: accountType === value ? 'white' : '#444', fontWeight: 'bold' }}>{label}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-
-                            <DefaultTextInput
-                                placeholder="Nombre"
-                                value={name}
-                                onChangeText={setName}
-                                icon={require('../../../../assets/user.png')}
-                                placeholderTextColor="gray"
-                                marginHorizontal={15}
-                                textColor="gray"
-                            />
-
-                            <DefaultTextInput
-                                placeholder="Apellido"
-                                value={lastname}
-                                onChangeText={setLastname}
-                                icon={require('../../../../assets/user_image.png')}
-                                placeholderTextColor="gray"
-                                marginHorizontal={15}
-                                textColor="gray"
-                            />
-
-                            <DefaultTextInput
-                                placeholder="Email"
-                                value={email}
-                                onChangeText={setEmail}
-                                keyboardType="email-address"
-                                icon={require('../../../../assets/email.png')}
-                                placeholderTextColor="gray"
-                                marginHorizontal={15}
-                                textColor="gray"
-                            />
-
-                            <DefaultTextInput
-                                placeholder="Telefono"
-                                value={phone}
-                                onChangeText={setPhone}
-                                keyboardType="number-pad"
-                                icon={require('../../../../assets/phone.png')}
-                                placeholderTextColor="gray"
-                                marginHorizontal={15}
-                                textColor="gray"
-                            />
-
-                            <DefaultTextInput
-                                placeholder="Contraseña"
-                                value={password}
-                                onChangeText={setPassword}
-                                icon={require('../../../../assets/password.png')}
-                                secureTextEntry={true}
-                                placeholderTextColor="gray"
-                                marginHorizontal={15}
-                                textColor="gray"
-                            />
-
-                            <DefaultTextInput
-                                placeholder="Confirmar Contraseña"
-                                value={confirmPassword}
-                                onChangeText={setConfirmPassword}
-                                icon={require('../../../../assets/password.png')}
-                                secureTextEntry={true}
-                                placeholderTextColor="gray"
-                                marginHorizontal={15}
-                                textColor="gray"
-                            />
-
-                            <DefaultRoundedButton
-                                text={accountType === 'DRIVER' ? "Siguiente: mi vehículo" : "Crear Usuario"}
-                                onPress={() => {
-                                    handleRegister();
-                                }}
-                                backgroundColor="orange"
-                                marginTop={15}
-                                height={50}
-                                marginLeft={15}
-                                width={260}
-                            />
-
-                        </View>}
-                    </Shadow>
-
-                    {/*<View style={styles.form}>
-                        <TouchableOpacity onPress={() => navigation.pop()}>
-                            <Image
-                                style={styles.back}
-                                source={require('../../../../assets/left_arrow.png')}
-                            />
-                        </TouchableOpacity>
-
-                        <Image
-                            source={require('../../../../assets/user.png')}
-                            style={styles.imageUser}
-                        />
-                        <Text style={styles.textRegister}>REGISTRO</Text>
-
-                        <DefaultTextInput
-                            placeholder="Nombre"
-                            value={name}
-                            onChangeText={setName}
-                            icon={require('../../../../assets/user.png')}
-                        />
-
-                        <DefaultTextInput
-                            placeholder="Apellido"
-                            value={lastname}
-                            onChangeText={setLastname}
-                            icon={require('../../../../assets/user_image.png')}
-                        />
-
-                        <DefaultTextInput
-                            placeholder="Email"
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                            icon={require('../../../../assets/email.png')}
-                        />
-
-                        <DefaultTextInput
-                            placeholder="Telefono"
-                            value={phone}
-                            onChangeText={setPhone}
-                            keyboardType="number-pad"
-                            icon={require('../../../../assets/phone.png')}
-                        />
-
-                        <DefaultTextInput
-                            placeholder="Contraseña"
-                            value={password}
-                            onChangeText={setPassword}
-                            icon={require('../../../../assets/password.png')}
-                            secureTextEntry={true}
-                        />
-
-                        <DefaultTextInput
-                            placeholder="Confirmar Contraseña"
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                            icon={require('../../../../assets/password.png')}
-                            secureTextEntry={true}
-                        />
-
-                        <DefaultRoundedButton
-                            text="REGISTRARSE"
-                            backgroundColor="black"
-                            onPress={() => handleRegister()}
-
-                        />
-
-                    </View>*/}
+                    }
                 </View>
-            </ScrollView>
+            </KeyboardAvoidingView>
 
-        </KeyboardAvoidingView>
-
+            <GoogleLinkDialog
+                link={google.link}
+                loading={google.isBusy}
+                onForgotPassword={() => navigation.navigate('ForgotPasswordScreen', { email: form.email })}
+            />
+        </SafeAreaView>
     );
 }

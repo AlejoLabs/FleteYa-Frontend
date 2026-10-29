@@ -3,6 +3,8 @@ export { default as AppText } from "./AppText";
 export { default as Button } from "./Button";
 export type { ButtonVariant } from "./Button";
 export { default as TextField } from "./TextField";
+export { default as CodeInput } from "./CodeInput";
+export { default as BrandMark } from "./BrandMark";
 export { default as Card } from "./Card";
 export { Chip, ChipGroup } from "./Chip";
 export type { ChipOption } from "./Chip";

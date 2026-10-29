@@ -9,13 +9,15 @@ interface Props extends TextInputProps {
     hint?: string;
     error?: string | null;
     icon?: keyof typeof Ionicons.glyphMap;
+    // Texto fijo antes del valor, como el indicativo +57 del celular
+    prefix?: string;
     // dark: sobre fondo asfalto (inicio de sesión)
     tone?: 'light' | 'dark';
 }
 
 // Campo con etiqueta arriba y ayuda o error abajo. Con secureTextEntry agrega el ojo para ver la contraseña
 const TextField = forwardRef<TextInput, Props>(function TextField(
-    { label, hint, error, icon, tone = 'light', secureTextEntry, editable = true, style, ...inputProps }, ref) {
+    { label, hint, error, icon, prefix, tone = 'light', secureTextEntry, editable = true, style, ...inputProps }, ref) {
     const [focused, setFocused] = useState(false);
     const [hidden, setHidden] = useState(true);
     const dark = tone === 'dark';
@@ -33,6 +35,7 @@ const TextField = forwardRef<TextInput, Props>(function TextField(
                 !editable && styles.disabled,
             ]}>
                 {icon && <Ionicons name={icon} size={20} color={mutedColor} />}
+                {prefix && <AppText variant="bodyStrong" style={{ color: textColor }}>{prefix}</AppText>}
                 <TextInput
                     ref={ref}
                     placeholderTextColor={mutedColor}

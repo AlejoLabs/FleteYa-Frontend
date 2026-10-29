@@ -28,7 +28,7 @@ const ICONS: Record<ToastTone, { name: keyof typeof Ionicons.glyphMap; color: st
 const ToastContext = createContext<ToastContextValue>({ showToast: () => { } });
 
 // Avisos que no bloquean ("Guardado", "No se pudo enviar"). Reemplazan los Alert.alert informativos;
-// las preguntas que piden decidir usan ConfirmDialog
+// las preguntas que piden decidir usan ConfirmDialog. Sale arriba para no tapar el botón principal ni la hoja inferior
 export function ToastProvider({ children }: { children: React.ReactNode }) {
     const [toast, setToast] = useState<ToastMessage | null>(null);
     const nextId = useRef(0);
@@ -62,7 +62,7 @@ function ToastView({ toast, onHide }: { toast: ToastMessage; onHide: () => void 
 
     const icon = ICONS[toast.tone];
     return (
-        <View pointerEvents="none" style={[styles.wrapper, { bottom: insets.bottom + spacing.xl }]}>
+        <View pointerEvents="none" style={[styles.wrapper, { top: insets.top + spacing.md }]}>
             <Animated.View style={[styles.toast, { opacity }]} accessibilityLiveRegion="assertive" accessibilityRole="alert">
                 <Ionicons name={icon.name} size={20} color={icon.color} />
                 <AppText variant="smallStrong" color="textOnDark" style={styles.text}>{toast.message}</AppText>
@@ -87,6 +87,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.lg,
         borderRadius: radius.md,
         backgroundColor: colors.asphalt,
+        // Sin el borde se pierde sobre el fondo asfalto del inicio de sesión
+        borderWidth: 1,
+        borderColor: colors.asphaltRaised,
         ...shadows.card,
     },
     text: {

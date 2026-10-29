@@ -1,24 +1,34 @@
+import { ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigator/MainStackNavigator";
-import { View, FlatList, Text } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
-import styles from "./Styles";
+import { AppText } from "../../components/ui";
 import RolesItem from "./RolesItem";
+import styles from "./Styles";
 
 interface Props extends StackScreenProps<RootStackParamList, 'RolesScreen'> { };
 
-export default function RolesScreen({ navigation, route }: Props) {
-    
-    const {authResponse} = useAuth();
+// Solo llega aquí quien tiene cuenta de cliente y de conductor
+export default function RolesScreen({ navigation }: Props) {
+
+    const { authResponse } = useAuth();
 
     return (
-        <View style={styles.container}>
-            <FlatList
-                contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}
-                data={authResponse?.user.roles}
-                keyExtractor={(item) => item.id}
-                renderItem= {({item}) => <RolesItem role={item} navigation={navigation} />}
-            />
-        </View>
+        <SafeAreaView style={styles.screen}>
+            <ScrollView contentContainerStyle={styles.content}>
+                <View style={styles.intro}>
+                    <AppText variant="title">Hola, {authResponse?.user.name}</AppText>
+                    <AppText variant="body" color="textMuted">¿Qué vas a hacer hoy?</AppText>
+                </View>
+                {authResponse?.user.roles?.map((role) => (
+                    <RolesItem
+                        key={role.id}
+                        role={role}
+                        onPress={() => navigation.replace(role.id === 'DRIVER' ? 'DriverHomeScreen' : 'ClientHomeScreen')}
+                    />
+                ))}
+            </ScrollView>
+        </SafeAreaView>
     );
 }
