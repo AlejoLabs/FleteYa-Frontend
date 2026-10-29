@@ -50,7 +50,7 @@ export default function TripRatingView({ request, person, fareLabel, sending, on
                 <View style={styles.rate}>
                     <Avatar name={`${person.name} ${person.lastname}`} imageUri={person.image} size={64} />
                     <AppText variant="heading" align="center">¿Cómo te fue con {person.name}?</AppText>
-                    <StarRating rating={rating} onChange={setRating} maxStars={5} starSize={44} color={colors.star} emptyColor={colors.borderStrong} style={styles.stars} />
+                    <StarRating rating={rating} onChange={setRating} maxStars={5} starSize={44} color={colors.star} emptyColor={colors.textMuted} style={styles.stars} />
                     <AppText variant="small" color="textMuted" accessibilityLiveRegion="polite">{ratingText(rating)}</AppText>
                 </View>
             </ScrollView>

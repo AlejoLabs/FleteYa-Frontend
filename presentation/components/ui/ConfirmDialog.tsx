@@ -23,7 +23,7 @@ export default function ConfirmDialog({ visible, title, message, confirmLabel, c
     return (
         <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel} statusBarTranslucent>
             <View style={styles.overlay}>
-                <Pressable style={StyleSheet.absoluteFill} onPress={onCancel} accessibilityLabel="Cerrar" />
+                <Pressable style={StyleSheet.absoluteFill} onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cerrar" />
                 <View style={styles.dialog} accessibilityViewIsModal>
                     <AppText variant="title">{title}</AppText>
                     {message && <AppText variant="body" color="textMuted">{message}</AppText>}

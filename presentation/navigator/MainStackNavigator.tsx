@@ -5,8 +5,6 @@ import { AuthProvider } from "../context/AuthContext";
 import { useNotificationNavigation } from "../hooks/useNotificationNavigation";
 import { container } from "../../di/container";
 import RolesScreen from "../screens/roles/RolesScreen";
-import ClientHomeScreen from "../screens/client/home/ClientHomeScreen";
-import DriverHomeScreen from "../screens/driver/home/DriverHomeScreen";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { getFocusedRouteNameFromRoute, ParamListBase, RouteProp } from "@react-navigation/native";
 import { colors, fonts, radius } from "../theme";

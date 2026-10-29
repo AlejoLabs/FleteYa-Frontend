@@ -50,7 +50,7 @@ const TextField = forwardRef<TextInput, Props>(function TextField(
                     onBlur={(e) => { setFocused(false); inputProps.onBlur?.(e); }}
                 />
                 {secureTextEntry &&
-                    <Pressable onPress={() => setHidden(!hidden)} hitSlop={12} accessibilityLabel={hidden ? 'Mostrar contraseña' : 'Ocultar contraseña'}>
+                    <Pressable onPress={() => setHidden(!hidden)} hitSlop={12} accessibilityRole="button" accessibilityLabel={hidden ? 'Mostrar contraseña' : 'Ocultar contraseña'}>
                         <Ionicons name={hidden ? 'eye-outline' : 'eye-off-outline'} size={20} color={mutedColor} />
                     </Pressable>
                 }
