@@ -1,24 +1,41 @@
-import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useCallback, useState } from "react";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { container } from "../../../di/container";
 import { ActiveTrip } from "../../../domain/models/ClientRequestResponse";
-import { cargoCategoryLabel, DRIVER_STATUS_LABELS, vehicleLabel } from "../../utils/Cargo";
-import { formatCOP, formatScheduledDate } from "../../utils/Formatters";
+import { Amount, AppText, Card, SegmentedTabs, StateView, StatusPill } from "../../components/ui";
+import { cargoCategoryLabel, vehicleLabel } from "../../utils/Cargo";
+import { formatScheduledDate } from "../../utils/Formatters";
+import { colors, spacing } from "../../theme";
+import TripPlaces from "../trip/components/TripPlaces";
+import { UpcomingTab, UpcomingTripsViewModel } from "./UpcomingTripsViewModel";
 
 // Búsquedas y viajes en curso o programados del usuario, como cliente o como conductor
 export function UpcomingTripsScreen() {
 
-    const viewModel = container.resolve("upcomingTripsViewModel");
+    const viewModel: UpcomingTripsViewModel = container.resolve("upcomingTripsViewModel");
     const navigation = useNavigation<any>();
-    const [trips, setTrips] = useState<ActiveTrip[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [trips, setTrips] = useState<ActiveTrip[] | null>(null);
+    const [failed, setFailed] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+    const [tab, setTab] = useState<UpcomingTab | null>(null);
+    // El cliente puede pedir un flete desde aquí; el conductor no tiene esa pantalla en su menú
+    const canRequest = navigation.getState()?.routeNames?.includes('ClientMapStackNavigator') ?? false;
 
     const load = async () => {
-        setIsLoading(true);
         const response = await viewModel.getMyActiveTrips();
-        setIsLoading(false);
-        if (Array.isArray(response)) setTrips(response);
+        if (Array.isArray(response)) {
+            setTrips(response);
+            setFailed(false);
+        } else {
+            setFailed(true);
+        }
+    }
+
+    const refresh = async () => {
+        setRefreshing(true);
+        await load();
+        setRefreshing(false);
     }
 
     useFocusEffect(useCallback(() => {
@@ -37,69 +54,102 @@ export function UpcomingTripsScreen() {
         }
     }
 
+    if (trips === null) {
+        return (
+            <View style={styles.screen}>
+                {failed
+                    ? <StateView kind="error" message="No pudimos cargar tus fletes." onAction={refresh} />
+                    : <StateView kind="loading" />}
+            </View>
+        );
+    }
+
+    const { active, scheduled } = viewModel.split(trips);
+    // Sin elegir, se abre la pestaña que tiene algo, empezando por lo que está en curso
+    const shownTab: UpcomingTab = tab ?? (active.length > 0 || scheduled.length === 0 ? 'ACTIVE' : 'SCHEDULED');
+    const shown = shownTab === 'ACTIVE' ? active : scheduled;
+
     return (
-        <View style={{ flex: 1 }}>
+        <View style={styles.screen}>
+            <View style={styles.tabs}>
+                <SegmentedTabs
+                    options={[
+                        { value: 'ACTIVE' as UpcomingTab, label: `En curso${active.length ? ` (${active.length})` : ''}` },
+                        { value: 'SCHEDULED' as UpcomingTab, label: `Programados${scheduled.length ? ` (${scheduled.length})` : ''}` },
+                    ]}
+                    selected={shownTab}
+                    onSelect={setTab}
+                />
+            </View>
             <FlatList
-                data={trips}
+                data={shown}
                 keyExtractor={(item) => item.id.toString()}
-                refreshControl={<RefreshControl refreshing={isLoading} onRefresh={load} />}
-                contentContainerStyle={{ paddingBottom: 20 }}
-                renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.card} onPress={() => openTrip(item)}>
-                        <View style={styles.rowBetween}>
-                            <Text style={styles.when}>{item.scheduled_at ? formatScheduledDate(item.scheduled_at) : 'Ahora'}</Text>
-                            <Text style={styles.status}>{DRIVER_STATUS_LABELS[item.status] ?? item.status}</Text>
-                        </View>
-                        <Text style={styles.fare}>{formatCOP(item.fare_assigned ?? item.fare_offered)}</Text>
-                        <Text numberOfLines={1}>Desde: {item.pickup_description}</Text>
-                        <Text numberOfLines={1}>Hasta: {item.destination_description}</Text>
-                        <Text style={styles.cargo}>
-                            {cargoCategoryLabel(item.cargo_category)} · {vehicleLabel(item.required_vehicle)}
-                            {item.role === 'DRIVER' ? ' · Lo llevas tú' : ''}
-                        </Text>
-                    </TouchableOpacity>
-                )}
+                contentContainerStyle={styles.list}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} colors={[colors.asphalt]} />}
+                renderItem={({ item }) => {
+                    const status = viewModel.status(item);
+                    return (
+                        <Card onPress={() => openTrip(item)} accessibilityLabel={`Abrir el flete a ${item.destination_description}`}>
+                            <View style={styles.top}>
+                                <View style={styles.flex}>
+                                    <AppText variant="smallStrong" color={item.scheduled_at ? 'text' : 'textMuted'}>
+                                        {item.scheduled_at ? formatScheduledDate(item.scheduled_at) : 'Ahora'}
+                                    </AppText>
+                                    <Amount value={item.fare_assigned ?? item.fare_offered} />
+                                </View>
+                                <StatusPill label={status.label} tone={status.tone} />
+                            </View>
+                            <TripPlaces pickup={item.pickup_description} destination={item.destination_description} pickupDone={item.status === 'TRAVELING'} />
+                            <AppText variant="small" color="textMuted">
+                                {cargoCategoryLabel(item.cargo_category)} · {vehicleLabel(item.required_vehicle)}{item.role === 'DRIVER' ? ' · Lo llevas tú' : ''}
+                            </AppText>
+                        </Card>
+                    );
+                }}
                 ListEmptyComponent={
-                    <Text style={styles.empty}>No tienes fletes en curso ni programados.</Text>
+                    shownTab === 'SCHEDULED'
+                        ? <StateView
+                            kind="empty"
+                            icon="calendar-outline"
+                            title="No tienes fletes programados"
+                            message={canRequest ? 'Al pedir un flete elige "Programar" y aparece aquí con su fecha.' : 'Los fletes que aceptes para otro día aparecen aquí con su fecha.'}
+                            actionLabel={canRequest ? 'Pedir un flete' : undefined}
+                            onAction={canRequest ? () => navigation.navigate('ClientMapStackNavigator', { screen: 'ClientSearchMapScreen' }) : undefined}
+                        />
+                        : <StateView
+                            kind="empty"
+                            icon="cube-outline"
+                            title="No tienes fletes en curso"
+                            message={canRequest ? 'Cuando pidas un flete, aquí lo sigues.' : 'Cuando un cliente acepte tu oferta, el viaje aparece aquí.'}
+                            actionLabel={canRequest ? 'Pedir un flete' : undefined}
+                            onAction={canRequest ? () => navigation.navigate('ClientMapStackNavigator', { screen: 'ClientSearchMapScreen' }) : undefined}
+                        />
                 }
             />
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
-    card: {
-        backgroundColor: 'white',
-        elevation: 2,
-        marginTop: 10,
-        marginHorizontal: 15,
-        padding: 15,
-        borderRadius: 15,
+    screen: {
+        flex: 1,
+        backgroundColor: colors.surfaceMuted,
     },
-    rowBetween: {
+    tabs: {
+        paddingHorizontal: spacing.lg,
+        paddingTop: spacing.lg,
+    },
+    list: {
+        flexGrow: 1,
+        padding: spacing.lg,
+        gap: spacing.md,
+    },
+    top: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        gap: spacing.md,
     },
-    when: {
-        fontWeight: 'bold',
-        color: '#6200EE',
-    },
-    status: {
-        color: '#018786',
-        fontWeight: 'bold',
-    },
-    fare: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginVertical: 4,
-    },
-    cargo: {
-        color: 'gray',
-        marginTop: 4,
-    },
-    empty: {
-        textAlign: 'center',
-        marginTop: 40,
-        color: 'gray',
+    flex: {
+        flex: 1,
     },
 });

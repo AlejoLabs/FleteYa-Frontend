@@ -1,36 +1,11 @@
-import { FlatList, View } from "react-native";
 import { container } from "../../../../di/container";
 import { useAuth } from "../../../hooks/useAuth";
-import { useEffect, useState } from "react";
-import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
+import TripHistoryList from "../../trip/history/TripHistoryList";
 import { DriverTripHistoryViewModel } from "./DriverTripHistoryViewModel";
-import { DriverTripHistoryItem } from "./DriverTripHistoryItem";
 
-
+// Fletes que el conductor ya entregó
 export function DriverTripHistoryScreen() {
-
     const viewModel: DriverTripHistoryViewModel = container.resolve("driverTripHistoryViewModel");
-    const {authResponse} = useAuth();
-    const[clientRequests, setClientRequests] = useState<ClientRequestResponse[]>([]);
-
-    useEffect(() => {
-        if (authResponse !== null) {
-            handleGetByDriverAssigned();
-        }
-    },[authResponse])
-    const handleGetByDriverAssigned = async () => {
-        if(authResponse !== null){
-            const response = await viewModel.getByDriverAssigned(authResponse?.user.id!);
-            setClientRequests(response as ClientRequestResponse[]);
-        }  
-    }
-    return(
-        <View style={{flex: 1}}>
-            <FlatList 
-                data={clientRequests}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => <DriverTripHistoryItem clientRequest={item} />}
-            />
-        </View>
-    )
+    const { authResponse } = useAuth();
+    return <TripHistoryList role="DRIVER" load={() => viewModel.getByDriverAssigned(authResponse?.user.id!)} />;
 }
