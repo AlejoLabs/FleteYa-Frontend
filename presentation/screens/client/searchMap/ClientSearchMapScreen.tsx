@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { BackHandler, Pressable, StyleSheet, View, useWindowDimensions } from "react-native";
+import { BackHandler, StyleSheet, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { DrawerActions } from "@react-navigation/native";
 import { StackScreenProps } from "@react-navigation/stack";
 import { container } from "../../../../di/container";
 import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
 import { useAuth } from "../../../hooks/useAuth";
-import { KeyboardArea, Sheet, useToast } from "../../../components/ui";
-import { colors, shadows, spacing, touchTarget } from "../../../theme";
+import { KeyboardArea, MapButton, Sheet, useToast } from "../../../components/ui";
+import { colors, spacing } from "../../../theme";
 import { formatErrorMessage } from "../../../utils/Formatters";
 import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
 import { useClientMap } from "./hooks/useClientMap";
@@ -136,13 +135,13 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
             />
 
             <View style={[styles.topBar, { top: insets.top + spacing.sm }]} pointerEvents="box-none">
-                <FloatingButton icon="menu" label="Abrir menú" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
+                <MapButton icon="menu" label="Abrir menú" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
             </View>
 
             <KeyboardArea style={styles.sheetArea} pointerEvents="box-none">
                 {step === 0 && map.userLocation &&
                     <View style={styles.locateRow} pointerEvents="box-none">
-                        <FloatingButton icon="locate" label="Ir a mi ubicación" onPress={() => { userDragged.current = true; map.centerOnUser(); }} />
+                        <MapButton icon="locate" label="Ir a mi ubicación" onPress={() => { userDragged.current = true; map.centerOnUser(); }} />
                     </View>
                 }
                 <View onLayout={(event) => setSheetHeight(event.nativeEvent.layout.height)}>
@@ -200,19 +199,6 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
     );
 }
 
-function FloatingButton({ icon, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) {
-    return (
-        <Pressable
-            onPress={onPress}
-            accessibilityRole="button"
-            accessibilityLabel={label}
-            style={({ pressed }) => [styles.floating, pressed && styles.floatingPressed]}
-        >
-            <Ionicons name={icon} size={24} color={colors.asphalt} />
-        </Pressable>
-    );
-}
-
 const styles = StyleSheet.create({
     screen: {
         flex: 1,
@@ -232,17 +218,5 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
         paddingHorizontal: spacing.lg,
         paddingBottom: spacing.md,
-    },
-    floating: {
-        width: touchTarget,
-        height: touchTarget,
-        borderRadius: touchTarget / 2,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colors.surface,
-        ...shadows.card,
-    },
-    floatingPressed: {
-        backgroundColor: colors.surfaceMuted,
     },
 });

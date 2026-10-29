@@ -7,6 +7,7 @@ export { default as CodeInput } from "./CodeInput";
 export { default as BrandMark } from "./BrandMark";
 export { default as Counter } from "./Counter";
 export { default as KeyboardArea } from "./KeyboardArea";
+export { default as MapButton } from "./MapButton";
 export { SwitchRow, CheckboxRow } from "./Toggle";
 export { default as Card } from "./Card";
 export { Chip, ChipGroup } from "./Chip";

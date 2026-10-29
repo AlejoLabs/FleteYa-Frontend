@@ -8,6 +8,27 @@ import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 import { TripPhotoKind } from "../../../../domain/models/Photo";
 import { TripMessageUseCases } from "../../../../domain/useCases/tripMessage/TripMessageUseCases";
 
+export interface DriverStep {
+    status: Status;
+    label: string;
+}
+
+// Siguiente paso del viaje para el conductor: llegar al origen, recoger la carga y entregarla.
+// Recoger pide una foto de la carga; entregar abre la prueba de entrega (foto y código)
+const NEXT_STEP: Partial<Record<string, DriverStep>> = {
+    [Status.ACCEPTED]: { status: Status.ARRIVED, label: 'Avisar que llegué' },
+    [Status.ON_THE_WAY]: { status: Status.ARRIVED, label: 'Avisar que llegué' },
+    [Status.ARRIVED]: { status: Status.TRAVELING, label: 'Tomar foto y salir' },
+    [Status.TRAVELING]: { status: Status.FINISHED, label: 'Entregar carga' },
+};
+
+const STATUS_TEXT: Partial<Record<string, { title: string; hint: string }>> = {
+    [Status.ACCEPTED]: { title: 'Ve a recoger la carga', hint: 'Cuando llegues, avísale al cliente desde aquí.' },
+    [Status.ON_THE_WAY]: { title: 'Ve a recoger la carga', hint: 'Cuando llegues, avísale al cliente desde aquí.' },
+    [Status.ARRIVED]: { title: 'Estás en la recogida', hint: 'Sube la carga y tómale una foto ya en el vehículo.' },
+    [Status.TRAVELING]: { title: 'Lleva la carga al destino', hint: 'Al entregar, pide el código a quien recibe.' },
+};
+
 export class DriverTripMapViewModel {
     
     private clientRequestUseCases: ClientRequestUseCases;
@@ -37,6 +58,14 @@ export class DriverTripMapViewModel {
         this.googlePlaceUseCases = googlePlaceUseCases;
         this.photoUseCases = photoUseCases;
         this.tripMessageUseCases = tripMessageUseCases;
+    }
+
+    nextStep(status: string): DriverStep | null {
+        return NEXT_STEP[status] ?? null;
+    }
+
+    statusText(status: string) {
+        return STATUS_TEXT[status] ?? { title: 'Viaje en curso', hint: '' };
     }
 
     // Mensajes del chat que le llegaron a esta persona y todavía no abre

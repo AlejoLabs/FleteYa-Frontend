@@ -1,7 +1,9 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { ClientRequestResponse } from "../../domain/models/ClientRequestResponse";
 import { cargoCategoryLabel, floorText, vehicleLabel } from "../utils/Cargo";
 import { formatScheduledDate } from "../utils/Formatters";
+import { AppText, StatusPill } from "./ui";
+import { colors, radius, spacing } from "../theme";
 
 interface Props {
     request: ClientRequestResponse;
@@ -11,6 +13,7 @@ interface Props {
 
 // Resumen de la carga, el cargue y descargue y la programación de un flete
 export default function CargoInfo({ request, showContacts = false }: Props) {
+    const packages = request.packages ?? 1;
     const tags = [
         request.is_fragile ? 'Frágil' : null,
         request.needs_cover ? 'Debe ir cubierta' : null,
@@ -18,58 +21,44 @@ export default function CargoInfo({ request, showContacts = false }: Props) {
     ].filter(Boolean) as string[];
     const pickupFloor = floorText(request.pickup_floor, request.pickup_has_elevator);
     const destinationFloor = floorText(request.destination_floor, request.destination_has_elevator);
+    const measures = request.length_cm ? `${request.length_cm} × ${request.width_cm} × ${request.height_cm} cm` : null;
 
     return (
-        <View>
-            {request.scheduled_at && <Text style={styles.scheduled}>Programado: {formatScheduledDate(request.scheduled_at)}</Text>}
-            <Text style={styles.line}>
-                <Text style={styles.bold}>{cargoCategoryLabel(request.cargo_category)}</Text>
-                {` · ${request.packages ?? 1} ${(request.packages ?? 1) === 1 ? 'bulto' : 'bultos'} · ${vehicleLabel(request.required_vehicle)}`}
-            </Text>
-            {request.cargo_description ? <Text style={styles.line}>{request.cargo_description}</Text> : null}
-            <Text style={styles.line}>
-                {request.weight_kg} kg · {request.length_cm} x {request.width_cm} x {request.height_cm} cm
-            </Text>
+        <View style={styles.box}>
+            {request.scheduled_at && <StatusPill tone="cargo" label={`Programado: ${formatScheduledDate(request.scheduled_at)}`} />}
+            <AppText variant="smallStrong">
+                {[cargoCategoryLabel(request.cargo_category), `${packages} ${packages === 1 ? 'bulto' : 'bultos'}`, request.weight_kg ? `${request.weight_kg} kg` : null]
+                    .filter(Boolean).join(' · ')}
+            </AppText>
+            {request.cargo_description ? <AppText variant="small" color="textMuted">{request.cargo_description}</AppText> : null}
+            <AppText variant="small" color="textMuted">
+                {[vehicleLabel(request.required_vehicle), measures].filter(Boolean).join(' · ')}
+            </AppText>
+            {(pickupFloor || destinationFloor) &&
+                <AppText variant="small" color="textMuted">Cargue: {pickupFloor ?? 'primer piso'} · Descargue: {destinationFloor ?? 'primer piso'}</AppText>}
             {tags.length > 0 &&
                 <View style={styles.tags}>
-                    {tags.map((tag) => <View key={tag} style={styles.tag}><Text style={styles.tagText}>{tag}</Text></View>)}
+                    {tags.map((tag) => <StatusPill key={tag} label={tag} tone="warning" />)}
                 </View>}
-            {(pickupFloor || destinationFloor) &&
-                <Text style={styles.line}>Cargue: {pickupFloor ?? 'Primer piso'} · Descargue: {destinationFloor ?? 'Primer piso'}</Text>}
             {showContacts && request.sender_name &&
-                <Text style={styles.line}>Entrega: {request.sender_name} · {request.sender_phone}</Text>}
+                <AppText variant="small">Entrega: {request.sender_name} · {request.sender_phone}</AppText>}
             {showContacts && request.receiver_name &&
-                <Text style={styles.line}>Recibe: {request.receiver_name} · {request.receiver_phone}</Text>}
+                <AppText variant="small">Recibe: {request.receiver_name} · {request.receiver_phone}</AppText>}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    line: {
-        marginTop: 2,
-    },
-    bold: {
-        fontWeight: 'bold',
-    },
-    scheduled: {
-        fontWeight: 'bold',
-        color: '#6200EE',
-        marginBottom: 2,
+    box: {
+        gap: spacing.xs,
+        padding: spacing.md,
+        borderRadius: radius.md,
+        backgroundColor: colors.surfaceMuted,
     },
     tags: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 6,
-        marginTop: 4,
-        marginBottom: 2,
-    },
-    tag: {
-        backgroundColor: '#fff3cd',
-        borderRadius: 10,
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-    },
-    tagText: {
-        fontSize: 12,
+        gap: spacing.xs,
+        marginTop: spacing.xxs,
     },
 });

@@ -1,524 +1,191 @@
-import { StackScreenProps } from "@react-navigation/stack";
-import { Animated, Dimensions, Image, Platform, ScrollView, Text, ToastAndroid, TouchableOpacity, View } from "react-native";
-import { DriverMapStackParamList } from "../../../navigator/DriverMapStackNavigator";
-import { container } from "../../../../di/container";
-import { DriverTripMapViewModel } from "./DriverTripMapViewModel";
 import { useEffect, useRef, useState } from "react";
-import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
-import MapView, { Camera, LatLng, Marker, Polyline, Region } from "react-native-maps";
-import styles from './Styles';
-import { Ionicons } from "@expo/vector-icons";
-import * as Location from "expo-location";
-import { GoogleDirections } from "../../../../domain/models/GoogleDirections";
-import { decode } from "@googlemaps/polyline-codec";
-import { Status } from "../../../../domain/repository/ClientRequestRepository";
-import { formatCOP, formatErrorMessage, formatRating, getTripFare } from "../../../utils/Formatters";
-import TripProgress from "../../../components/TripProgress";
-import CargoInfo from "../../../components/CargoInfo";
-import CancelReasonModal from "../../../components/CancelReasonModal";
-import { DRIVER_CANCEL_REASONS } from "../../../utils/Cargo";
-import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
-import { pickPhoto } from "../../../utils/PhotoPicker";
-import { PhotoItem } from "../../../components/PhotoStrip";
-import DeliveryModal from "./DeliveryModal";
-import TripActions from "../../../components/TripActions";
-import { useUnreadMessages } from "../../../hooks/useUnreadMessages";
+import { StyleSheet, View, useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { DrawerActions } from "@react-navigation/native";
+import { StackScreenProps } from "@react-navigation/stack";
+import MapView from "react-native-maps";
+import { container } from "../../../../di/container";
+import { DriverMapStackParamList } from "../../../navigator/DriverMapStackNavigator";
 import { useAuth } from "../../../hooks/useAuth";
+import { useUnreadMessages } from "../../../hooks/useUnreadMessages";
+import { Button, MapButton, Sheet, StateView } from "../../../components/ui";
+import CancelReasonModal from "../../../components/CancelReasonModal";
+import { DRIVER_CANCEL_REASONS, floorText } from "../../../utils/Cargo";
+import { colors, spacing } from "../../../theme";
+import TripMap, { fitPoints } from "../../trip/components/TripMap";
+import { useTripRoute } from "../../trip/hooks/useTripRoute";
+import { canCancelTrip, isCargoOnBoard, routeTarget, toLatLng } from "../../trip/TripStatus";
+import { DriverTripMapViewModel } from "./DriverTripMapViewModel";
+import { useDriverTrip } from "./hooks/useDriverTrip";
+import { useDriverTracking } from "./hooks/useDriverTracking";
+import DriverTripSheet from "./DriverTripSheet";
+import DeliveryPanel from "./DeliveryPanel";
 
-// Siguiente paso del viaje para el conductor: llegar al origen, recoger la carga y entregarla
-const NEXT_STEP: Partial<Record<Status, { status: Status; label: string }>> = {
-    [Status.ACCEPTED]: { status: Status.ARRIVED, label: 'NOTIFICAR LLEGADA' },
-    [Status.ON_THE_WAY]: { status: Status.ARRIVED, label: 'NOTIFICAR LLEGADA' },
-    // Recoger pide una foto de la carga; entregar abre la prueba de entrega (foto y código)
-    [Status.ARRIVED]: { status: Status.TRAVELING, label: 'FOTO Y CARGA RECOGIDA' },
-    [Status.TRAVELING]: { status: Status.FINISHED, label: 'ENTREGAR CARGA' },
-};
-const CANCELABLE = [Status.ACCEPTED, Status.ON_THE_WAY, Status.ARRIVED];
+// Alto máximo de la hoja: deja arriba casi la mitad del mapa para ver la ruta; el resto se desplaza
+const SHEET_MAX = 0.58;
 
 interface Props extends StackScreenProps<DriverMapStackParamList, 'DriverTripMapScreen'> { };
+
+// Viaje en curso del conductor: mapa con la ruta que le falta y una hoja con el paso en que va
 export function DriverTripMapScreen({ navigation, route }: Props) {
     const { idClientRequest } = route.params;
     const viewModel: DriverTripMapViewModel = container.resolve("driverTripMapViewModel");
-    const animatedValue = useRef(new Animated.Value(0)).current;
-    const mapRef = useRef<MapView>(null);
-    const [isInteractingWithMap, setIsInteractingWithMap] = useState<boolean>(false);
-    const [location, setLocation] = useState<Region | undefined>(undefined);
-    const [clientRequest, setClientRequest] = useState<ClientRequestResponse | null>(null);
     const { authResponse } = useAuth();
-    const unreadMessages = useUnreadMessages(viewModel, idClientRequest, authResponse?.user.id);
-    const [tracking, setTracking] = useState<boolean>(true);
-    const locationSubscription = useRef<Location.LocationSubscription | null>(null);
-    const [directionsRoute, setDirectionsRoute] = useState<LatLng[]>([]);
-    const [currentStatus, setCurrentStatus] = useState(Status.ACCEPTED);
+    const insets = useSafeAreaInsets();
+    const { height: windowHeight } = useWindowDimensions();
+    const mapRef = useRef<MapView>(null);
+    const [sheetHeight, setSheetHeight] = useState(0);
     const [isCancelVisible, setIsCancelVisible] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
     const [isDeliveryVisible, setIsDeliveryVisible] = useState(false);
-    const [deliveryPhotos, setDeliveryPhotos] = useState<PhotoItem[]>([]);
-    const [deliveryMessage, setDeliveryMessage] = useState<string | null>(null);
 
-    const handleGetClientRequestById = async () => {
-        const response = await viewModel.getClientRequestById(idClientRequest);
-        if ('id' in response) {
-            setClientRequest(response);
-            // Si el conductor vuelve al viaje desde "Próximos fletes", sigue en el paso en que iba
-            setCurrentStatus(response.status as Status);
-        }
-    }
+    const trip = useDriverTrip(viewModel, idClientRequest, {
+        onFinished: (request) => {
+            tracking.stop();
+            navigation.replace('DriverTripRatingScreen', { clientRequest: request });
+        },
+        onLeft: () => {
+            tracking.stop();
+            // reset y no popToTop: si el viaje se abrió desde "Próximos fletes" no hay pantalla anterior en este stack
+            navigation.reset({ index: 0, routes: [{ name: 'DriverClientRequestScreen' }] });
+        },
+    });
+    const { request, status } = trip;
+    const tracking = useDriverTracking(viewModel, request?.id_client);
+    const unread = useUnreadMessages(viewModel, idClientRequest, authResponse?.user.id);
+    const { route: tripRoute, loadRoute } = useTripRoute(viewModel);
 
-    // Foto con la cámara y subida al viaje; devuelve null si se canceló o falló
-    const takeTripPhoto = async (kind: 'PICKUP' | 'DELIVERY'): Promise<PhotoItem | null> => {
-        const photo = await pickPhoto('camera');
-        if (!photo.ok) {
-            if (!photo.cancelled) ToastAndroid.show(photo.message, ToastAndroid.LONG);
-            return null;
-        }
-        const response = await viewModel.uploadTripPhoto(idClientRequest, kind, photo.uri);
-        if ('statusCode' in response) {
-            ToastAndroid.show(formatErrorMessage(response.message), ToastAndroid.LONG);
-            return null;
-        }
-        return { key: String(response.id), localUri: photo.uri };
-    }
-
-    // El servidor avisa FINISHED a los dos: si el conductor cerró con el código, ese aviso no debe repetir el cierre
-    const isFinished = useRef(false);
-    const finishTrip = () => {
-        if (isFinished.current) return;
-        isFinished.current = true;
-        setIsDeliveryVisible(false);
-        stopRealTimeLocation();
-        navigation.replace('DriverTripRatingScreen', { clientRequest: clientRequest! });
-    }
-
-    const handleDeliver = async (code: string) => {
-        setIsUpdating(true);
-        setDeliveryMessage(null);
-        const response = await viewModel.deliver(idClientRequest, code);
-        setIsUpdating(false);
-        if (response === true) {
-            ToastAndroid.show('Entrega confirmada', ToastAndroid.SHORT);
-            finishTrip();
-        } else {
-            setDeliveryMessage(formatErrorMessage((response as ErrorResponse).message));
-        }
-    }
-
-    const handleNextStep = async () => {
-        const next = NEXT_STEP[currentStatus];
-        if (!next || isUpdating) return;
-        if (next.status === Status.FINISHED) {
-            setIsDeliveryVisible(true);
-            return;
-        }
-        setIsUpdating(true);
-        if (next.status === Status.TRAVELING) {
-            ToastAndroid.show('Toma una foto de la carga ya subida al vehículo', ToastAndroid.SHORT);
-            const photo = await takeTripPhoto('PICKUP');
-            if (!photo) {
-                setIsUpdating(false);
-                return;
-            }
-        }
-        const response = await viewModel.updateStatus(idClientRequest, next.status);
-        setIsUpdating(false);
-        if (typeof response !== 'boolean') {
-            ToastAndroid.show(formatErrorMessage((response as ErrorResponse).message), ToastAndroid.LONG);
-            return;
-        }
-        setCurrentStatus(next.status);
-        viewModel.emitUpdateStatus(idClientRequest, next.status);
-        if (next.status === Status.TRAVELING) {
-            ToastAndroid.show('Carga recogida: ruta al destino', ToastAndroid.SHORT);
-            handleGetDirections(
-                { latitude: location!.latitude, longitude: location!.longitude },
-                { latitude: clientRequest!.destination_position.y, longitude: clientRequest!.destination_position.x }
-            );
-        } else {
-            ToastAndroid.show('Estado actualizado', ToastAndroid.SHORT);
-        }
-    }
-
-    const leaveTrip = () => {
-        stopRealTimeLocation();
-        // reset y no popToTop: si el viaje se abrió desde "Próximos fletes" no hay pantalla anterior en este stack
-        navigation.reset({ index: 0, routes: [{ name: 'DriverClientRequestScreen' }] });
-    }
-
-    const handleCancel = async (reason: string) => {
-        setIsCancelVisible(false);
-        const response = await viewModel.cancelTrip(idClientRequest, reason);
-        if (response === true) {
-            ToastAndroid.show('Viaje cancelado', ToastAndroid.SHORT);
-            leaveTrip();
-        } else {
-            ToastAndroid.show(formatErrorMessage((response as ErrorResponse).message), ToastAndroid.LONG);
-        }
-    }
-
+    // La ruta va de donde está el conductor al punto que toca. Se pide al tener la primera ubicación y al recoger la carga,
+    // no con cada movimiento del GPS
+    const hasLocation = tracking.location !== null;
     useEffect(() => {
-        const off = viewModel.listenerTripCanceled(idClientRequest, (reason) => {
-            ToastAndroid.show(`El cliente canceló el viaje${reason ? `: ${reason}` : ''}`, ToastAndroid.LONG);
-            leaveTrip();
-        });
-        const offFinished = viewModel.listenerTripFinished(idClientRequest, () => {
-            if (isFinished.current) return;
-            ToastAndroid.show('El cliente confirmó que recibió la carga', ToastAndroid.LONG);
-            finishTrip();
-        });
-        return () => {
-            off();
-            offFinished();
-        };
-    }, [idClientRequest, clientRequest]);
+        if (request && tracking.location) loadRoute(tracking.location, routeTarget(request, status));
+    }, [request, hasLocation, isCargoOnBoard(status)]);
 
-    const moveCameraToLocation = (lat: number, lng: number) => {
-        const camera: Camera = {
-            center: {
-                latitude: lat,
-                longitude: lng,
-            },
-            pitch: 0,
-            heading: 0,
-            zoom: 15,
-        };
-        mapRef.current?.animateCamera(camera, { duration: 1000 });
+    const fitTrip = () => {
+        if (!request) return;
+        const target = routeTarget(request, status);
+        fitPoints(mapRef, tripRoute.length > 1 ? tripRoute : tracking.location ? [tracking.location, target] : [target]);
     }
-
-    const handleGetDirections = async (origin: LatLng, destination: LatLng) => {
-        const response: GoogleDirections | null = await viewModel.getDirections(origin, destination);
-        if (response !== null) {
-            if (response.routes.length > 0) {
-                const points = response.routes[0].overview_polyline.points;
-                const coordinates = decode(points).map(([lat, lng]) => ({ latitude: lat, longitude: lng }));
-                setDirectionsRoute(coordinates);
-            }
-        }
-    }
-
+    // Se espera a que la hoja tenga su alto y el mapa su margen
     useEffect(() => {
-        handleGetClientRequestById();
-        // Al terminar el viaje la pantalla se reemplaza: el GPS debe dejar de enviar la posición al cliente
-        return () => {
-            locationSubscription.current?.remove();
-            locationSubscription.current = null;
-        };
-    }, []);
+        const timer = setTimeout(fitTrip, 700);
+        return () => clearTimeout(timer);
+    }, [request, tripRoute]);
 
-    useEffect(() => {
-        if (clientRequest !== null) {
-            (async () => {
-                try {
-                    const { status } = await Location.requestForegroundPermissionsAsync();
-                    if (status !== 'granted') {
-                        console.log('Permiso de ubicacion denegado');
-                        return;
-                    }
-
-                    if (Platform.OS === 'android') {
-                        const backgroundStatus = await Location.requestBackgroundPermissionsAsync();
-                        if (backgroundStatus.status !== 'granted') {
-                            console.log('Permiso de ubicacion en segundo plano denegado');
-                        }
-                    }
-                    let location = await Location.getCurrentPositionAsync({});
-                    const currentCoords = {
-                        latitude: location.coords.latitude,
-                        longitude: location.coords.longitude,
-                        latitudeDelta: 0.0922,
-                        longitudeDelta: 0.0421,
-                    };
-                    setLocation(currentCoords);
-                    moveCameraToLocation(location.coords.latitude, location.coords.longitude);
-                    // Con la carga a bordo la ruta va al destino; antes, al punto de recogida
-                    const target = clientRequest.status === Status.TRAVELING ? clientRequest.destination_position : clientRequest.pickup_position;
-                    handleGetDirections(
-                        {
-                            latitude: location.coords.latitude,
-                            longitude: location.coords.longitude,
-                        },
-                        {
-                            latitude: target.y,
-                            longitude: target.x,
-
-                        }
-                    );
-
-                    if (tracking) {
-                        startRealTimeLocation();
-                    }
-                    else {
-                        stopRealTimeLocation();
-                    }
-
-
-                } catch (error) {
-                    console.log('No se pudo obtener la ubicacion actual', error);
-                }
-            })();
-        }
-
-    }, [clientRequest, tracking]);
-
-    const startRealTimeLocation = async () => {
-        if (!locationSubscription.current) {
-
-            // Durante el viaje el cliente sigue al conductor en el mapa: cada 3 s o 5 m se ve fluido sin saturar el teléfono
-            locationSubscription.current = await Location.watchPositionAsync(
-                {
-                    accuracy: Location.Accuracy.High,
-                    timeInterval: 3000,
-                    distanceInterval: 5
-                },
-                (newLocation) => {
-                    const currentCoords = {
-                        latitude: newLocation.coords.latitude,
-                        longitude: newLocation.coords.longitude,
-                    };
-
-                    setLocation({
-                        latitude: currentCoords.latitude,
-                        longitude: currentCoords.longitude,
-                        latitudeDelta: 0.0922,
-                        longitudeDelta: 0.0421,
-                    });
-
-                    viewModel.emitDriverPosition(
-                        clientRequest?.id_client!,
-                        newLocation.coords.latitude,
-                        newLocation.coords.longitude
-                    );
-                }
-
-            );
-        }
-
-        viewModel.initSocket();
+    const handleNext = async () => {
+        const openDelivery = await trip.advance();
+        if (openDelivery) setIsDeliveryVisible(true);
     }
 
-    const stopRealTimeLocation = () => {
-        if (locationSubscription.current) {
-            viewModel.discconectSocket();
-            locationSubscription.current.remove();
-            locationSubscription.current = null;
-        }
-    }
+    const openReport = () => navigation.navigate('IncidentReportScreen', { idClientRequest });
 
-    if (!clientRequest || !location) {
+    if (!request) {
         return (
-            <View style={styles.container}>
-                <Text>Cargando...</Text>
+            <View style={[styles.screen, styles.center]}>
+                {trip.loadFailed
+                    ? <StateView kind="error" message="No pudimos cargar el viaje." onAction={trip.reload} />
+                    : <StateView kind="loading" message="Cargando el viaje…" />}
             </View>
         );
     }
 
-    const toggleView = (isInteractingWithMap: boolean) => {
-        setIsInteractingWithMap(isInteractingWithMap);
-        Animated.timing(animatedValue, {
-            toValue: isInteractingWithMap ? 1 : 0,
-            duration: 200,
-            useNativeDriver: true,
-        }).start();
-    }
+    const step = viewModel.nextStep(status);
+    const text = viewModel.statusText(status);
+    const destinationFloor = floorText(request.destination_floor, request.destination_has_elevator);
+    const receiverText = [request.receiver_name ? `Recibe ${request.receiver_name}` : null, destinationFloor].filter(Boolean).join(' · ') || null;
 
     return (
-        <View style={styles.container}>
-            <Animated.View
-                style={{
-                    transform: [
-                        { scaleY: animatedValue.interpolate({ inputRange: [0, 1], outputRange: [1, 1] }) },
-                        { translateY: animatedValue.interpolate({ inputRange: [0, 1], outputRange: [0, 0] }) }
-                    ],
-                    width: "100%",
-                    position: "absolute",
-                    top: 0
-                }}
-            >
-                <MapView
-                    ref={mapRef}
-                    style={{
-                        width: "100%",
-                        height: isInteractingWithMap ? Dimensions.get("window").height * 0.87 : Dimensions.get("window").height * 0.66,
-                    }}
-                    initialRegion={location}
-                    zoomControlEnabled={true}
-                    mapPadding={{ bottom: isInteractingWithMap ? 140 : 170, top: 0, left: 0, right: 0 }}
-                    region={location}
-                    onRegionChangeComplete={(region) => {
-                        toggleView(false);
-                    }}
-                    onPanDrag={() => toggleView(true)}
-                >
-                    {
-                        location !== null && (
-                            <Marker
-                                coordinate={{
-                                    latitude: location?.latitude!,
-                                    longitude: location?.longitude!,
-                                }}
-                                title="Mi Posición"
-                            >
-                                <View style={{ width: 50, height: 50 }}>
-                                    <Image
-                                        source={require("../../../../assets/icon_taxi.png")}
-                                        style={{ resizeMode: "contain", width: "50%", height: "50%" }}
-                                    />
-                                </View>
-                            </Marker>
-                        )
-                    }
-                    {
-                        (clientRequest !== null && currentStatus !== Status.TRAVELING) && (
-                            <Marker
-                                coordinate={{
-                                    latitude: clientRequest.pickup_position.y,
-                                    longitude: clientRequest.pickup_position.x
-                                }}
-                                title="Origen"
-                            >
-                                <View style={{ width: 50, height: 50 }}>
-                                    <Image
-                                        source={require("../../../../assets/pin_map.png")}
-                                        style={{ resizeMode: "contain", width: "50%", height: "50%" }}
-                                    />
-                                </View>
-                            </Marker>
-                        )
-                    }
-                    {
-                        (clientRequest !== null && currentStatus === Status.TRAVELING) && (
-                            <Marker
-                                coordinate={{
-                                    latitude: clientRequest.destination_position.y,
-                                    longitude: clientRequest.destination_position.x
-                                }}
-                                title="Destino"
-                            >
-                                <View style={{ width: 50, height: 50 }}>
-                                    <Image
-                                        source={require("../../../../assets/flag.png")}
-                                        style={{ resizeMode: "contain", width: "50%", height: "50%" }}
-                                    />
-                                </View>
-                            </Marker>
-                        )
-                    }
-                    {
-                        directionsRoute.length > 0 && (<Polyline coordinates={directionsRoute} strokeWidth={6} strokeColor="#6200EE" />)
-                    }
-
-                </MapView>
-            </Animated.View>
-
-            <Animated.View
-                style={{
-                    transform: [
-                        { scaleY: animatedValue.interpolate({ inputRange: [0, 1], outputRange: [1, 1] }) },
-                        { translateY: animatedValue.interpolate({ inputRange: [0, 1], outputRange: [0, 280] }) }
-                    ],
-                    width: "100%",
-                    position: "absolute",
-                    height: "46%",
-                    bottom: 0,
-                    backgroundColor: "white",
-                    paddingTop: 10,
-                    paddingHorizontal: 10,
-                    paddingBottom: 14,
-                    borderTopLeftRadius: 25,
-                    borderTopRightRadius: 25,
-                }}
-            >
-
-                <ScrollView
-                    style={{ width: "100%" }}
-                    contentContainerStyle={{ paddingBottom: 10 }}
-                    showsVerticalScrollIndicator={false}
-                >
-
-                    <TripProgress status={currentStatus} />
-
-                    <Text style={styles.textTitle}>TU CLIENTE</Text>
-                    <View style={styles.rowContainer}>
-                        <View style={styles.dataContainer}>
-                            <Text>{clientRequest?.client.name} {clientRequest?.client.lastname}</Text>
-                            <Text style={styles.rating}>{formatRating(clientRequest?.client.rating)}</Text>
-                        </View>
-                        <Image
-                            source={{ uri: clientRequest?.client.image }}
-                            style={styles.userImage}
-                        />
-                    </View>
-                    <TripActions
-                        unread={unreadMessages}
-                        onChat={() => navigation.navigate('TripChatScreen', { idClientRequest, otherName: clientRequest?.client.name })}
-                        onReport={() => navigation.navigate('IncidentReportScreen', { idClientRequest })}
-                    />
-
-                    <Text style={styles.textTitle}>DATOS DEL VIAJE</Text>
-                    <View style={styles.rowContainer}>
-                        <Ionicons
-                            name="location"
-                            size={20}
-                            color="black"
-                        />
-                        <View style={styles.tripContainer}>
-                            <Text>Desde: {clientRequest?.pickup_description}</Text>
-                            <Text>Hasta: {clientRequest?.destination_description}</Text>
-                            <CargoInfo request={clientRequest} showContacts />
-                        </View>
-                    </View>
-
-                    <View style={styles.rowContainer}>
-                        <Ionicons
-                            name="pricetag"
-                            size={20}
-                            color="black"
-                        />
-                        <View style={styles.tripContainer}>
-                            <Text>Valor del viaje</Text>
-                            <Text style={styles.textPrice}>
-                                {clientRequest && formatCOP(getTripFare(clientRequest))}
-                            </Text>
-                        </View>
-                    </View>
-
-                    {NEXT_STEP[currentStatus] &&
-                        <TouchableOpacity style={styles.iconContainer} onPress={handleNextStep}>
-                            <View style={styles.iconBox}>
-                                <Ionicons name='checkmark' size={25} color='white' />
-                            </View>
-                            <Text style={styles.textAction}>
-                                {isUpdating ? 'GUARDANDO...' : NEXT_STEP[currentStatus]!.label}
-                            </Text>
-                        </TouchableOpacity>
-                    }
-
-                    {CANCELABLE.includes(currentStatus) &&
-                        <TouchableOpacity style={{ alignSelf: 'center', padding: 12 }} onPress={() => setIsCancelVisible(true)}>
-                            <Text style={{ color: 'red', fontWeight: 'bold' }}>Cancelar viaje</Text>
-                        </TouchableOpacity>
-                    }
-
-                </ScrollView>
-            </Animated.View>
-            <DeliveryModal
-                visible={isDeliveryVisible}
-                photos={deliveryPhotos}
-                isSending={isUpdating}
-                message={deliveryMessage}
-                onTakePhoto={async () => {
-                    const photo = await takeTripPhoto('DELIVERY');
-                    if (photo) setDeliveryPhotos((photos) => [...photos, photo]);
-                }}
-                onSubmit={handleDeliver}
-                onClose={() => setIsDeliveryVisible(false)}
+        <View style={styles.screen}>
+            <TripMap
+                mapRef={mapRef}
+                bottomInset={sheetHeight}
+                initialCenter={toLatLng(request.pickup_position)}
+                vehicle={tracking.location}
+                vehicleTitle="Tú"
+                pickup={isCargoOnBoard(status) ? null : toLatLng(request.pickup_position)}
+                destination={toLatLng(request.destination_position)}
+                route={tripRoute}
             />
+
+            <View style={[styles.topBar, { top: insets.top + spacing.sm }]} pointerEvents="box-none">
+                <MapButton icon="menu" label="Abrir menú" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
+                <MapButton icon="scan-outline" label="Ver la ruta completa" onPress={fitTrip} />
+            </View>
+
+            <View style={styles.sheetArea} onLayout={(event) => setSheetHeight(event.nativeEvent.layout.height)}>
+                <Sheet
+                    scroll
+                    maxHeight={windowHeight * SHEET_MAX}
+                    footer={
+                        <View style={styles.footer}>
+                            {step && <Button title={step.label} loading={trip.updating} onPress={handleNext} />}
+                            {canCancelTrip(status) && <Button title="Cancelar flete" variant="dangerText" onPress={() => setIsCancelVisible(true)} />}
+                        </View>
+                    }
+                >
+                    <DriverTripSheet
+                        request={request}
+                        status={status}
+                        title={text.title}
+                        hint={text.hint}
+                        unread={unread}
+                        locationUnavailable={tracking.unavailable}
+                        onChat={() => navigation.navigate('TripChatScreen', { idClientRequest, otherName: request.client.name })}
+                        onReport={openReport}
+                    />
+                </Sheet>
+            </View>
+
+            {isDeliveryVisible &&
+                <DeliveryPanel
+                    destination={request.destination_description}
+                    receiverText={receiverText}
+                    photos={trip.deliveryPhotos}
+                    isSending={trip.updating}
+                    error={trip.deliveryError}
+                    onTakePhoto={trip.addDeliveryPhoto}
+                    onSubmit={trip.deliver}
+                    onReport={openReport}
+                    onClose={() => setIsDeliveryVisible(false)}
+                />
+            }
+
             <CancelReasonModal
                 visible={isCancelVisible}
-                title="Cancelar el viaje"
+                title="Cancelar el flete"
                 reasons={DRIVER_CANCEL_REASONS}
                 onClose={() => setIsCancelVisible(false)}
-                onConfirm={handleCancel}
+                onConfirm={(reason) => {
+                    setIsCancelVisible(false);
+                    trip.cancel(reason);
+                }}
             />
         </View>
-    )
+    );
 }
+
+const styles = StyleSheet.create({
+    screen: {
+        flex: 1,
+        backgroundColor: colors.surfaceMuted,
+    },
+    center: {
+        justifyContent: 'center',
+    },
+    topBar: {
+        position: 'absolute',
+        left: spacing.lg,
+        right: spacing.lg,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    sheetArea: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
+    footer: {
+        gap: spacing.xs,
+    },
+});

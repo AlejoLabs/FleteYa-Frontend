@@ -118,16 +118,18 @@ export const MainStackNavigator = () => {
     )
 }
 
+const CLIENT_MAP_SCREENS = ['ClientSearchMapScreen', 'ClientTripMapScreen'];
+
 const ClientDrawerNavigator = () => {
     useNotificationNavigation('CLIENT');
     return (
         <Drawer.Navigator initialRouteName="ClientMapStackNavigator" drawerContent={(props) => <AppDrawerContent {...props} />}>
-            {/* Pedir el flete es un mapa a pantalla completa con su propio botón de menú; el resto del grupo conserva la barra */}
+            {/* Pedir el flete y seguir el viaje son mapas a pantalla completa con su propio botón de menú; el resto del grupo conserva la barra */}
             <Drawer.Screen
                 name="ClientMapStackNavigator"
                 options={({ route }) => ({
                     title: 'Mi Ubicación',
-                    headerShown: (getFocusedRouteNameFromRoute(route) ?? 'ClientSearchMapScreen') !== 'ClientSearchMapScreen',
+                    headerShown: !CLIENT_MAP_SCREENS.includes(getFocusedRouteNameFromRoute(route) ?? 'ClientSearchMapScreen'),
                 })}
                 component={ClientMapStackNavigator}
             />
@@ -144,7 +146,14 @@ const DriverDrawerNavigator = () => {
     return (
         <Drawer.Navigator initialRouteName="DriverMyLocationMapScreen" drawerContent={(props) => <AppDrawerContent {...props} />}>
             <Drawer.Screen name="DriverMyLocationMapScreen" options={{title:'Mi Ubicación'}} component={DriverMyLocationMapScreen} />
-            <Drawer.Screen name="DriverMapStackNavigator" options={{title: 'Solicitudes de carga'}} component={DriverMapStackNavigator} />
+            <Drawer.Screen
+                name="DriverMapStackNavigator"
+                options={({ route }) => ({
+                    title: 'Solicitudes de carga',
+                    headerShown: getFocusedRouteNameFromRoute(route) !== 'DriverTripMapScreen',
+                })}
+                component={DriverMapStackNavigator}
+            />
             <Drawer.Screen name="UpcomingTripsScreen" options={{title:'Próximos fletes'}} component={UpcomingTripsScreen} />
             <Drawer.Screen name="DriverTripHistoryScreen" options={{title:'Historial de cargas'}} component={DriverTripHistoryScreen} />
             <Drawer.Screen name="DriverCarInfoScreen" options={{title:'Datos del Vehículo'}} component={DriverCarInfoScreen} />
