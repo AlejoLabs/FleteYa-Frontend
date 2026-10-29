@@ -82,7 +82,8 @@ export const MainStackNavigator = () => {
                 />
 
                 <Stack.Screen
-                    options={{ title: 'Registro de conductor' }}
+                    // Trae su propio encabezado con "Paso 2 de 2", como el registro
+                    options={{ headerShown: false }}
                     name="DriverVehicleRegisterScreen"
                     component={DriverVehicleRegisterScreen}
                 />
@@ -145,18 +146,19 @@ const DriverDrawerNavigator = () => {
     useNotificationNavigation('DRIVER');
     return (
         <Drawer.Navigator initialRouteName="DriverMyLocationMapScreen" drawerContent={(props) => <AppDrawerContent {...props} />}>
-            <Drawer.Screen name="DriverMyLocationMapScreen" options={{title:'Mi Ubicación'}} component={DriverMyLocationMapScreen} />
+            {/* El inicio trae su propio encabezado oscuro con el menú, lo ganado y la disponibilidad */}
+            <Drawer.Screen name="DriverMyLocationMapScreen" options={{ title: 'Inicio', headerShown: false }} component={DriverMyLocationMapScreen} />
             <Drawer.Screen
                 name="DriverMapStackNavigator"
                 options={({ route }) => ({
-                    title: 'Solicitudes de carga',
+                    title: 'Solicitudes cerca',
                     headerShown: getFocusedRouteNameFromRoute(route) !== 'DriverTripMapScreen',
                 })}
                 component={DriverMapStackNavigator}
             />
             <Drawer.Screen name="UpcomingTripsScreen" options={{title:'Próximos fletes'}} component={UpcomingTripsScreen} />
             <Drawer.Screen name="DriverTripHistoryScreen" options={{title:'Historial de cargas'}} component={DriverTripHistoryScreen} />
-            <Drawer.Screen name="DriverCarInfoScreen" options={{title:'Datos del Vehículo'}} component={DriverCarInfoScreen} />
+            <Drawer.Screen name="DriverCarInfoScreen" options={{title:'Mi vehículo'}} component={DriverCarInfoScreen} />
             <Drawer.Screen name="ProfileStackNavigator" options={{title:'Perfil'}} component={ProfileStackNavigator} />
             {__DEV__ && <Drawer.Screen name="DesignSystemScreen" options={{title:'Sistema de diseño'}} component={DesignSystemScreen} />}
         </Drawer.Navigator>

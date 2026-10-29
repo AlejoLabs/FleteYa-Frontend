@@ -1,17 +1,17 @@
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "../../../navigator/MainStackNavigator";
 import { container } from "../../../../di/container";
 import { useAuth } from "../../../hooks/useAuth";
-import FormField, { formStyles } from "../../../components/FormField";
-import ChipGroup from "../../../components/ChipGroup";
+import { AppHeader, AppText, Button, ChipGroup, KeyboardArea, OptionCard, SwitchRow, TextField, useToast } from "../../../components/ui";
 import PhotoStrip from "../../../components/PhotoStrip";
 import { choosePhoto } from "../../../utils/PhotoPicker";
-import DefaultRoundedButton from "../../../components/DefaultRoundedButton";
 import { VEHICLES } from "../../../utils/Cargo";
 import { formatErrorMessage } from "../../../utils/Formatters";
-import { DriverVehicleForm, EMPTY_DRIVER_VEHICLE_FORM, HEAVY_CATEGORIES, LICENSE_CATEGORIES, MAX_VEHICLE_PHOTOS, isHeavyVehicle } from "./DriverVehicleRegisterViewModel";
+import { colors, spacing } from "../../../theme";
+import { DriverVehicleErrors, DriverVehicleForm, DriverVehicleRegisterViewModel, EMPTY_DRIVER_VEHICLE_FORM, HEAVY_CATEGORIES, LICENSE_CATEGORIES, MAX_VEHICLE_PHOTOS, isHeavyVehicle } from "./DriverVehicleRegisterViewModel";
 
 interface Props extends StackScreenProps<RootStackParamList, 'DriverVehicleRegisterScreen'> { };
 
@@ -19,132 +19,168 @@ interface Props extends StackScreenProps<RootStackParamList, 'DriverVehicleRegis
 export default function DriverVehicleRegisterScreen({ navigation, route }: Props) {
 
     const { account } = route.params;
-    const viewModel = container.resolve('driverVehicleRegisterViewModel');
+    const viewModel: DriverVehicleRegisterViewModel = container.resolve('driverVehicleRegisterViewModel');
     const { saveAuthSession } = useAuth();
+    const { showToast } = useToast();
     const [form, setForm] = useState<DriverVehicleForm>(EMPTY_DRIVER_VEHICLE_FORM);
+    const [errors, setErrors] = useState<DriverVehicleErrors>({});
     const [isSending, setIsSending] = useState(false);
+    const isHeavy = isHeavyVehicle(form.vehicleType);
 
-    const update = (changes: Partial<DriverVehicleForm>) => setForm((current) => ({ ...current, ...changes }));
+    // Al corregir un campo su error se borra; los demás siguen a la vista
+    const update = (changes: Partial<DriverVehicleForm>) => {
+        setForm((current) => ({ ...current, ...changes }));
+        setErrors((current) => {
+            const next = { ...current };
+            (Object.keys(changes) as (keyof DriverVehicleForm)[]).forEach((key) => delete next[key]);
+            return next;
+        });
+    }
 
     const addPhoto = async () => {
         const result = await choosePhoto('Foto del vehículo');
-        if (result.ok) {
-            setForm((current) => ({ ...current, photos: [...current.photos, result.uri] }));
-        } else if (!result.cancelled) {
-            Alert.alert('Foto', result.message);
-        }
+        if (result.ok) update({ photos: [...form.photos, result.uri] });
+        else if (!result.cancelled) showToast(result.message, 'error');
     }
-    const isHeavy = isHeavyVehicle(form.vehicleType);
 
     const handleRegister = async () => {
         const problems = viewModel.validate(form);
-        if (problems.length > 0) {
-            Alert.alert('Revisa los datos', problems.join('\n'));
+        setErrors(problems);
+        if (Object.keys(problems).length > 0) {
+            showToast('Revisa los datos marcados en rojo', 'error');
             return;
         }
-
         setIsSending(true);
         const response = await viewModel.registerDriver(account, form);
         setIsSending(false);
-
         if ('token' in response) {
             // El login ya decide a dónde ir según el rol: un conductor nuevo entra directo a su inicio
+            showToast(`Cuenta creada. ¡Hola, ${account.name}!`, 'success');
             navigation.popToTop();
             saveAuthSession(response);
             return;
         }
-        Alert.alert('No se pudo registrar', formatErrorMessage(response.message));
+        showToast(formatErrorMessage(response.message), 'error');
     }
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-            <ScrollView contentContainerStyle={formStyles.screen} keyboardShouldPersistTaps="handled">
-                <Text style={formStyles.title}>Tu vehículo de carga</Text>
-                <Text style={formStyles.subtitle}>
-                    Hola {account.name}. Con estos datos te mostramos solo las cargas que caben en tu vehículo.
-                </Text>
+        <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+            <AppHeader
+                title="Tu vehículo de carga"
+                onBack={() => navigation.goBack()}
+                right={<AppText variant="caption" color="textMuted">Paso 2 de 2</AppText>}
+            />
+            <KeyboardArea aboveBottomInset style={styles.flex}>
+                <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+                    <AppText variant="body" color="textMuted">
+                        Hola {account.name}. Con estos datos te mostramos solo las cargas que caben en tu vehículo.
+                    </AppText>
 
-                <Text style={formStyles.section}>Tipo de vehículo</Text>
-                <ChipGroup
-                    options={VEHICLES.map((v) => ({ value: v.type, label: `${v.label} (hasta ${v.maxWeightKg.toLocaleString('es-CO')} kg)` }))}
-                    selected={form.vehicleType}
-                    onSelect={(vehicleType) => update({ vehicleType })}
-                />
-
-                <FormField label="Marca y referencia" value={form.brand} onChangeText={(brand) => update({ brand })} placeholder="Chevrolet NHR" />
-                <FormField label="Color" value={form.color} onChangeText={(color) => update({ color })} placeholder="Blanco" />
-                <View style={styles.row}>
-                    <View style={{ flex: 1 }}>
-                        <FormField label="Placa" value={form.plate} onChangeText={(plate) => update({ plate })} autoCapitalize="characters" maxLength={7} placeholder="ABC123" />
+                    <View style={styles.block}>
+                        <AppText variant="label" color="textMuted">Tipo de vehículo</AppText>
+                        <View style={styles.options} accessibilityRole="radiogroup">
+                            {VEHICLES.map((vehicle) => (
+                                <OptionCard
+                                    key={vehicle.type}
+                                    title={vehicle.label}
+                                    description={`Hasta ${vehicle.maxWeightKg.toLocaleString('es-CO')} kg`}
+                                    selected={form.vehicleType === vehicle.type}
+                                    onPress={() => update({ vehicleType: vehicle.type })}
+                                />
+                            ))}
+                        </View>
+                        {errors.vehicleType && <AppText variant="caption" color="danger">{errors.vehicleType}</AppText>}
                     </View>
-                    <View style={{ flex: 1 }}>
-                        <FormField label="Año del modelo" value={form.modelYear} onChangeText={(modelYear) => update({ modelYear })} keyboardType="number-pad" maxLength={4} placeholder="2019" />
+
+                    <TextField label="Marca y referencia" placeholder="Chevrolet NHR" value={form.brand} onChangeText={(brand) => update({ brand })} error={errors.brand} />
+                    <TextField label="Color" placeholder="Blanco" value={form.color} onChangeText={(color) => update({ color })} error={errors.color} />
+                    <View style={styles.row}>
+                        <View style={styles.flex}>
+                            <TextField label="Placa" placeholder="ABC123" value={form.plate} onChangeText={(plate) => update({ plate })} error={errors.plate} autoCapitalize="characters" maxLength={7} />
+                        </View>
+                        <View style={styles.flex}>
+                            <TextField label="Año del modelo" placeholder="2019" value={form.modelYear} onChangeText={(modelYear) => update({ modelYear })} error={errors.modelYear} keyboardType="number-pad" maxLength={4} />
+                        </View>
                     </View>
+                    <SwitchRow label="Carrocería cerrada" hint="Furgón o carpa: la carga va protegida de la lluvia" value={form.isCovered} onChange={(isCovered) => update({ isCovered })} />
+
+                    <AppText variant="label" color="textMuted">Licencia de conducción</AppText>
+                    <TextField label="Número de la licencia" value={form.licenseNumber} onChangeText={(licenseNumber) => update({ licenseNumber })} error={errors.licenseNumber} keyboardType="number-pad" />
+                    <View style={styles.block}>
+                        <AppText variant="smallStrong">Categoría</AppText>
+                        <ChipGroup
+                            options={LICENSE_CATEGORIES.map((category) => ({ value: category, label: category, disabled: isHeavy && !HEAVY_CATEGORIES.includes(category) }))}
+                            selected={form.licenseCategory}
+                            onSelect={(licenseCategory) => update({ licenseCategory })}
+                        />
+                        {errors.licenseCategory
+                            ? <AppText variant="caption" color="danger">{errors.licenseCategory}</AppText>
+                            : isHeavy && <AppText variant="caption" color="textMuted">Para camión necesitas B2 o C2 en adelante.</AppText>}
+                    </View>
+                    <TextField label="La licencia vence el" placeholder="DD/MM/AAAA" value={form.licenseExpires} onChangeText={(licenseExpires) => update({ licenseExpires })} error={errors.licenseExpires} keyboardType="numbers-and-punctuation" />
+
+                    <AppText variant="label" color="textMuted">Documentos del vehículo</AppText>
+                    <TextField label="El SOAT vence el" placeholder="DD/MM/AAAA" value={form.soatExpires} onChangeText={(soatExpires) => update({ soatExpires })} error={errors.soatExpires} keyboardType="numbers-and-punctuation" />
+                    <TextField
+                        label="La revisión técnico-mecánica vence el"
+                        placeholder="DD/MM/AAAA"
+                        hint="Déjalo vacío si el vehículo es nuevo y todavía no la necesita."
+                        value={form.technoExpires}
+                        onChangeText={(technoExpires) => update({ technoExpires })}
+                        error={errors.technoExpires}
+                        keyboardType="numbers-and-punctuation"
+                    />
+                    <TextField label="Número de la tarjeta de propiedad" value={form.propertyCard} onChangeText={(propertyCard) => update({ propertyCard })} error={errors.propertyCard} />
+
+                    <View style={styles.block}>
+                        <AppText variant="label" color="textMuted">Fotos del vehículo</AppText>
+                        <AppText variant="small" color="textMuted">Al menos una donde se vea la placa. Los clientes las ven al comparar ofertas.</AppText>
+                        <PhotoStrip
+                            items={form.photos.map((uri) => ({ key: uri, localUri: uri }))}
+                            maxItems={MAX_VEHICLE_PHOTOS}
+                            onAdd={addPhoto}
+                            onRemove={(uri) => update({ photos: form.photos.filter((photo) => photo !== uri) })}
+                        />
+                        {errors.photos && <AppText variant="caption" color="danger">{errors.photos}</AppText>}
+                    </View>
+                </ScrollView>
+
+                <View style={styles.footer}>
+                    <Button title="Crear mi cuenta de conductor" loading={isSending} onPress={handleRegister} />
                 </View>
-                <View style={styles.switchRow}>
-                    <Text style={styles.switchLabel}>Carrocería cerrada (furgón o carpa)</Text>
-                    <Switch value={form.isCovered} onValueChange={(isCovered) => update({ isCovered })} />
-                </View>
-
-                <Text style={formStyles.section}>Licencia de conducción</Text>
-                <FormField label="Número de la licencia" value={form.licenseNumber} onChangeText={(licenseNumber) => update({ licenseNumber })} keyboardType="number-pad" />
-                <Text style={styles.label}>Categoría</Text>
-                <ChipGroup
-                    options={LICENSE_CATEGORIES.map((c) => ({ value: c, label: c, disabled: isHeavy && !HEAVY_CATEGORIES.includes(c) }))}
-                    selected={form.licenseCategory}
-                    onSelect={(licenseCategory) => update({ licenseCategory })}
-                />
-                <FormField label="Vence el" value={form.licenseExpires} onChangeText={(licenseExpires) => update({ licenseExpires })} keyboardType="numbers-and-punctuation" placeholder="DD/MM/AAAA" />
-
-                <Text style={formStyles.section}>Documentos del vehículo</Text>
-                <FormField label="SOAT vence el" value={form.soatExpires} onChangeText={(soatExpires) => update({ soatExpires })} keyboardType="numbers-and-punctuation" placeholder="DD/MM/AAAA" />
-                <FormField
-                    label="Revisión técnico-mecánica vence el"
-                    value={form.technoExpires}
-                    onChangeText={(technoExpires) => update({ technoExpires })}
-                    keyboardType="numbers-and-punctuation"
-                    placeholder="DD/MM/AAAA"
-                    hint="Déjalo vacío si el vehículo es nuevo y todavía no la necesita."
-                />
-                <FormField label="Número de la tarjeta de propiedad" value={form.propertyCard} onChangeText={(propertyCard) => update({ propertyCard })} />
-
-                <Text style={formStyles.section}>Fotos del vehículo</Text>
-                <Text style={styles.label}>Al menos una donde se vea la placa. Los clientes las ven al comparar ofertas.</Text>
-                <PhotoStrip
-                    items={form.photos.map((uri) => ({ key: uri, localUri: uri }))}
-                    maxItems={MAX_VEHICLE_PHOTOS}
-                    onAdd={addPhoto}
-                    onRemove={(uri) => update({ photos: form.photos.filter((photo) => photo !== uri) })}
-                />
-
-                <DefaultRoundedButton
-                    text={isSending ? 'Registrando...' : 'Crear mi cuenta de conductor'}
-                    backgroundColor="black"
-                    onPress={() => { if (!isSending) handleRegister(); }}
-                />
-            </ScrollView>
-        </KeyboardAvoidingView>
+            </KeyboardArea>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    row: {
-        flexDirection: 'row',
-        gap: 10,
+    screen: {
+        flex: 1,
+        backgroundColor: colors.background,
     },
-    switchRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 6,
-    },
-    switchLabel: {
-        fontSize: 15,
+    flex: {
         flex: 1,
     },
-    label: {
-        fontSize: 14,
-        color: '#333',
-        marginBottom: 6,
+    content: {
+        gap: spacing.lg,
+        padding: spacing.lg,
+    },
+    block: {
+        gap: spacing.sm,
+    },
+    options: {
+        gap: spacing.sm,
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: spacing.md,
+    },
+    // El botón queda abajo y visible aunque el formulario se desplace
+    footer: {
+        padding: spacing.lg,
+        borderTopWidth: 1,
+        borderTopColor: colors.border,
+        backgroundColor: colors.surface,
     },
 });

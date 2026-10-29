@@ -44,6 +44,9 @@ export interface ClientRequestResponse {
     my_offer?:               number | null;
     // Cuántas fotos de la carga subió el cliente (lista del conductor)
     cargo_photos?:           number;
+    // Estrellas que dio cada uno al terminar (historial); el promedio del conductor sale de driver_rating
+    driver_rating?:          number | null;
+    client_rating?:          number | null;
     // Código de 4 dígitos para cerrar la entrega; solo llega cuando consulta el cliente
     delivery_code?:          string | null;
 }

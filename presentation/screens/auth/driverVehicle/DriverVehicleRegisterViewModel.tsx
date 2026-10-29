@@ -30,6 +30,8 @@ export interface DriverVehicleForm {
     photos: string[];
 }
 
+export type DriverVehicleErrors = Partial<Record<keyof DriverVehicleForm, string>>;
+
 export const EMPTY_DRIVER_VEHICLE_FORM: DriverVehicleForm = {
     vehicleType: null,
     brand: '',
@@ -60,23 +62,24 @@ export class DriverVehicleRegisterViewModel {
         this.photoUseCases = photoUseCases;
     }
 
-    // Todos los problemas a la vez, para que la persona los corrija de una
-    validate(form: DriverVehicleForm): string[] {
+    // Todos los problemas a la vez, cada uno debajo de su campo, para que la persona los corrija de una
+    validate(form: DriverVehicleForm): DriverVehicleErrors {
         const isHeavy = isHeavyVehicle(form.vehicleType);
-        return [
-            !form.vehicleType && 'Elige el tipo de vehículo',
-            (form.brand.trim().length < 2 || form.color.trim().length < 2) && 'Escribe la marca y el color',
-            !PLATE_REGEX.test(normalizePlate(form.plate)) && 'La placa debe tener 3 letras y 3 números, por ejemplo ABC123',
-            !/^\d{4}$/.test(form.modelYear.trim()) && 'Escribe el año del modelo, por ejemplo 2019',
-            form.licenseNumber.trim().length < 5 && 'Escribe el número de tu licencia',
-            !form.licenseCategory && 'Elige la categoría de tu licencia',
-            form.licenseCategory && isHeavy && !HEAVY_CATEGORIES.includes(form.licenseCategory) && 'Para camión necesitas licencia B2 o C2 en adelante',
-            !parseDayMonthYear(form.licenseExpires) && 'La fecha de vencimiento de la licencia debe ser DD/MM/AAAA',
-            !parseDayMonthYear(form.soatExpires) && 'La fecha de vencimiento del SOAT debe ser DD/MM/AAAA',
-            form.technoExpires.trim() !== '' && !parseDayMonthYear(form.technoExpires) && 'La fecha de la revisión técnico-mecánica debe ser DD/MM/AAAA',
-            form.propertyCard.trim().length < 5 && 'Escribe el número de la tarjeta de propiedad',
-            form.photos.length === 0 && 'Agrega al menos una foto del vehículo',
-        ].filter(Boolean) as string[];
+        const errors: DriverVehicleErrors = {};
+        if (!form.vehicleType) errors.vehicleType = 'Elige el tipo de vehículo';
+        if (form.brand.trim().length < 2) errors.brand = 'Escribe la marca y la referencia';
+        if (form.color.trim().length < 2) errors.color = 'Escribe el color';
+        if (!PLATE_REGEX.test(normalizePlate(form.plate))) errors.plate = '3 letras y 3 números, por ejemplo ABC123';
+        if (!/^\d{4}$/.test(form.modelYear.trim())) errors.modelYear = 'Por ejemplo 2019';
+        if (form.licenseNumber.trim().length < 5) errors.licenseNumber = 'Escribe el número de tu licencia';
+        if (!form.licenseCategory) errors.licenseCategory = 'Elige la categoría de tu licencia';
+        else if (isHeavy && !HEAVY_CATEGORIES.includes(form.licenseCategory)) errors.licenseCategory = 'Para camión necesitas licencia B2 o C2 en adelante';
+        if (!parseDayMonthYear(form.licenseExpires)) errors.licenseExpires = 'Escríbela como DD/MM/AAAA';
+        if (!parseDayMonthYear(form.soatExpires)) errors.soatExpires = 'Escríbela como DD/MM/AAAA';
+        if (form.technoExpires.trim() !== '' && !parseDayMonthYear(form.technoExpires)) errors.technoExpires = 'Escríbela como DD/MM/AAAA';
+        if (form.propertyCard.trim().length < 5) errors.propertyCard = 'Escribe el número de la tarjeta de propiedad';
+        if (form.photos.length === 0) errors.photos = 'Agrega al menos una foto donde se vea la placa';
+        return errors;
     }
 
     // Llamar solo después de validate() sin problemas

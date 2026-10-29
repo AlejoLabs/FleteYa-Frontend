@@ -5,6 +5,7 @@ import { DriverTripOfferUseCases } from "../../../../domain/useCases/driverTripO
 import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import { SocketService } from "../../../../data/sources/remote/services/SocketService";
 import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
+import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 
 export class DriverClientRequestViewModel {
 
@@ -51,6 +52,27 @@ export class DriverClientRequestViewModel {
 
     async createDriverTripOffer(driverTripOffer: DriverTripOffer) {
         return await this.driverTripOfferUseCases.create.execute(driverTripOffer);
+    }
+
+    // Oferta del conductor (aceptar el precio del cliente o contraofertar). Si se guarda, el cliente la recibe por el socket
+    async sendOffer(idDriver: number, request: ClientRequestResponse, fare: number) {
+        const response = await this.createDriverTripOffer({
+            id_driver: idDriver,
+            id_client_request: request.id,
+            fare_offered: fare,
+            distance: request.google_distance_matrix.distance.value / 1000,
+            time: request.google_distance_matrix.duration.value / 60,
+        });
+        if ('id_client_request' in response) this.emitNewDriverOffer(request.id);
+        return response;
+    }
+
+    // "Llegas en 12 min · a 3,6 km" del conductor al punto de recogida
+    arrivalText(request: ClientRequestResponse) {
+        const { distance, duration } = request.google_distance_matrix;
+        const minutes = Math.max(1, Math.round(duration.value / 60));
+        const km = (distance.value / 1000).toFixed(1).replace('.', ',');
+        return `Llegas en ${minutes} min · a ${km} km`;
     }
 
     async dismissClientRequest(idClientRequest: number) {
