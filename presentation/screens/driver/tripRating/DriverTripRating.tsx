@@ -1,36 +1,38 @@
-import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
-import { Text, ToastAndroid, TouchableOpacity, View } from "react-native";
-import { DriverMapStackParamList } from "../../../navigator/DriverMapStackNavigator";
-import styles from "./Styles";
-import { Ionicons } from "@expo/vector-icons";
-import StarRating from "@empglabs/react-native-star-rating-widget";
 import { useState } from "react";
-import { container } from "../../../../di/container";
-import { DriverTripRatingViewModel } from "./DriverTripRatingViewModel";
+import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
+import { DriverMapStackParamList } from "../../../navigator/DriverMapStackNavigator";
 import { RootStackParamList } from "../../../navigator/MainStackNavigator";
-import { formatCOP, formatErrorMessage, getTripFare } from "../../../utils/Formatters";
+import { container } from "../../../../di/container";
+import { useToast } from "../../../components/ui";
+import { formatErrorMessage } from "../../../utils/Formatters";
+import TripRatingView from "../../trip/rating/TripRatingView";
+import { DriverTripRatingViewModel } from "./DriverTripRatingViewModel";
 
 interface Props extends StackScreenProps<DriverMapStackParamList, 'DriverTripRatingScreen'> { }
 
+// El conductor califica al cliente al entregar la carga
 export function DriverTripRatingScreen({ navigation, route }: Props) {
 
     const { clientRequest } = route.params;
-    const viewModel : DriverTripRatingViewModel = container.resolve('driverTripRatingViewModel');
-    const [rating, setRating] = useState(0);
     const rootNavigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    const viewModel: DriverTripRatingViewModel = container.resolve('driverTripRatingViewModel');
+    const { showToast } = useToast();
+    const [sending, setSending] = useState(false);
 
-    const handleUpdateClientRating = async () => {
+    const handleSubmit = async (rating: number) => {
         const error = viewModel.validate(rating);
         if (error) {
-            ToastAndroid.show(error, ToastAndroid.SHORT);
+            showToast(error, 'error');
             return;
         }
+        setSending(true);
         const response = await viewModel.updateClientRating(clientRequest.id, rating);
+        setSending(false);
         if (typeof response === 'boolean') {
-            ToastAndroid.show('¡Gracias por calificar!', ToastAndroid.LONG);
+            showToast('¡Gracias por calificar!', 'success');
         } else {
-            ToastAndroid.show(formatErrorMessage(response.message), ToastAndroid.LONG);
+            showToast(formatErrorMessage(response.message), 'error');
             // 409: ya estaba calificado, así que igual se sale
             if (response.statusCode !== 409) return;
         }
@@ -38,54 +40,13 @@ export function DriverTripRatingScreen({ navigation, route }: Props) {
     }
 
     return (
-        <View style={styles.container}>
-            <Ionicons
-                style={styles.iconCheck}
-                name="checkmark-circle"
-                size={100}
-            />
-            <Text style={styles.textTripFinished}>TU VIAJE HA FINALIZADO</Text>
-            <View style={styles.rowContainer}>
-                <Ionicons
-                    name="location"
-                    size={25}
-                />
-                <View style={styles.textDescription}>
-                    <Text style={styles.bold}>DESDE</Text>
-                    <Text>{clientRequest.pickup_description}</Text>
-                </View>
-            </View>
-            <View style={styles.rowContainer}>
-                <Ionicons
-                    name="home"
-                    size={25}
-                />
-                <View style={styles.textDescription}>
-                    <Text style={styles.bold}>HASTA</Text>
-                    <Text>{clientRequest.destination_description}</Text>
-                </View>
-            </View>
-            <Text style={styles.textFare}>VALOR DEL VIAJE</Text>
-            <Text style={styles.textFareValue}>{formatCOP(getTripFare(clientRequest))}</Text>
-            <Text style={styles.textRating}>CALIFICA A TU CLIENTE</Text>
-            <StarRating
-                style={styles.starRating}
-                maxStars={5}
-                rating={rating}
-                onChange={setRating}
-            />
-            <TouchableOpacity style={{ alignSelf: 'center', padding: 12 }} onPress={() => navigation.navigate('IncidentReportScreen', { idClientRequest: clientRequest.id })}>
-                <Text style={{ color: '#b45309', fontWeight: 'bold' }}>¿Algo salió mal? Reportar un problema</Text>
-            </TouchableOpacity>
-            <View style={{flex: 1}}></View>
-            <TouchableOpacity style={styles.iconContainer} onPress={() => {
-                handleUpdateClientRating();
-            }}>
-                <View style={styles.iconBox}>
-                    <Ionicons name='checkmark' size={25} color='white' />
-                </View>
-                <Text style={styles.textAction}>CALIFICAR CLIENTE</Text>
-            </TouchableOpacity>
-        </View>
+        <TripRatingView
+            request={clientRequest}
+            person={clientRequest.client}
+            fareLabel="Lo que cobras por este flete"
+            sending={sending}
+            onSubmit={handleSubmit}
+            onReport={() => navigation.navigate('IncidentReportScreen', { idClientRequest: clientRequest.id })}
+        />
     );
 }

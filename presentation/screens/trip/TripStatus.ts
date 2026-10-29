@@ -16,6 +16,9 @@ export const isCargoOnBoard = (status: string) => status === Status.TRAVELING;
 export const routeTarget = (request: ClientRequestResponse, status: string): LatLng =>
     toLatLng(isCargoOnBoard(status) ? request.destination_position : request.pickup_position);
 
+// Primera parte de la dirección ("Cl. 68a Sur # 78L-9"), para resúmenes de una línea
+export const shortPlace = (address?: string | null) => address?.split(',')[0].trim() ?? '';
+
 // "llega cerca de las 11:09": la hora en que se cumplen los minutos estimados, con la hora del teléfono
 export const arrivalTime = (minutes: number): string =>
     new Date(Date.now() + minutes * 60_000).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' });

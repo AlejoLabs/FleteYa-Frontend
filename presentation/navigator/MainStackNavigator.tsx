@@ -8,7 +8,8 @@ import RolesScreen from "../screens/roles/RolesScreen";
 import ClientHomeScreen from "../screens/client/home/ClientHomeScreen";
 import DriverHomeScreen from "../screens/driver/home/DriverHomeScreen";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import { getFocusedRouteNameFromRoute, ParamListBase, RouteProp } from "@react-navigation/native";
+import { colors, fonts, radius } from "../theme";
 import ClientSearchMapScreen from "../screens/client/searchMap/ClientSearchMapScreen";
 import DriverMyLocationMapScreen from "../screens/driver/MyLocationMap/DriverMyLocationMapScreen";
 import ProfileInfoScreen from "../screens/profile/info/ProfileInfoScreen";
@@ -119,25 +120,40 @@ export const MainStackNavigator = () => {
     )
 }
 
-const CLIENT_MAP_SCREENS = ['ClientSearchMapScreen', 'ClientTripMapScreen'];
+// Barra del menú lateral con la letra y los colores de FleteYa; el menú marca en amarillo suave la pantalla abierta
+const DRAWER_OPTIONS = {
+    headerStyle: { backgroundColor: colors.surface },
+    headerTintColor: colors.text,
+    headerTitleStyle: { fontFamily: fonts.bold, fontSize: 18 },
+    drawerActiveTintColor: colors.text,
+    drawerActiveBackgroundColor: colors.cargoTint,
+    drawerInactiveTintColor: colors.textMuted,
+    drawerLabelStyle: { fontFamily: fonts.semibold, fontSize: 16 },
+    drawerItemStyle: { borderRadius: radius.md },
+};
+
+// Solo la lista de solicitudes usa la barra del menú; el viaje, el chat, el reporte y la calificación traen la suya
+const driverStackOptions = ({ route }: { route: RouteProp<ParamListBase> }) => ({
+    title: 'Solicitudes cerca',
+    headerShown: (getFocusedRouteNameFromRoute(route) ?? 'DriverClientRequestScreen') === 'DriverClientRequestScreen',
+});
+
+// Editar el perfil y cambiar la contraseña traen su propio "Volver"
+const profileOptions = ({ route }: { route: RouteProp<ParamListBase> }) => ({
+    title: 'Perfil',
+    headerShown: (getFocusedRouteNameFromRoute(route) ?? 'ProfileInfoScreen') === 'ProfileInfoScreen',
+});
 
 const ClientDrawerNavigator = () => {
     useNotificationNavigation('CLIENT');
     return (
-        <Drawer.Navigator initialRouteName="ClientMapStackNavigator" drawerContent={(props) => <AppDrawerContent {...props} />}>
-            {/* Pedir el flete y seguir el viaje son mapas a pantalla completa con su propio botón de menú; el resto del grupo conserva la barra */}
-            <Drawer.Screen
-                name="ClientMapStackNavigator"
-                options={({ route }) => ({
-                    title: 'Mi Ubicación',
-                    headerShown: !CLIENT_MAP_SCREENS.includes(getFocusedRouteNameFromRoute(route) ?? 'ClientSearchMapScreen'),
-                })}
-                component={ClientMapStackNavigator}
-            />
-            <Drawer.Screen name="UpcomingTripsScreen" options={{title:'Próximos fletes'}} component={UpcomingTripsScreen} />
-            <Drawer.Screen name="ProfileStackNavigator" options={{title:'Perfil'}} component={ProfileStackNavigator} />
-            <Drawer.Screen name="ClientTripHistoryScreen" options={{title:'Historial de Viajes'}} component={ClientTripHistoryScreen} />
-            {__DEV__ && <Drawer.Screen name="DesignSystemScreen" options={{title:'Sistema de diseño'}} component={DesignSystemScreen} />}
+        <Drawer.Navigator initialRouteName="ClientMapStackNavigator" screenOptions={DRAWER_OPTIONS} drawerContent={(props) => <AppDrawerContent {...props} />}>
+            {/* Todas las pantallas del flete traen su propio encabezado: el mapa con el botón de menú y las demás con "Volver" */}
+            <Drawer.Screen name="ClientMapStackNavigator" options={{ title: 'Pedir un flete', headerShown: false }} component={ClientMapStackNavigator} />
+            <Drawer.Screen name="UpcomingTripsScreen" options={{ title: 'Próximos fletes' }} component={UpcomingTripsScreen} />
+            <Drawer.Screen name="ClientTripHistoryScreen" options={{ title: 'Historial de fletes' }} component={ClientTripHistoryScreen} />
+            <Drawer.Screen name="ProfileStackNavigator" options={profileOptions} component={ProfileStackNavigator} />
+            {__DEV__ && <Drawer.Screen name="DesignSystemScreen" options={{ title: 'Sistema de diseño' }} component={DesignSystemScreen} />}
         </Drawer.Navigator>
     )
 }
@@ -145,22 +161,15 @@ const ClientDrawerNavigator = () => {
 const DriverDrawerNavigator = () => {
     useNotificationNavigation('DRIVER');
     return (
-        <Drawer.Navigator initialRouteName="DriverMyLocationMapScreen" drawerContent={(props) => <AppDrawerContent {...props} />}>
+        <Drawer.Navigator initialRouteName="DriverMyLocationMapScreen" screenOptions={DRAWER_OPTIONS} drawerContent={(props) => <AppDrawerContent {...props} />}>
             {/* El inicio trae su propio encabezado oscuro con el menú, lo ganado y la disponibilidad */}
             <Drawer.Screen name="DriverMyLocationMapScreen" options={{ title: 'Inicio', headerShown: false }} component={DriverMyLocationMapScreen} />
-            <Drawer.Screen
-                name="DriverMapStackNavigator"
-                options={({ route }) => ({
-                    title: 'Solicitudes cerca',
-                    headerShown: getFocusedRouteNameFromRoute(route) !== 'DriverTripMapScreen',
-                })}
-                component={DriverMapStackNavigator}
-            />
-            <Drawer.Screen name="UpcomingTripsScreen" options={{title:'Próximos fletes'}} component={UpcomingTripsScreen} />
-            <Drawer.Screen name="DriverTripHistoryScreen" options={{title:'Historial de cargas'}} component={DriverTripHistoryScreen} />
-            <Drawer.Screen name="DriverCarInfoScreen" options={{title:'Mi vehículo'}} component={DriverCarInfoScreen} />
-            <Drawer.Screen name="ProfileStackNavigator" options={{title:'Perfil'}} component={ProfileStackNavigator} />
-            {__DEV__ && <Drawer.Screen name="DesignSystemScreen" options={{title:'Sistema de diseño'}} component={DesignSystemScreen} />}
+            <Drawer.Screen name="DriverMapStackNavigator" options={driverStackOptions} component={DriverMapStackNavigator} />
+            <Drawer.Screen name="UpcomingTripsScreen" options={{ title: 'Próximos fletes' }} component={UpcomingTripsScreen} />
+            <Drawer.Screen name="DriverTripHistoryScreen" options={{ title: 'Historial de fletes' }} component={DriverTripHistoryScreen} />
+            <Drawer.Screen name="DriverCarInfoScreen" options={{ title: 'Mi vehículo' }} component={DriverCarInfoScreen} />
+            <Drawer.Screen name="ProfileStackNavigator" options={profileOptions} component={ProfileStackNavigator} />
+            {__DEV__ && <Drawer.Screen name="DesignSystemScreen" options={{ title: 'Sistema de diseño' }} component={DesignSystemScreen} />}
         </Drawer.Navigator>
     )
 }

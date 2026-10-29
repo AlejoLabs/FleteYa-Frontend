@@ -1,27 +1,29 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { container } from "../../../../di/container";
 import { TripSharedParamList } from "../../../navigator/TripSharedParamList";
 import { TripChatViewModel, MAX_MESSAGE_LENGTH } from "./TripChatViewModel";
 import { TripMessage } from "../../../../domain/models/TripMessage";
 import { useAuth } from "../../../hooks/useAuth";
-import ScreenHeader from "../../../components/ScreenHeader";
+import { AppHeader, AppText, KeyboardArea, Notice, StateView, useToast } from "../../../components/ui";
 import { formatErrorMessage, formatTime } from "../../../utils/Formatters";
 import { setOpenChat } from "../../../utils/PushNotifications";
+import { colors, fonts, radius, spacing, touchTarget } from "../../../theme";
 
 type Props = NativeStackScreenProps<TripSharedParamList, 'TripChatScreen'>;
 
+// Chat del viaje entre el cliente y el conductor, sin compartir el celular
 export function TripChatScreen({ navigation, route }: Props) {
 
     const { idClientRequest, otherName, readOnly } = route.params;
     const viewModel: TripChatViewModel = container.resolve('tripChatViewModel');
     const { authResponse } = useAuth();
+    const { showToast } = useToast();
     const myId = authResponse?.user.id;
-    const insets = useSafeAreaInsets();
     const [messages, setMessages] = useState<TripMessage[]>([]);
     const [text, setText] = useState('');
     const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +37,7 @@ export function TripChatScreen({ navigation, route }: Props) {
             setMessages(response);
             viewModel.markRead(idClientRequest);
         } else {
-            ToastAndroid.show(formatErrorMessage(response.message), ToastAndroid.LONG);
+            showToast(formatErrorMessage(response.message), 'error');
         }
     }
 
@@ -69,7 +71,7 @@ export function TripChatScreen({ navigation, route }: Props) {
             setText('');
         } else {
             if (response.statusCode === 409) setIsClosed(true);
-            ToastAndroid.show(formatErrorMessage(response.message), ToastAndroid.LONG);
+            showToast(formatErrorMessage(response.message), 'error');
         }
     }
 
@@ -77,145 +79,139 @@ export function TripChatScreen({ navigation, route }: Props) {
         const mine = item.id_sender === myId;
         return (
             <View style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
-                <Text style={mine ? styles.mineText : styles.theirsText}>{item.text}</Text>
-                <Text style={[styles.time, mine && styles.mineTime]}>{formatTime(item.created_at)}</Text>
+                <AppText variant="body" color={mine ? 'textOnDark' : 'text'}>{item.text}</AppText>
+                <AppText variant="caption" color={mine ? 'textOnDarkMuted' : 'textMuted'} style={styles.time}>
+                    {formatTime(item.created_at)}{mine && item.read_at ? ' · Leído' : ''}
+                </AppText>
             </View>
         );
     }
 
+    const canSend = viewModel.canSend(text) && !isSending;
+
     return (
-        <KeyboardAvoidingView style={styles.container} behavior="padding">
-            <ScreenHeader title={otherName ? `Chat con ${otherName}` : 'Chat del viaje'} onBack={() => navigation.goBack()} />
+        <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+            <AppHeader title={otherName ?? 'Chat del viaje'} subtitle="Chat del viaje" onBack={() => navigation.goBack()} />
+            <KeyboardArea style={styles.body} aboveBottomInset>
+                {isLoading
+                    ? <StateView kind="loading" />
+                    : messages.length === 0
+                        ? <StateView kind="empty" icon="chatbubbles-outline" title="Todavía no hay mensajes" message="Escribe para coordinar la recogida o la entrega. Tu número de celular no se comparte." />
+                        // Invertida: el último mensaje queda abajo y la lista arranca ahí
+                        : <FlatList
+                            style={styles.flex}
+                            contentContainerStyle={styles.list}
+                            data={[...messages].reverse()}
+                            inverted
+                            keyExtractor={(item) => String(item.id)}
+                            renderItem={renderMessage}
+                        />
+                }
 
-            {isLoading
-                ? <ActivityIndicator style={styles.center} size="large" />
-                : messages.length === 0
-                    ? <Text style={[styles.center, styles.empty]}>Escribe para coordinar la recogida o la entrega. Tu número de celular no se comparte.</Text>
-                    // Invertida: el último mensaje queda abajo y la lista arranca ahí
-                    : <FlatList
-                        style={styles.list}
-                        contentContainerStyle={styles.listContent}
-                        data={[...messages].reverse()}
-                        inverted
-                        keyExtractor={(item) => String(item.id)}
-                        renderItem={renderMessage}
-                    />
-            }
-
-            {isClosed
-                ? <Text style={[styles.closed, { paddingBottom: insets.bottom + 12 }]}>El viaje terminó: el chat queda solo para leer.</Text>
-                : <View style={[styles.inputRow, { paddingBottom: insets.bottom + 8 }]}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Escribe un mensaje"
-                        placeholderTextColor="#888"
-                        value={text}
-                        onChangeText={setText}
-                        maxLength={MAX_MESSAGE_LENGTH}
-                        multiline
-                    />
-                    <TouchableOpacity
-                        style={[styles.send, (!viewModel.canSend(text) || isSending) && styles.sendDisabled]}
-                        onPress={handleSend}
-                        disabled={!viewModel.canSend(text) || isSending}
-                        accessibilityLabel="Enviar mensaje"
-                    >
-                        <Ionicons name="send" size={20} color="white" />
-                    </TouchableOpacity>
-                </View>
-            }
-        </KeyboardAvoidingView>
+                {isClosed
+                    ? <View style={styles.closed}><Notice tone="info" message="El viaje terminó: el chat queda solo para leer." /></View>
+                    : <View style={styles.inputRow}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Mensaje"
+                            placeholderTextColor={colors.textMuted}
+                            value={text}
+                            onChangeText={setText}
+                            maxLength={MAX_MESSAGE_LENGTH}
+                            multiline
+                            accessibilityLabel="Mensaje"
+                        />
+                        <Pressable
+                            style={({ pressed }) => [styles.send, !canSend && styles.sendDisabled, pressed && styles.sendPressed]}
+                            onPress={handleSend}
+                            disabled={!canSend}
+                            accessibilityRole="button"
+                            accessibilityLabel="Enviar mensaje"
+                            accessibilityState={{ disabled: !canSend, busy: isSending }}
+                        >
+                            <Ionicons name="send" size={20} color={colors.asphalt} />
+                        </Pressable>
+                    </View>
+                }
+            </KeyboardArea>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    // Blanco arriba (barra de estado y encabezado) y abajo (campo); gris solo detrás de los mensajes
+    screen: {
         flex: 1,
-        backgroundColor: '#f2f2f2',
+        backgroundColor: colors.surface,
     },
-    center: {
+    body: {
         flex: 1,
-        textAlignVertical: 'center',
+        backgroundColor: colors.surfaceMuted,
     },
-    empty: {
-        textAlign: 'center',
-        color: '#666',
-        paddingHorizontal: 40,
+    flex: {
+        flex: 1,
     },
     list: {
-        flex: 1,
-    },
-    listContent: {
-        padding: 12,
-        gap: 6,
+        padding: spacing.md,
+        gap: spacing.sm,
     },
     bubble: {
         maxWidth: '80%',
-        borderRadius: 14,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        borderRadius: radius.lg,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        gap: spacing.xxs,
     },
     mine: {
         alignSelf: 'flex-end',
-        backgroundColor: '#1f7a3d',
-        borderBottomRightRadius: 4,
+        backgroundColor: colors.asphalt,
+        borderBottomRightRadius: radius.sm / 2,
     },
     theirs: {
         alignSelf: 'flex-start',
-        backgroundColor: 'white',
-        borderBottomLeftRadius: 4,
-    },
-    mineText: {
-        color: 'white',
-        fontSize: 15,
-    },
-    theirsText: {
-        color: 'black',
-        fontSize: 15,
+        backgroundColor: colors.surface,
+        borderBottomLeftRadius: radius.sm / 2,
     },
     time: {
-        fontSize: 11,
-        color: '#777',
         alignSelf: 'flex-end',
-        marginTop: 2,
-    },
-    mineTime: {
-        color: '#d8eedd',
     },
     inputRow: {
         flexDirection: 'row',
         alignItems: 'flex-end',
-        gap: 8,
-        paddingHorizontal: 10,
-        paddingTop: 8,
-        backgroundColor: 'white',
+        gap: spacing.sm,
+        padding: spacing.sm,
+        backgroundColor: colors.surface,
+        borderTopWidth: 1,
+        borderTopColor: colors.border,
     },
     input: {
         flex: 1,
-        maxHeight: 110,
-        minHeight: 44,
-        borderRadius: 22,
-        backgroundColor: '#f2f2f2',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        fontSize: 15,
-        color: 'black',
+        maxHeight: 120,
+        minHeight: touchTarget,
+        borderRadius: touchTarget / 2,
+        backgroundColor: colors.surfaceMuted,
+        paddingHorizontal: spacing.lg,
+        paddingVertical: spacing.md,
+        fontFamily: fonts.regular,
+        fontSize: 16,
+        color: colors.text,
     },
     send: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: '#1f7a3d',
+        width: touchTarget,
+        height: touchTarget,
+        borderRadius: touchTarget / 2,
+        backgroundColor: colors.cargo,
         alignItems: 'center',
         justifyContent: 'center',
     },
+    sendPressed: {
+        backgroundColor: colors.cargoPressed,
+    },
     sendDisabled: {
-        backgroundColor: '#9bbfa6',
+        opacity: 0.45,
     },
     closed: {
-        textAlign: 'center',
-        color: '#666',
-        paddingTop: 12,
-        backgroundColor: 'white',
+        padding: spacing.md,
+        backgroundColor: colors.surface,
     },
 });

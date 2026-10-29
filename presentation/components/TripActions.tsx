@@ -18,7 +18,7 @@ export default function TripActions({ unread, onChat, onReport }: Props) {
                     icon="chatbubble-outline"
                     variant="dark"
                     onPress={onChat}
-                    accessibilityLabel={unread > 0 ? `Abrir el chat, ${unread} mensajes sin leer` : 'Abrir el chat del viaje'}
+                    accessibilityLabel={unread > 0 ? `Abrir el chat, ${unread} ${unread === 1 ? 'mensaje' : 'mensajes'} sin leer` : 'Abrir el chat del viaje'}
                 />
                 {/* Encima del botón y no dentro: el botón solo lleva texto e icono */}
                 <View style={styles.badge} pointerEvents="none">
