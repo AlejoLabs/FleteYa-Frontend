@@ -16,6 +16,8 @@ export const colors = {
     border: '#E1E5EA',
     borderStrong: '#C9D0D8',
     overlay: 'rgba(15, 21, 28, 0.6)',
+    // Fondo casi negro para ver una foto en grande
+    viewer: 'rgba(15, 21, 28, 0.94)',
 
     // Texto
     text: '#1B2430',

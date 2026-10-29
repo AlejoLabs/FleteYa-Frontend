@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import AuthImage from "./AuthImage";
+import { AppText, Button } from "./ui";
+import { colors, radius, spacing } from "../theme";
 
 // Una foto de la tira: local (todavía no se sube) o ya guardada en el backend
 export interface PhotoItem {
@@ -18,6 +21,8 @@ interface Props {
     emptyText?: string;
 }
 
+const THUMB = 84;
+
 // Miniaturas en fila. Tocar una la abre en grande; la ✕ la quita si la pantalla lo permite
 export default function PhotoStrip({ items, onAdd, onRemove, maxItems = 4, addLabel = 'Agregar foto', emptyText }: Props) {
     const [opened, setOpened] = useState<PhotoItem | null>(null);
@@ -28,39 +33,42 @@ export default function PhotoStrip({ items, onAdd, onRemove, maxItems = 4, addLa
         : <Image source={{ uri: item.localUri }} style={style} resizeMode="cover" />;
 
     if (!items.length && !canAdd) {
-        return emptyText ? <Text style={styles.empty}>{emptyText}</Text> : null;
+        return emptyText ? <AppText variant="small" color="textMuted" style={styles.empty}>{emptyText}</AppText> : null;
     }
 
     return (
         <View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-                {items.map((item) => (
+                {items.map((item, index) => (
                     <View key={item.key}>
-                        <TouchableOpacity onPress={() => setOpened(item)} accessibilityLabel="Ver foto">
+                        <Pressable onPress={() => setOpened(item)} accessibilityRole="imagebutton" accessibilityLabel={`Ver la foto ${index + 1}`}>
                             {renderImage(item, styles.thumb)}
-                        </TouchableOpacity>
+                        </Pressable>
                         {onRemove &&
-                            <TouchableOpacity style={styles.remove} onPress={() => onRemove(item.key)} accessibilityLabel="Quitar foto" hitSlop={8}>
-                                <Text style={styles.removeText}>✕</Text>
-                            </TouchableOpacity>
+                            <Pressable style={styles.remove} onPress={() => onRemove(item.key)} accessibilityRole="button" accessibilityLabel={`Quitar la foto ${index + 1}`} hitSlop={10}>
+                                <Ionicons name="close" size={14} color={colors.textOnDark} />
+                            </Pressable>
                         }
                     </View>
                 ))}
                 {canAdd &&
-                    <TouchableOpacity style={[styles.thumb, styles.add]} onPress={onAdd}>
-                        <Text style={styles.addPlus}>+</Text>
-                        <Text style={styles.addText}>{addLabel}</Text>
-                    </TouchableOpacity>
+                    <Pressable
+                        style={({ pressed }) => [styles.thumb, styles.add, pressed && styles.addPressed]}
+                        onPress={onAdd}
+                        accessibilityRole="button"
+                        accessibilityLabel={addLabel}
+                    >
+                        <Ionicons name="add" size={26} color={colors.textMuted} />
+                        <AppText variant="caption" color="textMuted" align="center">{addLabel}</AppText>
+                    </Pressable>
                 }
             </ScrollView>
 
-            <Modal visible={opened !== null} transparent animationType="fade" onRequestClose={() => setOpened(null)}>
+            <Modal visible={opened !== null} transparent animationType="fade" onRequestClose={() => setOpened(null)} statusBarTranslucent>
                 <View style={styles.viewer}>
-                    <Pressable style={StyleSheet.absoluteFill} onPress={() => setOpened(null)} />
+                    <Pressable style={StyleSheet.absoluteFill} onPress={() => setOpened(null)} accessibilityLabel="Cerrar la foto" />
                     {opened && renderImage(opened, styles.full)}
-                    <TouchableOpacity style={styles.close} onPress={() => setOpened(null)}>
-                        <Text style={styles.closeText}>Cerrar</Text>
-                    </TouchableOpacity>
+                    <Button title="Cerrar" variant="onDark" icon="close" onPress={() => setOpened(null)} style={styles.close} />
                 </View>
             </Modal>
         </View>
@@ -69,72 +77,57 @@ export default function PhotoStrip({ items, onAdd, onRemove, maxItems = 4, addLa
 
 const styles = StyleSheet.create({
     row: {
-        gap: 10,
-        paddingVertical: 6,
+        gap: spacing.md,
+        paddingVertical: spacing.sm,
+        // Deja espacio a la ✕, que sobresale de la esquina
+        paddingRight: spacing.sm,
     },
     thumb: {
-        width: 84,
-        height: 84,
-        borderRadius: 12,
-        backgroundColor: '#eee',
+        width: THUMB,
+        height: THUMB,
+        borderRadius: radius.md,
+        backgroundColor: colors.surfaceMuted,
     },
     add: {
         alignItems: 'center',
         justifyContent: 'center',
+        gap: spacing.xxs,
+        paddingHorizontal: spacing.xs,
         borderWidth: 1,
-        borderColor: '#bbb',
+        borderColor: colors.borderStrong,
         borderStyle: 'dashed',
-        backgroundColor: '#fafafa',
     },
-    addPlus: {
-        fontSize: 26,
-        color: '#555',
-    },
-    addText: {
-        fontSize: 11,
-        color: '#555',
-        textAlign: 'center',
-        paddingHorizontal: 4,
+    addPressed: {
+        backgroundColor: colors.border,
     },
     remove: {
         position: 'absolute',
-        top: -6,
-        right: -6,
+        top: -spacing.xs - 2,
+        right: -spacing.xs - 2,
         width: 24,
         height: 24,
         borderRadius: 12,
-        backgroundColor: 'black',
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    removeText: {
-        color: 'white',
-        fontSize: 12,
-        fontWeight: 'bold',
+        backgroundColor: colors.asphalt,
+        borderWidth: 2,
+        borderColor: colors.surface,
     },
     empty: {
-        color: '#777',
-        paddingVertical: 6,
+        paddingVertical: spacing.xs,
     },
     viewer: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.92)',
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: colors.viewer,
     },
     full: {
         width: '100%',
         height: '75%',
     },
     close: {
-        marginTop: 20,
-        paddingVertical: 12,
-        paddingHorizontal: 28,
-        borderRadius: 24,
-        backgroundColor: 'white',
-    },
-    closeText: {
-        fontWeight: 'bold',
-        fontSize: 16,
+        marginTop: spacing.xl,
+        paddingHorizontal: spacing.xl,
     },
 });
