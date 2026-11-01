@@ -3,7 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { AppText, CheckboxRow, Chip, ConfirmDialog, OptionCard, PriceStepper, SwitchRow, TextField } from "../../../../components/ui";
 import { spacing } from "../../../../theme";
 import { cargoCategoryLabel, vehicleLabel } from "../../../../utils/Cargo";
-import { formatCOP } from "../../../../utils/Formatters";
+import { formatCOP, formatKm } from "../../../../utils/Formatters";
 import { RequestDraftState } from "../hooks/useRequestDraft";
 import { FARE_STEP, RequestDraft } from "../RequestDraft";
 import SchedulePicker from "../components/SchedulePicker";
@@ -52,7 +52,7 @@ export default function PriceStep({ state }: Props) {
                 {recommendedFare > 0
                     ? <View style={styles.recommended}>
                         <AppText variant="small" color="textMuted" style={styles.flex}>
-                            Sugerido {formatCOP(recommendedFare)}{pricing ? ` por ${pricing.distance.text}` : ''}
+                            Sugerido {formatCOP(recommendedFare)}{pricing ? ` por ${formatKm(pricing.distance.value)}` : ''}
                             {draft.needsHelp
                                 ? ', solo por el transporte. Súbelo si quieres que incluya la ayuda para cargar y descargar.'
                                 : '. Cubre solo el transporte de la carga.'}

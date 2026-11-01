@@ -1,6 +1,7 @@
 import { ActiveTrip } from "../../../domain/models/ClientRequestResponse";
 import { ClientRequestUseCases } from "../../../domain/useCases/clientRequest/ClientRequestUseCases";
 import { StatusTone } from "../../components/ui";
+import { formatScheduledDate } from "../../utils/Formatters";
 
 export type UpcomingTab = 'ACTIVE' | 'SCHEDULED';
 
@@ -40,6 +41,12 @@ export class UpcomingTripsViewModel {
             .sort((a, b) => new Date(a.scheduled_at!).getTime() - new Date(b.scheduled_at!).getTime());
         const active = trips.filter((trip) => !this.isScheduled(trip));
         return { active, scheduled };
+    }
+
+    // Arriba de cada tarjeta: para cuándo es, o "Entregado" si solo falta el pago
+    whenText(trip: ActiveTrip) {
+        if (trip.status === 'FINISHED') return 'Entregado';
+        return trip.scheduled_at ? formatScheduledDate(trip.scheduled_at) : 'Ahora';
     }
 
     status(trip: ActiveTrip) {

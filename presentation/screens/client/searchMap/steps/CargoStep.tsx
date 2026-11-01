@@ -1,5 +1,6 @@
 import { ChipGroup, Counter, Notice, SwitchRow, TextField } from "../../../../components/ui";
 import { CARGO_CATEGORIES } from "../../../../utils/Cargo";
+import { formatThousands } from "../../../../utils/Formatters";
 import { RequestDraftState } from "../hooks/useRequestDraft";
 import { shortAddress } from "../RequestDraft";
 import { SectionLabel, StepHeader, SummaryRow } from "../components/StepParts";
@@ -37,13 +38,14 @@ export default function CargoStep({ state }: { state: RequestDraftState }) {
             <Counter label="Artículos" hint="Un motor es 1; una nevera y 6 cajas son 7" value={draft.packages} min={1} max={500} onChange={(packages) => update({ packages })} />
             <TextField
                 label="Valor aproximado de la carga (opcional)"
-                placeholder="1500000"
+                placeholder="1.500.000"
                 prefix="$"
-                value={draft.declaredValue}
-                onChangeText={(declaredValue) => update({ declaredValue: declaredValue.replace(/D/g, '') })}
+                // Se guardan solo los dígitos; en pantalla, con punto de miles
+                value={formatThousands(draft.declaredValue)}
+                onChangeText={(declaredValue) => update({ declaredValue: declaredValue.replace(/\D/g, '') })}
                 error={errors.declaredValue}
                 keyboardType="number-pad"
-                maxLength={10}
+                maxLength={13}
                 hint="Informativo: queda en el flete por si hay que reportar un daño"
             />
 

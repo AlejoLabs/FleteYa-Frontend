@@ -40,7 +40,7 @@ export class GooglePlaceServices {
 
     async getDirections(origin: LatLng, destination: LatLng): Promise<GoogleDirections | null> {
         try {
-            const response = await GoogleApiRequestHandler.get<GoogleDirections>(`/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${GoogleMapsApiKey}`);
+            const response = await GoogleApiRequestHandler.get<GoogleDirections>(`/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&language=es-419&key=${GoogleMapsApiKey}`);
             return response.data;
         } catch (error) {
             console.error("Error en la peticion", error);

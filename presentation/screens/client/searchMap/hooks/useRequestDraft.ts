@@ -4,6 +4,7 @@ import { decode } from "@googlemaps/polyline-codec";
 import { TimeAndDistanceValues } from "../../../../../domain/models/TimeAndDistanceValues";
 import { ErrorResponse } from "../../../../../domain/models/ErrorResponse";
 import { ClientSearchMapViewModel } from "../ClientSearchMapViewModel";
+import { formatKm } from "../../../../utils/Formatters";
 import { DraftErrors, EMPTY_DRAFT, PlacePoint, RequestDraft, REQUEST_STEPS, hasSize, sizeM3, suggestedVehicleFor, weightKg } from "../RequestDraft";
 
 export interface RouteSummary {
@@ -51,7 +52,7 @@ export function useRequestDraft(viewModel: ClientSearchMapViewModel) {
             if (!first) return;
             setRoute(decode(first.overview_polyline.points).map(([lat, lng]) => ({ latitude: lat, longitude: lng })));
             const leg = first.legs[0];
-            if (leg) setRouteSummary({ distanceText: leg.distance.text, durationText: leg.duration.text });
+            if (leg) setRouteSummary({ distanceText: formatKm(leg.distance.value), durationText: leg.duration.text });
         });
     }, [draft.origin, draft.destination]);
 

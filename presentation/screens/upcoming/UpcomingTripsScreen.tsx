@@ -5,7 +5,6 @@ import { container } from "../../../di/container";
 import { ActiveTrip } from "../../../domain/models/ClientRequestResponse";
 import { Amount, AppText, Card, SegmentedTabs, StateView, StatusPill } from "../../components/ui";
 import { cargoCategoryLabel, vehicleLabel } from "../../utils/Cargo";
-import { formatScheduledDate } from "../../utils/Formatters";
 import { colors, spacing } from "../../theme";
 import TripPlaces from "../trip/components/TripPlaces";
 import { UpcomingTab, UpcomingTripsViewModel } from "./UpcomingTripsViewModel";
@@ -97,8 +96,8 @@ export function UpcomingTripsScreen() {
                         <Card onPress={() => openTrip(item)} accessibilityLabel={`Abrir el flete a ${item.destination_description}`}>
                             <View style={styles.top}>
                                 <View style={styles.flex}>
-                                    <AppText variant="smallStrong" color={item.scheduled_at ? 'text' : 'textMuted'}>
-                                        {item.scheduled_at ? formatScheduledDate(item.scheduled_at) : 'Ahora'}
+                                    <AppText variant="smallStrong" color={item.scheduled_at && item.status !== 'FINISHED' ? 'text' : 'textMuted'}>
+                                        {viewModel.whenText(item)}
                                     </AppText>
                                     <Amount value={item.fare_assigned ?? item.fare_offered} />
                                 </View>

@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { Amount, AppText, Card, PersonRow, StateView, StatusPill } from "../../../components/ui";
-import { formatTripDate, getTripFare } from "../../../utils/Formatters";
+import { formatCOP, formatTripDate, getTripFare } from "../../../utils/Formatters";
 import { colors, spacing } from "../../../theme";
 import TripPlaces from "../components/TripPlaces";
 
@@ -73,8 +73,20 @@ export default function TripHistoryList({ role, load }: Props) {
     );
 }
 
+// El conductor ve lo que le quedó (sin la comisión de FleteYa); el cliente, lo que pagó. Debajo, cómo se pagó
+const tripAmounts = (trip: ClientRequestResponse, role: Role) => {
+    const fare = getTripFare(trip);
+    const method = trip.payment_method === 'WOMPI' ? 'Pagado por la app' : 'En efectivo';
+    if (role === 'DRIVER' && trip.commission) {
+        return { amount: fare - trip.commission, breakdown: `Te quedó: flete ${formatCOP(fare)} − comisión ${formatCOP(trip.commission)}`, method };
+    }
+    return { amount: fare, breakdown: null, method };
+}
+
 function TripHistoryCard({ trip, role }: { trip: ClientRequestResponse; role: Role }) {
     const other = role === 'CLIENT' ? trip.driver : trip.client;
+    const { amount, breakdown, method } = tripAmounts(trip, role);
+    const paid = Boolean(trip.paid_at);
     // Las estrellas que esta persona le dio a la otra al terminar
     const myStars = role === 'CLIENT' ? trip.driver_rating : trip.client_rating;
     return (
@@ -82,9 +94,12 @@ function TripHistoryCard({ trip, role }: { trip: ClientRequestResponse; role: Ro
             <View style={styles.top}>
                 <View style={styles.flex}>
                     <AppText variant="small" color="textMuted">{formatTripDate(trip.update_at)}</AppText>
-                    <Amount value={getTripFare(trip)} />
+                    <Amount value={amount} />
+                    {breakdown && <AppText variant="caption" color="textMuted">{breakdown}</AppText>}
+                    <AppText variant="caption" color="textMuted">{method}</AppText>
                 </View>
-                <StatusPill label="Entregado" tone="success" />
+                {/* Entregado pero sin pagar: el cobro sigue abierto en "Próximos fletes" */}
+                <StatusPill label={paid ? 'Entregado' : 'Pendiente de pago'} tone={paid ? 'success' : 'warning'} />
             </View>
             <TripPlaces pickup={trip.pickup_description} destination={trip.destination_description} pickupDone={false} />
             <PersonRow

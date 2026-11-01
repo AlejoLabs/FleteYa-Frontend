@@ -1,4 +1,3 @@
-import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
@@ -40,12 +39,17 @@ export const pickPhoto = async (source: PhotoSource): Promise<PhotoPickResult> =
     }
 }
 
+// La hoja de cámara o galería (PhotoSourceSheet) se registra aquí al montarse en App
+type PhotoSourcePresenter = (title: string) => Promise<PhotoSource | null>;
+let presentPhotoSource: PhotoSourcePresenter | null = null;
+
+export const setPhotoSourcePresenter = (presenter: PhotoSourcePresenter | null) => {
+    presentPhotoSource = presenter;
+};
+
 // Pregunta si usar la cámara o la galería y luego toma la foto (cancelled: true si la persona se arrepiente)
-export const choosePhoto = (title = 'Agregar foto'): Promise<PhotoPickResult> => new Promise((resolve) => {
-    const cancelled: PhotoPickResult = { ok: false, cancelled: true, message: '' };
-    Alert.alert(title, '¿De dónde quieres sacar la foto?', [
-        { text: 'Cámara', onPress: () => pickPhoto('camera').then(resolve) },
-        { text: 'Galería', onPress: () => pickPhoto('library').then(resolve) },
-        { text: 'Cancelar', style: 'cancel', onPress: () => resolve(cancelled) },
-    ], { cancelable: true, onDismiss: () => resolve(cancelled) });
-});
+export const choosePhoto = async (title = 'Agregar foto'): Promise<PhotoPickResult> => {
+    const source = presentPhotoSource ? await presentPhotoSource(title) : 'library';
+    if (!source) return { ok: false, cancelled: true, message: '' };
+    return pickPhoto(source);
+};

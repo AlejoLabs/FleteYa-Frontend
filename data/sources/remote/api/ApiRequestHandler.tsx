@@ -23,6 +23,22 @@ ApiRequestHandler.interceptors.request.use(async (config) => {
     return config;
 });
 
+// El backend marca así el token vencido o inválido (otros 401, como una contraseña equivocada, no cierran la sesión)
+const SESSION_EXPIRED = "SESSION_EXPIRED";
+let onSessionExpired: (() => void) | null = null;
+
+// La sesión de la app (AuthContext) decide qué hacer: borrar la sesión guardada y volver al inicio de sesión
+export const setSessionExpiredHandler = (handler: (() => void) | null) => {
+    onSessionExpired = handler;
+};
+
+ApiRequestHandler.interceptors.response.use(undefined, (error) => {
+    if (error.response?.status === 401 && error.response.data?.code === SESSION_EXPIRED) {
+        onSessionExpired?.();
+    }
+    return Promise.reject(error);
+});
+
 const GoogleApiRequestHandler = axios.create({
     baseURL: "https://maps.googleapis.com/maps/api",
     headers: {
