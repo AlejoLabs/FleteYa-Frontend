@@ -1,6 +1,9 @@
 {
-  "name": "indriverreactnative",
+  "name": "fleteya",
   "version": "1.0.0",
+  "description": "App móvil de FleteYa para clientes y conductores (React Native con Expo)",
+  "author": "Alejandro Beltrán",
+  "license": "MIT",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",

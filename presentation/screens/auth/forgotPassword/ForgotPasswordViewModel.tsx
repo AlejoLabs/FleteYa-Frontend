@@ -21,7 +21,7 @@ export class ForgotPasswordViewModel {
     // Devuelve el problema a mostrar o null si se puede enviar
     validateEmail(email: string): string | null {
         if (email.trim() === '') return 'Escribe tu correo';
-        return EmailValidator(email.trim()) ? null : 'Escribe un correo completo, por ejemplo alejo@gmail.com';
+        return EmailValidator(email.trim()) ? null : 'Escribe un correo completo, por ejemplo nombre@gmail.com';
     }
 
     validateReset(code: string, password: string): ResetErrors {
@@ -31,7 +31,7 @@ export class ForgotPasswordViewModel {
         return errors;
     }
 
-    // "alejo@gmail.com" → "a••••@gmail.com", para confirmar a dónde llegó sin mostrarlo entero
+    // "nombre@gmail.com" → "n•••••@gmail.com", para confirmar a dónde llegó sin mostrarlo entero
     maskEmail(email: string): string {
         const [user, domain] = email.trim().split('@');
         if (!domain) return email.trim();

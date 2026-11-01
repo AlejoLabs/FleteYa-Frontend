@@ -85,6 +85,19 @@ def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBu
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+/**
+ * Lee una variable del .env de la raíz del proyecto (o del entorno, por ejemplo en CI).
+ * Así la llave de Google Maps nunca queda escrita en el código ni en el repositorio.
+ */
+def readEnv(String name) {
+    def fromEnvironment = System.getenv(name)
+    if (fromEnvironment) return fromEnvironment
+    def envFile = rootProject.file('../.env')
+    if (!envFile.exists()) return ''
+    def line = envFile.readLines().find { it.trim().startsWith(name + '=') }
+    return line ? line.substring(line.indexOf('=') + 1).trim().replace('"', '').replace("'", '') : ''
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -96,6 +109,8 @@ android {
         applicationId 'com.anonymous.InDriverReactNative'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
+        // El mapa nativo toma la llave del .env (EXPO_PUBLIC_GOOGLE_MAPS_API_KEY) al compilar
+        manifestPlaceholders = [googleMapsApiKey: readEnv('EXPO_PUBLIC_GOOGLE_MAPS_API_KEY')]
         versionCode 1
         versionName "1.0.0"
 

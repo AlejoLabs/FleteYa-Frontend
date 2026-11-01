@@ -32,7 +32,7 @@ export class RegisterViewModel {
         if (form.lastname.trim() === '') errors.lastname = 'Escribe tu apellido';
         if (!/^\d{10}$/.test(this.cleanPhone(form.phone))) errors.phone = 'Escribe los 10 dígitos de tu celular';
         if (form.email.trim() === '') errors.email = 'Escribe tu correo';
-        else if (!EmailValidator(form.email.trim())) errors.email = 'Escribe un correo completo, por ejemplo alejo@gmail.com';
+        else if (!EmailValidator(form.email.trim())) errors.email = 'Escribe un correo completo, por ejemplo nombre@gmail.com';
         if (form.password.length < 6) errors.password = 'La contraseña debe tener al menos 6 caracteres';
         return errors;
     }

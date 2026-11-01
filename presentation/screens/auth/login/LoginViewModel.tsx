@@ -22,7 +22,7 @@ export class LoginViewModel {
     validate(email: string, password: string): LoginErrors {
         const errors: LoginErrors = {};
         if (email.trim() === '') errors.email = 'Escribe tu correo';
-        else if (!EmailValidator(email.trim())) errors.email = 'Escribe un correo completo, por ejemplo alejo@gmail.com';
+        else if (!EmailValidator(email.trim())) errors.email = 'Escribe un correo completo, por ejemplo nombre@gmail.com';
         if (password === '') errors.password = 'Escribe tu contraseña';
         return errors;
     }
