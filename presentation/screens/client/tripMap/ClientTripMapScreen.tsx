@@ -38,7 +38,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
     const [isConfirmVisible, setIsConfirmVisible] = useState(false);
 
     const trip = useClientTrip(viewModel, idClientRequest, idDriver, {
-        onFinished: (request) => navigation.replace('ClientTripRatingScreen', { clientRequest: request }),
+        onFinished: () => navigation.replace('TripPaymentScreen', { idClientRequest }),
         // reset: si el viaje se abrió desde "Próximos fletes" no hay pantalla anterior en este stack
         onLeft: () => navigation.reset({ index: 0, routes: [{ name: 'ClientSearchMapScreen' }] }),
     });

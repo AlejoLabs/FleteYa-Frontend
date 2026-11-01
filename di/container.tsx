@@ -90,6 +90,10 @@ import { PhotoUseCases } from "../domain/useCases/photo/PhotoUseCases";
 import { GetMyActiveTripsUseCase } from "../domain/useCases/clientRequest/GetMyActiveTripsUseCase";
 import { ChangeDriverTripOfferStatusUseCase } from "../domain/useCases/driverTripOffer/ChangeDriverTripOfferStatusUseCase";
 import { UpcomingTripsViewModel } from "../presentation/screens/upcoming/UpcomingTripsViewModel";
+import { PaymentService } from "../data/sources/remote/services/PaymentService";
+import { PaymentRepositoryImpl } from "../data/repository/PaymentRepositoryImpl";
+import { PaymentUseCases } from "../domain/useCases/payment/PaymentUseCases";
+import { TripPaymentViewModel } from "../presentation/screens/trip/payment/TripPaymentViewModel";
 import { TripMessageService } from "../data/sources/remote/services/TripMessageService";
 import { TripMessageRepositoryImpl } from "../data/repository/TripMessageRepositoryImpl";
 import { GetTripMessagesUseCase } from "../domain/useCases/tripMessage/GetTripMessagesUseCase";
@@ -191,6 +195,10 @@ const confirmDeliveryUseCase = new ConfirmDeliveryUseCase({ clientRequestReposit
 const getMyActiveTripsUseCase = new GetMyActiveTripsUseCase({ clientRequestRepository });
 const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, getClientRequestByIdUseCase, createClientRequestUseCase, updateDriverAssignedUseCase, updateStatusUseCase, updateDriverRatingUseCase, updateClientRatingUseCase, getByClientAssignedUseCase, getByDriverAssignedUseCase, raiseFareUseCase, cancelClientRequestUseCase, dismissClientRequestUseCase, getMyActiveTripsUseCase, deliverClientRequestUseCase, confirmDeliveryUseCase });
 const upcomingTripsViewModel = new UpcomingTripsViewModel({ clientRequestUseCases });
+// Pago del flete al entregar la carga: lo usan las pantallas de los dos roles
+const paymentService = new PaymentService();
+const paymentRepository = new PaymentRepositoryImpl({ paymentService });
+const paymentUseCases = new PaymentUseCases({ paymentRepository });
 const socketService = new SocketService({} as any);
 const driverPositionService = new DriverPositionService();
 const driverPositionRepository = new DriverPositionRepositoryImpl({ driverPositionService });
@@ -222,6 +230,7 @@ const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCa
 const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, driverCarInfoUseCases, photoUseCases, tripMessageUseCases });
 const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, photoUseCases, tripMessageUseCases });
 const tripChatViewModel = new TripChatViewModel({ tripMessageUseCases, socketService });
+const tripPaymentViewModel = new TripPaymentViewModel({ clientRequestUseCases, paymentUseCases, socketService });
 const driverTripRatingViewModel = new DriverTripRatingViewModel({ clientRequestUseCases });
 const clientTripRatingViewModel = new ClientTripRatingViewModel({ clientRequestUseCases });
 const clientTripHistoryViewModel = new ClientTripHistoryViewModel({ clientRequestUseCases });
@@ -293,6 +302,7 @@ type ContainerDeps = {
     getDriverTripOfferUseCase: GetDriverTripOfferUseCase;
     driverTripOfferUseCases: DriverTripOfferUseCases;
     upcomingTripsViewModel: UpcomingTripsViewModel;
+    tripPaymentViewModel: TripPaymentViewModel;
     tripChatViewModel: TripChatViewModel;
     incidentReportViewModel: IncidentReportViewModel;
 };
@@ -363,6 +373,7 @@ const container = {
             getDriverTripOfferUseCase,
             driverTripOfferUseCases,
             upcomingTripsViewModel,
+            tripPaymentViewModel,
             tripChatViewModel,
             incidentReportViewModel
         };

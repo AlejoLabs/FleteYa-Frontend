@@ -84,10 +84,11 @@ export class DriverMyLocationMapViewModel {
         return Array.isArray(response) ? response.length : null;
     }
 
-    // Lo cobrado en los fletes entregados hoy, con la fecha del teléfono. En bruto: la Fase 7 le resta la comisión
+    // Lo que le queda al conductor de los fletes entregados hoy (valor acordado menos la comisión de FleteYa),
+    // con la fecha del teléfono
     daySummary(trips: ClientRequestResponse[], now = new Date()): DaySummary {
         const today = trips.filter((trip) => new Date(trip.update_at).toDateString() === now.toDateString());
-        return { earned: today.reduce((sum, trip) => sum + getTripFare(trip), 0), trips: today.length };
+        return { earned: today.reduce((sum, trip) => sum + getTripFare(trip) - (trip.commission ?? 0), 0), trips: today.length };
     }
 
     // Promedio de las estrellas que le dieron los clientes, igual que lo calcula el servidor para las ofertas

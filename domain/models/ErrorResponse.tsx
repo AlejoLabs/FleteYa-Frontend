@@ -6,10 +6,11 @@ interface ErrorResponse {
     code?: string
 }
 
+// Los servicios la devuelven cuando la petición no tuvo respuesta: sin internet, servidor caído o se cortó la conexión
 const defaultErrorResponse: ErrorResponse = {
     statusCode: 500,
-    error: 'Error desconocido',
-    message: 'Ocurrió un error desconocido. Por favor, inténtalo de nuevo más tarde.'
+    error: 'Sin conexión',
+    message: 'No pudimos conectarnos con FleteYa. Revisa tu internet e intenta de nuevo.'
 }
 
 export {ErrorResponse, defaultErrorResponse};

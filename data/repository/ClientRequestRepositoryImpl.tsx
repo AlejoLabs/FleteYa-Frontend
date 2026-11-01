@@ -3,7 +3,7 @@ import { TimeAndDistanceValues } from "../../domain/models/TimeAndDistanceValues
 import { ClientRequestRepository, Status } from "../../domain/repository/ClientRequestRepository";
 import { ClientRequestService } from "../sources/remote/services/ClientRequestService";
 import { ErrorResponse } from "../../domain/models/ErrorResponse";
-import { ClientRequest } from "../../domain/models/ClientRequest";
+import { ClientRequest, VehicleType } from "../../domain/models/ClientRequest";
 import { ActiveTrip, ClientRequestResponse } from "../../domain/models/ClientRequestResponse";
 
 export class ClientRequestRepositoryImpl implements ClientRequestRepository {
@@ -68,7 +68,7 @@ export class ClientRequestRepositoryImpl implements ClientRequestRepository {
         return await this.clientRequestService.create(clientRequest);
     }
 
-    async getTimeAndDistance(origin: LatLng, destination: LatLng, weight?: number, size?: number): Promise<TimeAndDistanceValues | ErrorResponse> {
-        return await this.clientRequestService.getTimeAndDistance(origin, destination, weight, size);
+    async getTimeAndDistance(origin: LatLng, destination: LatLng, weight?: number, size?: number, vehicle?: VehicleType): Promise<TimeAndDistanceValues | ErrorResponse> {
+        return await this.clientRequestService.getTimeAndDistance(origin, destination, weight, size, vehicle);
     }
 }

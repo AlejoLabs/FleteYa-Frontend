@@ -6,6 +6,7 @@ import { ClientRequestResponse } from "../../domain/models/ClientRequestResponse
 import { DriverTripRatingScreen } from "../screens/driver/tripRating/DriverTripRating";
 import { TripChatScreen } from "../screens/trip/chat/TripChatScreen";
 import { IncidentReportScreen } from "../screens/trip/incident/IncidentReportScreen";
+import { TripPaymentScreen } from "../screens/trip/payment/TripPaymentScreen";
 import { TripSharedParamList } from "./TripSharedParamList";
 
 export type DriverMapStackParamList = {
@@ -58,6 +59,14 @@ export const DriverMapStackNavigator = () => {
                 }}
                 name="IncidentReportScreen"
                 component={IncidentReportScreen}
+            />
+
+            <Stack.Screen
+                options={{
+                    headerShown: false,
+                }}
+                name="TripPaymentScreen"
+                component={TripPaymentScreen}
             />
 
 

@@ -75,6 +75,11 @@ export class DriverClientRequestViewModel {
         return `Llegas en ${minutes} min · a ${km} km`;
     }
 
+    // Cómo cobra el conductor al entregar; lo ve antes de ofertar
+    paymentText(request: ClientRequestResponse) {
+        return request.payment_method === 'WOMPI' ? 'Paga por la app' : 'Paga en efectivo';
+    }
+
     async dismissClientRequest(idClientRequest: number) {
         return await this.clientRequestUseCases.dismiss.execute(idClientRequest);
     }

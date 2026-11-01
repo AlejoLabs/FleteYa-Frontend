@@ -43,6 +43,11 @@ export function UpcomingTripsScreen() {
     }, []));
 
     const openTrip = (trip: ActiveTrip) => {
+        const stack = trip.role === 'CLIENT' ? 'ClientMapStackNavigator' : 'DriverMapStackNavigator';
+        if (trip.status === 'FINISHED') {
+            navigation.navigate(stack, { screen: 'TripPaymentScreen', params: { idClientRequest: trip.id } });
+            return;
+        }
         if (trip.role === 'CLIENT') {
             if (trip.status === 'CREATED') {
                 navigation.navigate('ClientMapStackNavigator', { screen: 'ClientSearchMapScreen', params: { idClientRequest: trip.id } });

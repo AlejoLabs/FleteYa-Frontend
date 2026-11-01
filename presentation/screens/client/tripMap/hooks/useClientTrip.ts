@@ -10,7 +10,7 @@ import { formatErrorMessage } from "../../../../utils/Formatters";
 import { ClientTripMapViewModel } from "../ClientTripMapViewModel";
 
 interface Callbacks {
-    // La carga se entregó: se pasa a calificar
+    // La carga se entregó: se pasa a pagar
     onFinished: (request: ClientRequestResponse) => void;
     // Viaje cancelado por cualquiera de los dos
     onLeft: () => void;

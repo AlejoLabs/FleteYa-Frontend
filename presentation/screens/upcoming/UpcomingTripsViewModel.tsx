@@ -13,6 +13,8 @@ const STATUS: Record<string, { label: string; tone: StatusTone }> = {
     ON_THE_WAY: { label: 'Conductor en camino', tone: 'success' },
     ARRIVED: { label: 'En la recogida', tone: 'success' },
     TRAVELING: { label: 'Carga en camino', tone: 'cargo' },
+    // Entregado y sin pagar: sigue aquí hasta que se pague
+    FINISHED: { label: 'Pendiente de pago', tone: 'warning' },
 };
 
 // Búsquedas y viajes en curso o programados del usuario, como cliente o como conductor

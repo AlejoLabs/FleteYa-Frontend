@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { AppText, CheckboxRow, Chip, ConfirmDialog, PriceStepper, SwitchRow, TextField } from "../../../../components/ui";
+import { AppText, CheckboxRow, Chip, ConfirmDialog, OptionCard, PriceStepper, SwitchRow, TextField } from "../../../../components/ui";
 import { spacing } from "../../../../theme";
 import { cargoCategoryLabel, vehicleLabel } from "../../../../utils/Cargo";
 import { formatCOP } from "../../../../utils/Formatters";
@@ -62,6 +62,24 @@ export default function PriceStep({ state }: Props) {
                     </View>
                     : <AppText variant="small" color="textMuted">Calculando el precio sugerido…</AppText>
                 }
+            </View>
+
+            <SectionLabel>Cómo pagas</SectionLabel>
+            <View style={styles.payment}>
+                <OptionCard
+                    title="Efectivo"
+                    description="Le pagas al conductor cuando entrega la carga"
+                    icon="cash-outline"
+                    selected={draft.paymentMethod === 'CASH'}
+                    onPress={() => update({ paymentMethod: 'CASH' })}
+                />
+                <OptionCard
+                    title="Por la app"
+                    description="Nequi, tarjeta o PSE cuando entrega la carga"
+                    icon="phone-portrait-outline"
+                    selected={draft.paymentMethod === 'WOMPI'}
+                    onPress={() => update({ paymentMethod: 'WOMPI' })}
+                />
             </View>
 
             <SectionLabel>Contactos</SectionLabel>
@@ -135,6 +153,9 @@ const styles = StyleSheet.create({
     },
     flex: {
         flex: 1,
+    },
+    payment: {
+        gap: spacing.sm,
     },
     contact: {
         flexDirection: 'row',

@@ -1,4 +1,4 @@
-import { CargoCategory, VehicleType } from "./ClientRequest";
+import { CargoCategory, PaymentMethod, VehicleType } from "./ClientRequest";
 import { Rating } from "./Rating";
 
 export interface ClientRequestResponse {
@@ -49,6 +49,12 @@ export interface ClientRequestResponse {
     client_rating?:          number | null;
     // Código de 4 dígitos para cerrar la entrega; solo llega cuando consulta el cliente
     delivery_code?:          string | null;
+    // Pago: método, comisión de FleteYa (incluida en el valor acordado) y cuándo se pagó; null = sin pagar
+    payment_method?:         PaymentMethod;
+    commission?:             number | null;
+    commission_rate?:        number | null;
+    paid_at?:                string | null;
+    declared_value?:         number | null;
 }
 
 // Búsqueda o viaje en curso del usuario (GET /client-requests/me/active)
@@ -67,6 +73,8 @@ export interface ActiveTrip {
     scheduled_at:            string | null;
     expires_at:              string | null;
     created_at:              string;
+    payment_method:          PaymentMethod;
+    paid_at:                 string | null;
     role:                    'CLIENT' | 'DRIVER';
 }
 

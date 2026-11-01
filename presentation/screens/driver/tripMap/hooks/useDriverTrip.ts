@@ -10,7 +10,7 @@ import { pickPhoto } from "../../../../utils/PhotoPicker";
 import { DriverTripMapViewModel } from "../DriverTripMapViewModel";
 
 interface Callbacks {
-    // Entrega confirmada (con el código o por el cliente): se pasa a calificar
+    // Entrega confirmada (con el código o por el cliente): se pasa a cobrar
     onFinished: (request: ClientRequestResponse) => void;
     // Viaje cancelado por cualquiera de los dos
     onLeft: () => void;

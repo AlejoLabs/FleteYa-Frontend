@@ -55,7 +55,8 @@ export function useRequestDraft(viewModel: ClientSearchMapViewModel) {
         });
     }, [draft.origin, draft.destination]);
 
-    // El precio sugerido depende de la ruta, el peso y el tamaño; una respuesta vieja que llegue tarde no pisa la última
+    // El precio sugerido depende de la ruta, el peso, el tamaño y el vehículo; una respuesta vieja que llegue tarde no pisa la última
+    const pricedVehicle = draft.vehicleType ?? suggestedVehicle;
     useEffect(() => {
         const { origin, destination } = draft;
         if (!origin || !destination || !hasSize(draft)) {
@@ -68,11 +69,12 @@ export function useRequestDraft(viewModel: ClientSearchMapViewModel) {
             { latitude: destination.lat, longitude: destination.lng },
             weightKg(draft),
             sizeM3(draft),
+            pricedVehicle ?? undefined,
         ).then((response: TimeAndDistanceValues | ErrorResponse) => {
             if (requestId !== pricingRequestId.current) return;
             if ('distance' in response) setPricing(response);
         });
-    }, [draft.origin, draft.destination, draft.weightKg, draft.lengthCm, draft.widthCm, draft.heightCm]);
+    }, [draft.origin, draft.destination, draft.weightKg, draft.lengthCm, draft.widthCm, draft.heightCm, pricedVehicle]);
 
     // Al llegar al precio, se arranca con el sugerido; si el cliente ya escribió uno, se respeta
     useEffect(() => {

@@ -1,4 +1,4 @@
-import { CargoCategory, ClientRequest, VehicleType } from "../../../../domain/models/ClientRequest";
+import { CargoCategory, ClientRequest, PaymentMethod, VehicleType } from "../../../../domain/models/ClientRequest";
 import { suggestVehicle, vehicleRank } from "../../../utils/Cargo";
 
 // Solicitud que el cliente arma en cuatro pasos sobre el mapa, antes de publicarla
@@ -16,6 +16,8 @@ export interface RequestDraft {
     description: string;
     weightKg: string;
     packages: number;
+    // Valor aproximado de la carga, opcional
+    declaredValue: string;
     // Lo normal es que el cliente suba y reciba la carga y el precio cubra solo el transporte.
     // Si pide ayuda, los ayudantes y los pisos le dicen al conductor qué incluir en su oferta
     needsHelp: boolean;
@@ -44,6 +46,8 @@ export interface RequestDraft {
     receiverName: string;
     receiverPhone: string;
     noProhibitedItems: boolean;
+    // Se paga al terminar: en efectivo al conductor o por la app
+    paymentMethod: PaymentMethod;
 }
 
 export const EMPTY_DRAFT: RequestDraft = {
@@ -53,6 +57,7 @@ export const EMPTY_DRAFT: RequestDraft = {
     description: '',
     weightKg: '',
     packages: 1,
+    declaredValue: '',
     needsHelp: false,
     helpers: 1,
     lengthCm: '',
@@ -75,6 +80,7 @@ export const EMPTY_DRAFT: RequestDraft = {
     receiverName: '',
     receiverPhone: '',
     noProhibitedItems: false,
+    paymentMethod: 'CASH',
 };
 
 export const REQUEST_STEPS = ['Ruta', 'Carga', 'Medidas', 'Precio'];
@@ -114,6 +120,7 @@ export const validateStep = (step: number, draft: RequestDraft): DraftErrors => 
     if (step === 1) {
         if (draft.description.trim().length < 3) errors.description = 'Cuenta qué vas a mover, por ejemplo "nevera y 6 cajas"';
         if (!isPositive(draft.weightKg)) errors.weightKg = 'Escribe el peso aproximado';
+        if (draft.declaredValue.trim() !== '' && isNaN(toNumber(draft.declaredValue))) errors.declaredValue = 'Escribe solo el número, sin puntos';
     }
     if (step === 2) {
         if (!isPositive(draft.lengthCm)) errors.lengthCm = 'Falta el largo';
@@ -170,6 +177,8 @@ export const toClientRequest = (draft: RequestDraft, idClient: number): ClientRe
     receiver_name: draft.otherReceiver ? draft.receiverName.trim() : undefined,
     receiver_phone: draft.otherReceiver ? draft.receiverPhone : undefined,
     scheduled_at: draft.scheduledAt ? draft.scheduledAt.toISOString() : undefined,
+    payment_method: draft.paymentMethod,
+    declared_value: isPositive(draft.declaredValue) ? toNumber(draft.declaredValue) : undefined,
 });
 
 // Dirección corta para el resumen: "Cl. 68a Sur # 78L-9, Bosa" en vez de la dirección completa con ciudad y país

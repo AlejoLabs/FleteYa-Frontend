@@ -7,7 +7,7 @@ import { ClientRequestUseCases } from "../../../../domain/useCases/clientRequest
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { TimeAndDistanceValues } from "../../../../domain/models/TimeAndDistanceValues";
 import { SocketService } from "../../../../data/sources/remote/services/SocketService";
-import { ClientRequest } from "../../../../domain/models/ClientRequest";
+import { ClientRequest, VehicleType } from "../../../../domain/models/ClientRequest";
 import { DriverTripOfferUseCases } from "../../../../domain/useCases/driverTripOffer/DriverTripOfferUseCases";
 import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
@@ -116,8 +116,8 @@ export class ClientSearchMapViewModel {
         return await this.googlePlaceUseCases.getDirections.execute(origin, destination);
     }
 
-    async getTimeAndDistance(origin: LatLng, destination: LatLng, weight?: number, size?: number): Promise<TimeAndDistanceValues | ErrorResponse> {
-        return await this.clientRequestUseCases.getTimeAndDistanceUseCase.execute(origin, destination, weight, size);
+    async getTimeAndDistance(origin: LatLng, destination: LatLng, weight?: number, size?: number, vehicle?: VehicleType): Promise<TimeAndDistanceValues | ErrorResponse> {
+        return await this.clientRequestUseCases.getTimeAndDistanceUseCase.execute(origin, destination, weight, size, vehicle);
     }
 
     emitNewClientRequest(idClientRequest: number) {

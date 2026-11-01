@@ -1,5 +1,6 @@
 import { LatLng } from "react-native-maps";
 import { ClientRequestRepository } from "../../repository/ClientRequestRepository";
+import { VehicleType } from "../../models/ClientRequest";
 
 export class GetTimeAndDistanceUseCase {
     private clientRequestRepository: ClientRequestRepository;
@@ -8,7 +9,7 @@ export class GetTimeAndDistanceUseCase {
         this.clientRequestRepository = clientRequestRepository;
     }
 
-    async execute(origin: LatLng, destination: LatLng, weight?: number, size?: number) {
-        return await this.clientRequestRepository.getTimeAndDistance(origin, destination, weight, size);
+    async execute(origin: LatLng, destination: LatLng, weight?: number, size?: number, vehicle?: VehicleType) {
+        return await this.clientRequestRepository.getTimeAndDistance(origin, destination, weight, size, vehicle);
     }
 }

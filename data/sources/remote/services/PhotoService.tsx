@@ -2,6 +2,8 @@ import { ApiRequestHandler } from "../api/ApiRequestHandler";
 import { defaultErrorResponse, ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { Photo, TripPhotoKind } from "../../../../domain/models/Photo";
 
+const RETRY_DELAY_MS = 1500;
+
 // Subir y listar fotos del flete y del vehículo. Las fotos ya llegan comprimidas desde PhotoPicker
 export class PhotoService {
 
@@ -14,6 +16,22 @@ export class PhotoService {
         return defaultErrorResponse;
     }
 
+    // Una subida que se corta en la red (sin respuesta del servidor) se intenta una vez más con un formulario nuevo.
+    // Si el servidor respondió con un error, no se repite
+    private async postPhoto(url: string, uri: string, fields: Record<string, string> = {}, headers: Record<string, string> = {}) {
+        const send = () => ApiRequestHandler.post<Photo>(url, this.photoForm(uri, fields), {
+            headers: { 'Content-Type': 'multipart/form-data', ...headers },
+            timeout: 30000,
+        });
+        try {
+            return (await send()).data;
+        } catch (error: any) {
+            if (error.response) throw error;
+            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+            return (await send()).data;
+        }
+    }
+
     private photoForm(uri: string, fields: Record<string, string> = {}) {
         const formData = new FormData();
         Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
@@ -23,11 +41,7 @@ export class PhotoService {
 
     async uploadTripPhoto(idClientRequest: number, kind: TripPhotoKind, uri: string): Promise<Photo | ErrorResponse> {
         try {
-            const response = await ApiRequestHandler.post<Photo>(`/client-requests/${idClientRequest}/photos`, this.photoForm(uri, { kind }), {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                timeout: 30000,
-            });
-            return response.data;
+            return await this.postPhoto(`/client-requests/${idClientRequest}/photos`, uri, { kind });
         } catch (error: any) {
             return this.toErrorResponse(error);
         }
@@ -53,11 +67,7 @@ export class PhotoService {
 
     async uploadVehiclePhoto(uri: string, token?: string): Promise<Photo | ErrorResponse> {
         try {
-            const response = await ApiRequestHandler.post<Photo>('/driver-car-info/me/photos', this.photoForm(uri), {
-                headers: { 'Content-Type': 'multipart/form-data', ...(token ? { Authorization: token } : {}) },
-                timeout: 30000,
-            });
-            return response.data;
+            return await this.postPhoto('/driver-car-info/me/photos', uri, {}, token ? { Authorization: token } : {});
         } catch (error: any) {
             return this.toErrorResponse(error);
         }

@@ -2,7 +2,7 @@ import { LatLng } from "react-native-maps";
 import { TimeAndDistanceValues } from "../../../../domain/models/TimeAndDistanceValues";
 import { ApiRequestHandler } from "../api/ApiRequestHandler";
 import { defaultErrorResponse, ErrorResponse } from "../../../../domain/models/ErrorResponse";
-import { ClientRequest } from "../../../../domain/models/ClientRequest";
+import { ClientRequest, VehicleType } from "../../../../domain/models/ClientRequest";
 import { ActiveTrip, ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { Status } from "../../../../domain/repository/ClientRequestRepository";
 
@@ -95,11 +95,13 @@ export class ClientRequestService {
         }
     }
 
-    async getTimeAndDistance(origin: LatLng, destination: LatLng, weight?: number, size?: number): Promise<TimeAndDistanceValues | ErrorResponse> {
+    async getTimeAndDistance(origin: LatLng, destination: LatLng, weight?: number, size?: number, vehicle?: VehicleType): Promise<TimeAndDistanceValues | ErrorResponse> {
         try {
             const params: string[] = [];
             if (weight !== undefined) params.push(`weight=${weight}`);
             if (size !== undefined) params.push(`size=${size}`);
+            // El precio sugerido cambia con el vehículo: un camión tiene una base mayor que un carry
+            if (vehicle) params.push(`vehicle=${vehicle}`);
             const query = params.length > 0 ? `?${params.join('&')}` : '';
             const response = await ApiRequestHandler.get<TimeAndDistanceValues>(`/client-requests/${origin.latitude}/${origin.longitude}/${destination.latitude}/${destination.longitude}${query}`);
 

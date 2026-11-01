@@ -35,6 +35,17 @@ export default function CargoStep({ state }: { state: RequestDraftState }) {
                 hint="Aproximado está bien"
             />
             <Counter label="Artículos" hint="Un motor es 1; una nevera y 6 cajas son 7" value={draft.packages} min={1} max={500} onChange={(packages) => update({ packages })} />
+            <TextField
+                label="Valor aproximado de la carga (opcional)"
+                placeholder="1500000"
+                prefix="$"
+                value={draft.declaredValue}
+                onChangeText={(declaredValue) => update({ declaredValue: declaredValue.replace(/D/g, '') })}
+                error={errors.declaredValue}
+                keyboardType="number-pad"
+                maxLength={10}
+                hint="Informativo: queda en el flete por si hay que reportar un daño"
+            />
 
             <SectionLabel>Cargue y descargue</SectionLabel>
             <SwitchRow

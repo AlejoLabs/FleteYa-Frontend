@@ -31,7 +31,14 @@ export interface ClientRequest {
     receiver_phone?: string;
     // ISO; sin fecha el flete es "Ahora"
     scheduled_at?: string;
+    // Cómo paga al terminar el viaje; el conductor lo ve antes de ofertar
+    payment_method?: PaymentMethod;
+    // Valor aproximado de la carga, informativo
+    declared_value?: number;
 }
+
+// CASH = efectivo al conductor; WOMPI = por la app (Nequi, tarjeta o PSE)
+export type PaymentMethod = 'CASH' | 'WOMPI';
 
 export type CargoCategory = 'MUDANZA' | 'MERCANCIA' | 'MATERIALES' | 'MAQUINARIA' | 'ELECTRODOMESTICOS' | 'OTRO';
 export type VehicleType = 'CARRY' | 'ESTACAS' | 'FURGON' | 'CAMION';

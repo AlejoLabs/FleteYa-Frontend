@@ -39,9 +39,9 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
     const [isDeliveryVisible, setIsDeliveryVisible] = useState(false);
 
     const trip = useDriverTrip(viewModel, idClientRequest, {
-        onFinished: (request) => {
+        onFinished: () => {
             tracking.stop();
-            navigation.replace('DriverTripRatingScreen', { clientRequest: request });
+            navigation.replace('TripPaymentScreen', { idClientRequest });
         },
         onLeft: () => {
             tracking.stop();
