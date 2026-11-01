@@ -20,6 +20,8 @@ export function useTripPayment(viewModel: TripPaymentViewModel, idClientRequest:
     const [payment, setPayment] = useState<TripPayment | null>(null);
     const [loadFailed, setLoadFailed] = useState(false);
     const [busy, setBusy] = useState<Busy>(null);
+    // true si el pago se confirmó con la pantalla abierta (no si ya estaba pagado al entrar)
+    const [paidNow, setPaidNow] = useState(false);
     // true desde que el cliente abrió el checkout hasta que vuelve a la app
     const inCheckout = useRef(false);
     const paymentRef = useRef<TripPayment | null>(null);
@@ -31,7 +33,10 @@ export function useTripPayment(viewModel: TripPaymentViewModel, idClientRequest:
     const applyPayment = (next: TripPayment) => {
         const wasPaid = Boolean(paymentRef.current?.paid_at);
         setPayment(next);
-        if (!wasPaid && next.paid_at && paymentRef.current) showToast('Pago confirmado', 'success');
+        if (!wasPaid && next.paid_at && paymentRef.current) {
+            showToast('Pago confirmado', 'success');
+            setPaidNow(true);
+        }
     }
 
     const loadPayment = async () => {
@@ -125,5 +130,5 @@ export function useTripPayment(viewModel: TripPaymentViewModel, idClientRequest:
         return false;
     }
 
-    return { request, payment, loadFailed, reload: load, busy, changeMethod, payOnline, verify, confirmCash };
+    return { request, payment, loadFailed, reload: load, busy, paidNow, changeMethod, payOnline, verify, confirmCash };
 }

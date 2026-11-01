@@ -54,5 +54,7 @@ export function useDriverSummary(viewModel: DriverMyLocationMapViewModel, idDriv
         today: viewModel.daySummary(trips),
         documentAlert: viewModel.documentAlert(documents),
         nearby,
+        // Llega una solicitud nueva: el conteo se actualiza sin esperar a volver a la pantalla
+        setNearby,
     };
 }

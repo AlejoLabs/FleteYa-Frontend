@@ -8,6 +8,14 @@ export const VEHICLES: { type: VehicleType; label: string; maxWeightKg: number; 
     { type: 'CAMION',  label: 'Camión',               maxWeightKg: 10000, maxVolumeM3: 45, maxLengthCm: 800 },
 ];
 
+// Lo máximo que el conductor puede declarar si su vehículo es más grande que el típico (igual que el backend)
+export const CAPACITY_LIMITS: Record<VehicleType, { maxWeightKg: number; maxVolumeM3: number }> = {
+    CARRY:   { maxWeightKg: 1500,  maxVolumeM3: 6 },
+    ESTACAS: { maxWeightKg: 4500,  maxVolumeM3: 25 },
+    FURGON:  { maxWeightKg: 9000,  maxVolumeM3: 45 },
+    CAMION:  { maxWeightKg: 20000, maxVolumeM3: 90 },
+};
+
 export const vehicleLabel = (type?: string | null) => VEHICLES.find((v) => v.type === type)?.label ?? 'Vehículo de carga';
 export const vehicleRank = (type: VehicleType) => VEHICLES.findIndex((v) => v.type === type);
 

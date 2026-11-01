@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +15,8 @@ import { useTripPayment } from "./useTripPayment";
 
 type Props = NativeStackScreenProps<TripSharedParamList, 'TripPaymentScreen'>;
 
+const AUTO_RATING_MS = 1800;
+
 // Pago al entregar la carga: el cliente paga (efectivo o por la app) y el conductor cobra. Después, a calificar
 export function TripPaymentScreen({ navigation, route }: Props) {
 
@@ -25,6 +27,20 @@ export function TripPaymentScreen({ navigation, route }: Props) {
     const [isCashConfirmVisible, setIsCashConfirmVisible] = useState(false);
     const trip = useTripPayment(viewModel, idClientRequest, (request) => viewModel.roleOf(request, userId) === 'CLIENT');
     const { request, payment, busy } = trip;
+    const isClient = request ? viewModel.roleOf(request, userId) === 'CLIENT' : false;
+
+    // Cada stack tiene su propia pantalla de calificación
+    const goToRating = () => {
+        if (!request) return;
+        (navigation as any).replace(isClient ? 'ClientTripRatingScreen' : 'DriverTripRatingScreen', { clientRequest: request });
+    }
+
+    // Al volver del pago aprobado, el cliente ve un momento el recibo y pasa solo a calificar al conductor
+    useEffect(() => {
+        if (!trip.paidNow || !isClient) return;
+        const timer = setTimeout(goToRating, AUTO_RATING_MS);
+        return () => clearTimeout(timer);
+    }, [trip.paidNow, isClient]);
 
     if (!request || !payment) {
         return (
@@ -37,13 +53,9 @@ export function TripPaymentScreen({ navigation, route }: Props) {
     }
 
     const role = viewModel.roleOf(request, userId);
-    const isClient = role === 'CLIENT';
     const isPaid = Boolean(payment.paid_at);
     const receipt = viewModel.receipt(request, payment, role);
     const other = isClient ? request.driver : request.client;
-
-    // Cada stack tiene su propia pantalla de calificación
-    const goToRating = () => (navigation as any).replace(isClient ? 'ClientTripRatingScreen' : 'DriverTripRatingScreen', { clientRequest: request });
 
     const handleConfirmCash = async () => {
         const done = await trip.confirmCash();

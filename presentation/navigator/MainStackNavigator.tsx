@@ -7,7 +7,7 @@ import { container } from "../../di/container";
 import RolesScreen from "../screens/roles/RolesScreen";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { getFocusedRouteNameFromRoute, ParamListBase, RouteProp } from "@react-navigation/native";
-import { colors, fonts, radius } from "../theme";
+import { colors, fonts } from "../theme";
 import ClientSearchMapScreen from "../screens/client/searchMap/ClientSearchMapScreen";
 import DriverMyLocationMapScreen from "../screens/driver/MyLocationMap/DriverMyLocationMapScreen";
 import ProfileInfoScreen from "../screens/profile/info/ProfileInfoScreen";
@@ -23,7 +23,6 @@ import { UpcomingTripsScreen } from "../screens/upcoming/UpcomingTripsScreen";
 import ForgotPasswordScreen from "../screens/auth/forgotPassword/ForgotPasswordScreen";
 import DriverVehicleRegisterScreen from "../screens/auth/driverVehicle/DriverVehicleRegisterScreen";
 import { User } from "../../domain/models/User";
-import DesignSystemScreen from "../screens/dev/designSystem/DesignSystemScreen";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -43,7 +42,6 @@ export type RootStackParamList = {
     UpcomingTripsScreen: undefined,
     ForgotPasswordScreen: { email?: string } | undefined,
     DriverVehicleRegisterScreen: { account: User },
-    DesignSystemScreen: undefined,
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -123,11 +121,9 @@ const DRAWER_OPTIONS = {
     headerStyle: { backgroundColor: colors.surface },
     headerTintColor: colors.text,
     headerTitleStyle: { fontFamily: fonts.bold, fontSize: 18 },
-    drawerActiveTintColor: colors.text,
-    drawerActiveBackgroundColor: colors.cargoTint,
-    drawerInactiveTintColor: colors.textMuted,
-    drawerLabelStyle: { fontFamily: fonts.semibold, fontSize: 16 },
-    drawerItemStyle: { borderRadius: radius.md },
+    // El menú es asfalto de arriba abajo (AppDrawerContent dibuja sus opciones)
+    drawerStyle: { backgroundColor: colors.asphalt, width: 304 },
+    overlayColor: colors.overlay,
 };
 
 // Solo la lista de solicitudes usa la barra del menú; el viaje, el chat, el reporte y la calificación traen la suya
@@ -151,7 +147,6 @@ const ClientDrawerNavigator = () => {
             <Drawer.Screen name="UpcomingTripsScreen" options={{ title: 'Próximos fletes' }} component={UpcomingTripsScreen} />
             <Drawer.Screen name="ClientTripHistoryScreen" options={{ title: 'Historial de fletes' }} component={ClientTripHistoryScreen} />
             <Drawer.Screen name="ProfileStackNavigator" options={profileOptions} component={ProfileStackNavigator} />
-            {__DEV__ && <Drawer.Screen name="DesignSystemScreen" options={{ title: 'Sistema de diseño' }} component={DesignSystemScreen} />}
         </Drawer.Navigator>
     )
 }
@@ -167,7 +162,6 @@ const DriverDrawerNavigator = () => {
             <Drawer.Screen name="DriverTripHistoryScreen" options={{ title: 'Historial de fletes' }} component={DriverTripHistoryScreen} />
             <Drawer.Screen name="DriverCarInfoScreen" options={{ title: 'Mi vehículo' }} component={DriverCarInfoScreen} />
             <Drawer.Screen name="ProfileStackNavigator" options={profileOptions} component={ProfileStackNavigator} />
-            {__DEV__ && <Drawer.Screen name="DesignSystemScreen" options={{ title: 'Sistema de diseño' }} component={DesignSystemScreen} />}
         </Drawer.Navigator>
     )
 }

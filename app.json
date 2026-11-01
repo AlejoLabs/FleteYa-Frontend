@@ -4,6 +4,7 @@
     "slug": "InDriverReactNative",
     "version": "1.0.0",
     "orientation": "portrait",
+    "scheme": "fleteya",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
      "plugins": [

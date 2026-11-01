@@ -1,4 +1,4 @@
-import { DriverCarInfo } from "../../domain/models/DriverCarInfo";
+import { DriverCarInfo, DriverDocumentsUpdate, DriverVehicleUpdate } from "../../domain/models/DriverCarInfo";
 import { ErrorResponse } from "../../domain/models/ErrorResponse";
 import { DriverDocument } from "../../domain/models/DriverDocument";
 import { DriverCarInfoRepository } from "../../domain/repository/DriverCarInfoRepository";
@@ -26,6 +26,12 @@ export class DriverCarInfoRepositoryImpl implements DriverCarInfoRepository {
     }
     async create(driverCarInfo: DriverCarInfo): Promise<DriverCarInfo | ErrorResponse> {
         return await this.driverCarInfoService.create(driverCarInfo);
+    }
+    async updateMyVehicle(vehicle: DriverVehicleUpdate): Promise<DriverCarInfo | ErrorResponse> {
+        return await this.driverCarInfoService.updateMyVehicle(vehicle);
+    }
+    async updateMyDocuments(documents: DriverDocumentsUpdate): Promise<DriverDocument[] | ErrorResponse> {
+        return await this.driverCarInfoService.updateMyDocuments(documents);
     }
 
 }

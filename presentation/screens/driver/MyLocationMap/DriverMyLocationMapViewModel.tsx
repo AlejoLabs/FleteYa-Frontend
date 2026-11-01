@@ -6,7 +6,7 @@ import { DriverPosition } from "../../../../domain/models/DriverPosition";
 import { ClientRequestUseCases } from "../../../../domain/useCases/clientRequest/ClientRequestUseCases";
 import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
 import { DriverPositionUseCases } from "../../../../domain/useCases/driverPosition/DriverPositionUseCases";
-import { vehicleLabel } from "../../../utils/Cargo";
+import { cargoCategoryLabel, vehicleLabel } from "../../../utils/Cargo";
 import { getTripFare } from "../../../utils/Formatters";
 
 export interface DaySummary {
@@ -79,9 +79,30 @@ export class DriverMyLocationMapViewModel {
         return await this.clientRequestUseCases.getByDriverAssigned.execute(idDriver);
     }
 
-    async countNearbyRequests(latitude: number, longitude: number) {
+    // Las solicitudes que el conductor ve en su lista (cerca y que caben en su vehículo); null si falla
+    async getNearbyRequests(latitude: number, longitude: number): Promise<ClientRequestResponse[] | null> {
         const response = await this.clientRequestUseCases.getNearbyTripRequestUseCase.execute({ latitude, longitude });
-        return Array.isArray(response) ? response.length : null;
+        return Array.isArray(response) ? response : null;
+    }
+
+    async countNearbyRequests(latitude: number, longitude: number) {
+        return (await this.getNearbyRequests(latitude, longitude))?.length ?? null;
+    }
+
+    // Un cliente publicó una solicitud; el inicio decide si le sirve a este conductor
+    listenerNewClientRequest(callback: (idClientRequest: number) => void) {
+        return this.socketService.onMessage('created_client_request', (data: any) => callback(Number(data?.id_client_request)));
+    }
+
+    // "Mudanza · a 0,3 km · Paga por la app"
+    newRequestText(request: ClientRequestResponse) {
+        const km = (Number(request.distance) / 1000).toFixed(1).replace('.', ',');
+        return [
+            cargoCategoryLabel(request.cargo_category),
+            `a ${km} km`,
+            request.payment_method === 'WOMPI' ? 'Paga por la app' : 'Paga en efectivo',
+            request.scheduled_at ? 'Programado' : null,
+        ].filter(Boolean).join(' · ');
     }
 
     // Lo que le queda al conductor de los fletes entregados hoy (valor acordado menos la comisión de FleteYa),

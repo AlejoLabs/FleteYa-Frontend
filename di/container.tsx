@@ -77,6 +77,8 @@ import { DismissClientRequestUseCase } from "../domain/useCases/clientRequest/Di
 import { DeliverClientRequestUseCase } from "../domain/useCases/clientRequest/DeliverClientRequestUseCase";
 import { ConfirmDeliveryUseCase } from "../domain/useCases/clientRequest/ConfirmDeliveryUseCase";
 import { GetMyDocumentsUseCase } from "../domain/useCases/driverCarInfo/GetMyDocumentsUseCase";
+import { UpdateMyVehicleUseCase } from "../domain/useCases/driverCarInfo/UpdateMyVehicleUseCase";
+import { UpdateMyDocumentsUseCase } from "../domain/useCases/driverCarInfo/UpdateMyDocumentsUseCase";
 import { SaveNotificationTokenUseCase } from "../domain/useCases/user/SaveNotificationTokenUseCase";
 import { PhotoService } from "../data/sources/remote/services/PhotoService";
 import { PhotoRepositoryImpl } from "../data/repository/PhotoRepositoryImpl";
@@ -210,7 +212,11 @@ const driverCarInfoRepository = new DriverCarInfoRepositoryImpl({ driverCarInfoS
 const createDriverCarInfoUseCase = new CreateDriverCarInfoUseCase({ driverCarInfoRepository });
 const getDriverCarInfoUseCase = new GetDriverCarInfoUseCase({ driverCarInfoRepository });
 const getMyDocumentsUseCase = new GetMyDocumentsUseCase({ driverCarInfoRepository });
-const driverCarInfoUseCases = new DriverCarInfoUseCases({ createDriverCarInfoUseCase, getDriverCarInfoUseCase, getMyDocumentsUseCase });
+const driverCarInfoUseCases = new DriverCarInfoUseCases({
+    createDriverCarInfoUseCase, getDriverCarInfoUseCase, getMyDocumentsUseCase,
+    updateMyVehicleUseCase: new UpdateMyVehicleUseCase({ driverCarInfoRepository }),
+    updateMyDocumentsUseCase: new UpdateMyDocumentsUseCase({ driverCarInfoRepository }),
+});
 const driverCarInfoViewModel = new DriverCarInfoViewModel({ driverCarInfoUseCases, photoUseCases });
 const userService = new UserService();
 const driverMyLocationMapViewModel = new DriverMyLocationMapViewModel({ clientRequestUseCases, socketService, driverPositionUseCases, driverCarInfoUseCases });

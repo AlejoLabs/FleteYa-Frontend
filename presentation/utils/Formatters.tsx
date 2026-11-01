@@ -57,6 +57,15 @@ export const formatErrorMessage = (message: string | string[]): string =>
 export const getTripFare = (clientRequest: { fare_offered: number; fare_assigned?: number | null }): number =>
   clientRequest.fare_assigned ?? clientRequest.fare_offered;
 
+// ISO a DD/MM/AAAA, para llenar un campo de fecha con lo que ya está guardado
+export const formatDayMonthYear = (value?: string | null): string => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+}
+
 // Fecha escrita como DD/MM/AAAA; devuelve ISO (fin del día) o null si no es una fecha real
 export const parseDayMonthYear = (value: string): string | null => {
   const match = value.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);

@@ -14,7 +14,9 @@ import { DEFAULT_REGION } from "../../client/searchMap/hooks/useClientMap";
 import { DriverMyLocationMapViewModel } from "./DriverMyLocationMapViewModel";
 import { useDriverAvailability } from "./hooks/useDriverAvailability";
 import { useDriverSummary } from "./hooks/useDriverSummary";
+import { useNewRequestAlert } from "./hooks/useNewRequestAlert";
 import AvailabilitySwitch from "./components/AvailabilitySwitch";
+import NewRequestCard from "./components/NewRequestCard";
 
 type Props = DrawerScreenProps<ParamListBase>;
 
@@ -32,6 +34,7 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
     const [bottomHeight, setBottomHeight] = useState(0);
     const { available, setAvailable, location, locationUnavailable } = useDriverAvailability(viewModel, idDriver);
     const summary = useDriverSummary(viewModel, idDriver, location);
+    const newRequest = useNewRequestAlert(viewModel, available, location, isFocused, summary.setNearby);
 
     // El mapa se centra una vez, con la primera ubicación; después el conductor lo mueve a su gusto
     const centered = useRef(false);
@@ -97,7 +100,15 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
                         <Notice tone="info" message="No estás disponible: no te llegan solicitudes y los clientes no te ven en el mapa." />}
                     {available && locationUnavailable &&
                         <Notice tone="warning" message="No tenemos tu ubicación. Actívala en los ajustes del teléfono para recibir solicitudes." />}
-                    {summary.documentAlert &&
+                    {newRequest.alert &&
+                        <NewRequestCard
+                            fare={newRequest.alert.fare_offered}
+                            detail={viewModel.newRequestText(newRequest.alert)}
+                            onOpen={() => { newRequest.dismiss(); openRequests(); }}
+                            onDismiss={newRequest.dismiss}
+                        />
+                    }
+                    {!newRequest.alert && summary.documentAlert &&
                         <Notice
                             tone={summary.documentAlert.tone}
                             title={summary.documentAlert.title}

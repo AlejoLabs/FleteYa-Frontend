@@ -5,10 +5,32 @@ import { defaultErrorResponse, ErrorResponse } from "../../../../domain/models/E
 import { ClientRequest } from "../../../../domain/models/ClientRequest";
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { DriverPosition } from "../../../../domain/models/DriverPosition";
-import { DriverCarInfo } from "../../../../domain/models/DriverCarInfo";
+import { DriverCarInfo, DriverDocumentsUpdate, DriverVehicleUpdate } from "../../../../domain/models/DriverCarInfo";
 import { DriverDocument } from "../../../../domain/models/DriverDocument";
 
 export class DriverCarInfoService {
+
+    async updateMyVehicle(vehicle: DriverVehicleUpdate): Promise<DriverCarInfo | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.put<DriverCarInfo>('/driver-car-info/me', vehicle);
+            return response.data;
+        } catch (error: any) {
+            if (error.response) return error.response.data;
+            console.log('Error en la peticion', error.message);
+            return defaultErrorResponse;
+        }
+    }
+
+    async updateMyDocuments(documents: DriverDocumentsUpdate): Promise<DriverDocument[] | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.put<DriverDocument[]>('/driver-car-info/me/documents', documents);
+            return response.data;
+        } catch (error: any) {
+            if (error.response) return error.response.data;
+            console.log('Error en la peticion', error.message);
+            return defaultErrorResponse;
+        }
+    }
 
     async create(driverCarInfo: DriverCarInfo): Promise<DriverCarInfo | ErrorResponse> {
         try {

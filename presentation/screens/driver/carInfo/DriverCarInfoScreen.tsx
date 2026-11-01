@@ -6,13 +6,15 @@ import { DriverCarInfo } from "../../../../domain/models/DriverCarInfo";
 import { DriverDocument } from "../../../../domain/models/DriverDocument";
 import { Photo } from "../../../../domain/models/Photo";
 import { useAuth } from "../../../hooks/useAuth";
-import { AppText, Button, Card, ConfirmDialog, KeyboardArea, StateView, StatusPill, TextField, useToast } from "../../../components/ui";
+import { AppText, Button, Card, ConfirmDialog, KeyboardArea, StateView, StatusPill, useToast } from "../../../components/ui";
 import DocumentsStatus from "../../../components/DocumentsStatus";
 import PhotoStrip from "../../../components/PhotoStrip";
 import { choosePhoto } from "../../../utils/PhotoPicker";
 import { formatErrorMessage } from "../../../utils/Formatters";
 import { colors, fonts, radius, spacing } from "../../../theme";
-import { CarForm, CarFormErrors, DriverCarInfoViewModel } from "./DriverCarInfoViewModel";
+import { DocumentsForm, DocumentsFormErrors, DriverCarInfoViewModel, VehicleForm, VehicleFormErrors } from "./DriverCarInfoViewModel";
+import VehicleEditForm from "./components/VehicleEditForm";
+import DocumentsEditForm from "./components/DocumentsEditForm";
 
 const MAX_VEHICLE_PHOTOS = 4;
 
@@ -27,8 +29,11 @@ export function DriverCarInfoScreen() {
     const [loadFailed, setLoadFailed] = useState(false);
     const [documents, setDocuments] = useState<DriverDocument[]>([]);
     const [photos, setPhotos] = useState<Photo[]>([]);
-    const [form, setForm] = useState<CarForm | null>(null);
-    const [errors, setErrors] = useState<CarFormErrors>({});
+    // Solo uno de los dos formularios está abierto a la vez
+    const [vehicleForm, setVehicleForm] = useState<VehicleForm | null>(null);
+    const [vehicleErrors, setVehicleErrors] = useState<VehicleFormErrors>({});
+    const [documentsForm, setDocumentsForm] = useState<DocumentsForm | null>(null);
+    const [documentsErrors, setDocumentsErrors] = useState<DocumentsFormErrors>({});
     const [saving, setSaving] = useState(false);
     const [photoToRemove, setPhotoToRemove] = useState<string | null>(null);
 
@@ -77,18 +82,69 @@ export function DriverCarInfoScreen() {
         }
     }
 
-    const handleSave = async () => {
-        if (!form) return;
-        const problems = viewModel.validate(form);
-        setErrors(problems);
+    const editVehicle = (current: DriverCarInfo) => {
+        setDocumentsForm(null);
+        setVehicleErrors({});
+        setVehicleForm(viewModel.vehicleFormFrom(current));
+    }
+
+    const editDocuments = (current: DriverCarInfo) => {
+        setVehicleForm(null);
+        setDocumentsErrors({});
+        setDocumentsForm(viewModel.documentsFormFrom(current));
+    }
+
+    // Cambiar un campo quita su error: el aviso solo vuelve si se intenta guardar otra vez
+    const updateVehicleForm = (changes: Partial<VehicleForm>) => {
+        setVehicleForm((current) => current && { ...current, ...changes });
+        setVehicleErrors((current) => {
+            const next = { ...current };
+            (Object.keys(changes) as (keyof VehicleForm)[]).forEach((field) => delete next[field]);
+            return next;
+        });
+    }
+
+    const updateDocumentsForm = (changes: Partial<DocumentsForm>) => {
+        setDocumentsForm((current) => current && { ...current, ...changes });
+        setDocumentsErrors((current) => {
+            const next = { ...current };
+            (Object.keys(changes) as (keyof DocumentsForm)[]).forEach((field) => delete next[field]);
+            return next;
+        });
+    }
+
+    const handleSaveVehicle = async () => {
+        if (!vehicleForm || !car) return;
+        const problems = viewModel.validateVehicle(vehicleForm, car.license_category);
+        setVehicleErrors(problems);
         if (Object.keys(problems).length > 0) return;
         setSaving(true);
-        const response = await viewModel.saveCar(idDriver, form);
+        const response = await viewModel.saveVehicle(vehicleForm);
         setSaving(false);
         if ('brand' in response) {
             setCar((current) => current ? { ...current, ...response } : response);
-            setForm(null);
+            setVehicleForm(null);
             showToast('Datos del vehículo guardados', 'success');
+        } else {
+            showToast(formatErrorMessage(response.message), 'error');
+        }
+    }
+
+    const handleSaveDocuments = async () => {
+        if (!documentsForm || !car) return;
+        const problems = viewModel.validateDocuments(documentsForm, car.vehicle_type);
+        setDocumentsErrors(problems);
+        if (Object.keys(problems).length > 0) return;
+        setSaving(true);
+        const response = await viewModel.saveDocuments(documentsForm);
+        setSaving(false);
+        if (Array.isArray(response)) {
+            setDocuments(response);
+            setDocumentsForm(null);
+            showToast('Documentos actualizados', 'success');
+            // Trae la categoría y las fechas guardadas para la próxima edición
+            const updated = await viewModel.getDriverCarInfo(idDriver);
+            if ('brand' in updated) setCar(updated);
         } else {
             showToast(formatErrorMessage(response.message), 'error');
         }
@@ -125,15 +181,17 @@ export function DriverCarInfoScreen() {
                     </View>
                     {capacity && <AppText variant="small" color="textMuted">{capacity}</AppText>}
 
-                    {form
-                        ? <View style={styles.form}>
-                            <TextField label="Marca y referencia" value={form.brand} onChangeText={(brand) => setForm({ ...form, brand })} error={errors.brand} />
-                            <TextField label="Color" value={form.color} onChangeText={(color) => setForm({ ...form, color })} error={errors.color} />
-                            <TextField label="Placa" value={form.plate} onChangeText={(plate) => setForm({ ...form, plate })} error={errors.plate} autoCapitalize="characters" maxLength={7} />
-                            <Button title="Guardar cambios" variant="dark" loading={saving} onPress={handleSave} />
-                            <Button title="Cancelar" variant="text" disabled={saving} onPress={() => { setForm(null); setErrors({}); }} />
-                        </View>
-                        : <Button title="Editar datos" icon="create-outline" variant="secondary" onPress={() => setForm({ brand: car.brand, color: car.color, plate: car.plate })} />
+                    {vehicleForm
+                        ? <VehicleEditForm
+                            form={vehicleForm}
+                            errors={vehicleErrors}
+                            typicalCapacity={viewModel.typicalCapacityText(vehicleForm.vehicleType)}
+                            saving={saving}
+                            onChange={updateVehicleForm}
+                            onSave={handleSaveVehicle}
+                            onCancel={() => setVehicleForm(null)}
+                        />
+                        : <Button title="Cambiar vehículo o capacidad" icon="create-outline" variant="secondary" onPress={() => editVehicle(car)} />
                     }
                 </Card>
 
@@ -151,10 +209,26 @@ export function DriverCarInfoScreen() {
                 <View style={styles.section}>
                     <AppText variant="label" color="textMuted">Documentos</AppText>
                     <Card style={styles.documents}>
-                        {documents.length > 0
-                            ? <DocumentsStatus documents={documents} />
-                            // Conductores registrados antes de que la app pidiera los documentos
-                            : <AppText variant="small" color="textMuted" style={styles.noDocuments}>No tienes fechas de vencimiento registradas.</AppText>}
+                        {documentsForm
+                            ? <View style={styles.documentsForm}>
+                                <DocumentsEditForm
+                                    form={documentsForm}
+                                    errors={documentsErrors}
+                                    isHeavy={car.vehicle_type === 'CAMION'}
+                                    saving={saving}
+                                    onChange={updateDocumentsForm}
+                                    onSave={handleSaveDocuments}
+                                    onCancel={() => setDocumentsForm(null)}
+                                />
+                            </View>
+                            : <>
+                                {documents.length > 0
+                                    ? <DocumentsStatus documents={documents} />
+                                    // Conductores registrados antes de que la app pidiera los documentos
+                                    : <AppText variant="small" color="textMuted" style={styles.noDocuments}>No tienes fechas de vencimiento registradas.</AppText>}
+                                <Button title="Actualizar documentos" icon="refresh-outline" variant="secondary" onPress={() => editDocuments(car)} style={styles.documentsButton} />
+                            </>
+                        }
                     </Card>
                 </View>
             </ScrollView>
@@ -205,9 +279,6 @@ const styles = StyleSheet.create({
         letterSpacing: 2,
         color: colors.asphalt,
     },
-    form: {
-        gap: spacing.md,
-    },
     section: {
         gap: spacing.sm,
     },
@@ -216,5 +287,11 @@ const styles = StyleSheet.create({
     },
     noDocuments: {
         paddingVertical: spacing.md,
+    },
+    documentsForm: {
+        paddingVertical: spacing.md,
+    },
+    documentsButton: {
+        marginBottom: spacing.md,
     },
 });

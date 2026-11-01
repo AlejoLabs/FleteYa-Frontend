@@ -20,6 +20,7 @@ const targetFor = (role: Role, type?: string, idClientRequest?: number): [string
             return ['DriverMapStackNavigator', { screen: 'DriverTripMapScreen', params: { idClientRequest } }];
         }
         if (type === 'DOCUMENTS_EXPIRING') return ['DriverCarInfoScreen', {}];
+        if (type === 'NEW_REQUEST') return ['DriverMapStackNavigator', { screen: 'DriverClientRequestScreen' }];
     }
     if (type === 'CHAT_MESSAGE' && idClientRequest) {
         const stack = role === 'CLIENT' ? 'ClientMapStackNavigator' : 'DriverMapStackNavigator';

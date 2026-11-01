@@ -11,7 +11,8 @@ export const setOpenChat = (idClientRequest: number | null) => {
 Notifications.setNotificationHandler({
     handleNotification: async (notification) => {
         const data = readNotificationData(notification);
-        const show = !(data.type === 'CHAT_MESSAGE' && Number(data.id_client_request) === openChatTrip);
+        // Con la app abierta, la solicitud nueva ya sale como tarjeta en el inicio del conductor
+        const show = data.type !== 'NEW_REQUEST' && !(data.type === 'CHAT_MESSAGE' && Number(data.id_client_request) === openChatTrip);
         return { shouldShowBanner: show, shouldShowList: show, shouldPlaySound: show, shouldSetBadge: false };
     },
 });
