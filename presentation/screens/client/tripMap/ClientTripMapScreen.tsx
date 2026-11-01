@@ -103,9 +103,9 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                 <Sheet
                     scroll
                     maxHeight={windowHeight * SHEET_MAX}
-                    footer={(status === Status.TRAVELING || canCancelTrip(status)) &&
+                    footer={((status === Status.TRAVELING && trip.deliveryLocked) || canCancelTrip(status)) &&
                         <View style={styles.footer}>
-                            {status === Status.TRAVELING && <Button title="Ya recibí la carga" variant="success" onPress={() => setIsConfirmVisible(true)} />}
+                            {status === Status.TRAVELING && trip.deliveryLocked && <Button title="Ya recibí la carga" variant="success" onPress={() => setIsConfirmVisible(true)} />}
                             {canCancelTrip(status) && <Button title="Cancelar flete" variant="dangerText" onPress={() => setIsCancelVisible(true)} />}
                         </View>
                     }
@@ -117,6 +117,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                         hint={text.hint}
                         vehicleText={viewModel.vehicleText(trip.carInfo)}
                         photos={trip.photos}
+                        deliveryLocked={trip.deliveryLocked}
                         unread={unread}
                         onChat={() => navigation.navigate('TripChatScreen', { idClientRequest, otherName: request.driver.name })}
                         onReport={() => navigation.navigate('IncidentReportScreen', { idClientRequest })}
@@ -127,7 +128,7 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
             <ConfirmDialog
                 visible={isConfirmVisible}
                 title="¿Ya recibiste la carga?"
-                message="El viaje se cerrará como entregado. Úsalo si recibiste tú o si el conductor no pudo usar el código."
+                message="El conductor no pudo cerrar la entrega con el código. Confírmalo solo si ya tienes la carga: el viaje se cierra como entregado."
                 confirmLabel="Sí, la recibí"
                 cancelLabel="Todavía no"
                 loading={trip.confirming}

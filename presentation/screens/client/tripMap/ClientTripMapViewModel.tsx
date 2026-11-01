@@ -124,6 +124,11 @@ export class ClientTripMapViewModel {
     }
 
     // El servidor avisa si el conductor cancela el viaje
+    // El conductor se equivocó 5 veces con el código: el cliente pasa a poder confirmar la entrega
+    listenerDeliveryLocked(idClientRequest: number, callback: () => void) {
+        return this.socketService.onMessage(`delivery_locked/${idClientRequest}`, callback);
+    }
+
     listenerTripCanceled(idClientRequest: number, callback: (reason: string) => void) {
         return this.socketService.onMessage(`trip_canceled/${idClientRequest}`, (data: any) => callback(data?.reason ?? ''));
     }

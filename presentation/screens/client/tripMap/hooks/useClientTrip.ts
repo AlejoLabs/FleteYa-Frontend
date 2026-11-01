@@ -26,6 +26,8 @@ export function useClientTrip(viewModel: ClientTripMapViewModel, idClientRequest
     const [carInfo, setCarInfo] = useState<DriverCarInfo | null>(null);
     const [photos, setPhotos] = useState<Photo[]>([]);
     const [confirming, setConfirming] = useState(false);
+    // Respaldo del código de entrega: se activa si el conductor agota los intentos
+    const [deliveryLocked, setDeliveryLocked] = useState(false);
 
     // Los avisos del socket llegan a funciones registradas una sola vez: leen lo último por referencia
     const callbacksRef = useRef(callbacks);
@@ -49,6 +51,7 @@ export function useClientTrip(viewModel: ClientTripMapViewModel, idClientRequest
         requestRef.current = response;
         setRequest(response);
         setStatus(response.status);
+        setDeliveryLocked(Boolean(response.delivery_locked));
 
         const driverId = response.id_driver_assigned ?? idDriver;
         listeners.current.push(
@@ -74,6 +77,10 @@ export function useClientTrip(viewModel: ClientTripMapViewModel, idClientRequest
             }),
             // El conductor tomó una foto al cargar o al entregar
             viewModel.listenerTripPhoto(idClientRequest, loadPhotos),
+            viewModel.listenerDeliveryLocked(idClientRequest, () => {
+                setDeliveryLocked(true);
+                showToast('El conductor no pudo cerrar con el código: confirma tú si ya tienes la carga', 'info');
+            }),
         );
         return () => {
             listeners.current.forEach((off) => off());
@@ -88,7 +95,7 @@ export function useClientTrip(viewModel: ClientTripMapViewModel, idClientRequest
         callbacksRef.current.onFinished(requestRef.current);
     }, [status]);
 
-    // Para cuando el cliente mismo recibe la carga o el conductor agotó los intentos del código
+    // Respaldo del código: solo cuando el conductor agotó los intentos
     const confirmDelivery = async () => {
         setConfirming(true);
         const response = await viewModel.confirmDelivery(idClientRequest);
@@ -112,5 +119,5 @@ export function useClientTrip(viewModel: ClientTripMapViewModel, idClientRequest
         }
     }
 
-    return { request, loadFailed, reload: load, status, driverPosition, carInfo, photos, confirming, confirmDelivery, cancel };
+    return { request, loadFailed, reload: load, status, driverPosition, carInfo, photos, deliveryLocked, confirming, confirmDelivery, cancel };
 }

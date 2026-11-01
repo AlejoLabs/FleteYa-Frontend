@@ -49,6 +49,8 @@ export interface ClientRequestResponse {
     client_rating?:          number | null;
     // Código de 4 dígitos para cerrar la entrega; solo llega cuando consulta el cliente
     delivery_code?:          string | null;
+    // El conductor agotó los intentos del código: solo entonces el cliente puede confirmar la entrega él mismo
+    delivery_locked?:        boolean;
     // Pago: método, comisión de FleteYa (incluida en el valor acordado) y cuándo se pagó; null = sin pagar
     payment_method?:         PaymentMethod;
     commission?:             number | null;

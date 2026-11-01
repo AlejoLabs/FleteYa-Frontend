@@ -19,13 +19,14 @@ interface Props {
     hint: string;
     vehicleText: string;
     photos: Photo[];
+    deliveryLocked: boolean;
     unread: number;
     onChat: () => void;
     onReport: () => void;
 }
 
 // Contenido de la hoja del cliente: en qué va el flete, quién lo lleva, el código de entrega, las fotos y la carga
-export default function ClientTripSheet({ request, status, title, hint, vehicleText, photos, unread, onChat, onReport }: Props) {
+export default function ClientTripSheet({ request, status, title, hint, vehicleText, photos, deliveryLocked, unread, onChat, onReport }: Props) {
     const { driver } = request;
     return (
         <>
@@ -52,6 +53,7 @@ export default function ClientTripSheet({ request, status, title, hint, vehicleT
             <DeliveryProofSection
                 deliveryCode={status !== Status.FINISHED ? request.delivery_code : null}
                 receiverName={request.receiver_name}
+                deliveryLocked={status === Status.TRAVELING && deliveryLocked}
                 photos={photos}
             />
             <TripPlaces pickup={request.pickup_description} destination={request.destination_description} pickupDone={isCargoOnBoard(status)} />
