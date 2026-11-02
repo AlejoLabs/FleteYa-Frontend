@@ -8,6 +8,7 @@ import { DriverMapStackParamList } from "../../../navigator/DriverMapStackNaviga
 import { useAuth } from "../../../hooks/useAuth";
 import { StateView, useToast } from "../../../components/ui";
 import { colors, spacing } from "../../../theme";
+import { formatErrorMessage } from "../../../utils/Formatters";
 import { DriverClientRequestViewModel } from "./DriverClientRequestViewModel";
 import { DriverClientRequestItem } from "./DriverClientRequestItem";
 
@@ -25,6 +26,7 @@ export function DriverClientRequestScreen({ navigation }: Props) {
     const [requests, setRequests] = useState<ClientRequestResponse[]>([]);
     const [loadState, setLoadState] = useState<LoadState>('loading');
     const [refreshing, setRefreshing] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('No pudimos cargar las solicitudes.');
     const positionRef = useRef<DriverPosition | null>(null);
 
     // La última posición que guardó el inicio; si el conductor no ha estado disponible todavía no hay ninguna
@@ -45,7 +47,9 @@ export function DriverClientRequestScreen({ navigation }: Props) {
             setRequests(response);
             setLoadState('ready');
         } else {
-            // Si ya había una lista, un fallo al recargar la deja como estaba
+            // El servidor dice por qué (por ejemplo, que la cuenta está en revisión). Si ya había una lista,
+            // un fallo al recargar la deja como estaba
+            setErrorMessage(formatErrorMessage(response.message));
             setLoadState((current) => current === 'ready' ? 'ready' : 'error');
         }
     }
@@ -91,7 +95,7 @@ export function DriverClientRequestScreen({ navigation }: Props) {
                     loadState === 'noPosition'
                         ? <StateView kind="empty" icon="location-outline" title="Todavía no sabemos dónde estás" message="Ponte disponible en el inicio para ver las solicitudes cerca." />
                         : loadState === 'error'
-                            ? <StateView kind="error" message="No pudimos cargar las solicitudes." onAction={refresh} />
+                            ? <StateView kind="error" message={errorMessage} onAction={refresh} />
                             : <StateView kind="empty" icon="cube-outline" title="No hay solicitudes cerca" message="Te avisamos cuando llegue una que quepa en tu vehículo." />
                 }
             />

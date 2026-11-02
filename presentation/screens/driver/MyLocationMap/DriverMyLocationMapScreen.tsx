@@ -8,12 +8,13 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import MapView, { Marker } from "react-native-maps";
 import { container } from "../../../../di/container";
 import { useAuth } from "../../../hooks/useAuth";
-import { Amount, AppText, Notice, RatingBadge } from "../../../components/ui";
+import { Amount, AppText, Notice, RatingBadge, useToast } from "../../../components/ui";
 import { colors, radius, shadows, spacing, touchTarget } from "../../../theme";
 import { DEFAULT_REGION } from "../../client/searchMap/hooks/useClientMap";
 import { DriverMyLocationMapViewModel } from "./DriverMyLocationMapViewModel";
 import { useDriverAvailability } from "./hooks/useDriverAvailability";
 import { useDriverSummary } from "./hooks/useDriverSummary";
+import { useDriverApproval } from "./hooks/useDriverApproval";
 import { useNewRequestAlert } from "./hooks/useNewRequestAlert";
 import AvailabilitySwitch from "./components/AvailabilitySwitch";
 import NewRequestCard from "./components/NewRequestCard";
@@ -32,8 +33,19 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
     const [mapReady, setMapReady] = useState(false);
     // Alto de los avisos y el botón de abajo: el mapa lo deja libre para que el logo de Google no quede tapado
     const [bottomHeight, setBottomHeight] = useState(0);
-    const { available, setAvailable, location, locationUnavailable } = useDriverAvailability(viewModel, idDriver);
-    const summary = useDriverSummary(viewModel, idDriver, location);
+    const approval = useDriverApproval(viewModel, idDriver);
+    const { available, setAvailable, location, locationUnavailable } = useDriverAvailability(viewModel, idDriver, approval.canWork);
+    const summary = useDriverSummary(viewModel, idDriver, location, approval.canWork);
+    const { showToast } = useToast();
+
+    // En revisión, rechazado o con un documento vencido no se puede poner disponible: se explica por qué
+    const changeAvailability = (value: boolean) => {
+        if (value && approval.notice) {
+            showToast(approval.notice.title, 'info');
+            return;
+        }
+        setAvailable(value);
+    };
     const newRequest = useNewRequestAlert(viewModel, available, location, isFocused, summary.setNearby);
 
     // El mapa se centra una vez, con la primera ubicación; después el conductor lo mueve a su gusto
@@ -56,7 +68,7 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
                     </Pressable>
                     <View style={styles.flex}>
                         <AppText variant="bodyStrong" color="textOnDark" numberOfLines={1}>Hola, {authResponse?.user.name}</AppText>
-                        <AppText variant="small" color="textOnDarkMuted" numberOfLines={1}>{viewModel.vehicleText(summary.carInfo)}</AppText>
+                        <AppText variant="small" color="textOnDarkMuted" numberOfLines={1}>{viewModel.vehicleText(approval.carInfo)}</AppText>
                     </View>
                     <RatingBadge rating={summary.rating} tone="dark" />
                 </View>
@@ -68,7 +80,7 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
                             {summary.today.trips === 0 ? 'Todavía sin fletes hoy' : `${summary.today.trips} ${summary.today.trips === 1 ? 'flete entregado' : 'fletes entregados'}`}
                         </AppText>
                     </View>
-                    <AvailabilitySwitch value={available} onChange={setAvailable} />
+                    <AvailabilitySwitch value={available} onChange={changeAvailability} />
                 </View>
             </View>
 
@@ -96,7 +108,16 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
                     pointerEvents="box-none"
                     onLayout={(event) => setBottomHeight(event.nativeEvent.layout.height + spacing.lg + insets.bottom)}
                 >
-                    {!available &&
+                    {approval.notice &&
+                        <Notice
+                            tone={approval.notice.tone}
+                            title={approval.notice.title}
+                            message={approval.notice.message}
+                            actionLabel="Ver mi vehículo"
+                            onAction={() => navigation.navigate('DriverCarInfoScreen')}
+                        />
+                    }
+                    {!available && !approval.notice && approval.canWork !== null &&
                         <Notice tone="info" message="No estás disponible: no te llegan solicitudes y los clientes no te ven en el mapa." />}
                     {available && locationUnavailable &&
                         <Notice tone="warning" message="No tenemos tu ubicación. Actívala en los ajustes del teléfono para recibir solicitudes." />}
@@ -108,7 +129,7 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
                             onDismiss={newRequest.dismiss}
                         />
                     }
-                    {!newRequest.alert && summary.documentAlert &&
+                    {!newRequest.alert && summary.documentAlert && !approval.notice &&
                         <Notice
                             tone={summary.documentAlert.tone}
                             title={summary.documentAlert.title}

@@ -2,14 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import { LatLng } from "react-native-maps";
 import { useFocusEffect } from "@react-navigation/native";
 import { ClientRequestResponse } from "../../../../../domain/models/ClientRequestResponse";
-import { DriverCarInfo } from "../../../../../domain/models/DriverCarInfo";
 import { DriverDocument } from "../../../../../domain/models/DriverDocument";
 import { DriverMyLocationMapViewModel } from "../DriverMyLocationMapViewModel";
 
 // Datos del encabezado y de los avisos del inicio. Se recargan cada vez que el conductor vuelve a la pantalla
-// (por ejemplo, después de entregar un flete o de mirar su vehículo)
-export function useDriverSummary(viewModel: DriverMyLocationMapViewModel, idDriver: number | undefined, location: LatLng | null) {
-    const [carInfo, setCarInfo] = useState<DriverCarInfo | null>(null);
+// (por ejemplo, después de entregar un flete o de mirar su vehículo). El vehículo lo trae useDriverApproval
+export function useDriverSummary(viewModel: DriverMyLocationMapViewModel, idDriver: number | undefined, location: LatLng | null, canWork: boolean | null) {
     const [trips, setTrips] = useState<ClientRequestResponse[]>([]);
     const [documents, setDocuments] = useState<DriverDocument[]>([]);
     const [nearby, setNearby] = useState<number | null>(null);
@@ -19,13 +17,11 @@ export function useDriverSummary(viewModel: DriverMyLocationMapViewModel, idDriv
         if (!idDriver) return;
         let active = true;
         (async () => {
-            const [car, finished, docs] = await Promise.all([
-                viewModel.getDriverCarInfo(idDriver),
+            const [finished, docs] = await Promise.all([
                 viewModel.getFinishedTrips(idDriver),
                 viewModel.getMyDocuments(),
             ]);
             if (!active) return;
-            if ('brand' in car) setCarInfo(car);
             if (Array.isArray(finished)) setTrips(finished);
             if (Array.isArray(docs)) setDocuments(docs);
         })();
@@ -35,10 +31,11 @@ export function useDriverSummary(viewModel: DriverMyLocationMapViewModel, idDriv
         };
     }, [idDriver]));
 
-    // Las solicitudes cercanas dependen de la ubicación: se cuentan con la primera y al volver a la pantalla
+    // Las solicitudes cercanas dependen de la ubicación: se cuentan con la primera y al volver a la pantalla.
+    // Un conductor que todavía no puede trabajar no tiene solicitudes que contar
     const hasLocation = location !== null;
     useEffect(() => {
-        if (!location) return;
+        if (!location || !canWork) return;
         let active = true;
         viewModel.countNearbyRequests(location.latitude, location.longitude).then((count) => {
             if (active) setNearby(count);
@@ -46,10 +43,9 @@ export function useDriverSummary(viewModel: DriverMyLocationMapViewModel, idDriv
         return () => {
             active = false;
         };
-    }, [hasLocation, focusCount]);
+    }, [hasLocation, focusCount, canWork]);
 
     return {
-        carInfo,
         rating: viewModel.rating(trips),
         today: viewModel.daySummary(trips),
         documentAlert: viewModel.documentAlert(documents),

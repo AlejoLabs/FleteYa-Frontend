@@ -5,8 +5,9 @@ import * as Location from "expo-location";
 import { DriverMyLocationMapViewModel } from "../DriverMyLocationMapViewModel";
 
 // Disponible = el GPS guarda la posición del conductor y la emite: así le llegan solicitudes y los clientes lo ven en el mapa.
-// No disponible = deja de enviarla y sale de la lista de conectados
-export function useDriverAvailability(viewModel: DriverMyLocationMapViewModel, idDriver?: number) {
+// No disponible = deja de enviarla y sale de la lista de conectados. Mientras el admin no lo apruebe (o tenga un
+// documento vencido) canWork es false y no se pone disponible aunque lo pida; null = todavía no se sabe
+export function useDriverAvailability(viewModel: DriverMyLocationMapViewModel, idDriver: number | undefined, canWork: boolean | null) {
     const [available, setAvailable] = useState(true);
     const [location, setLocation] = useState<LatLng | null>(null);
     const [locationUnavailable, setLocationUnavailable] = useState(false);
@@ -21,7 +22,7 @@ export function useDriverAvailability(viewModel: DriverMyLocationMapViewModel, i
 
     useEffect(() => {
         if (!idDriver) return;
-        if (!available) {
+        if (!available || canWork !== true) {
             stop();
             return;
         }
@@ -59,7 +60,7 @@ export function useDriverAvailability(viewModel: DriverMyLocationMapViewModel, i
         return () => {
             active = false;
         };
-    }, [available, idDriver]);
+    }, [available, idDriver, canWork]);
 
     // Al cerrar sesión la pantalla se desmonta: sin esto el GPS sigue enviando la posición sin token
     useEffect(() => () => {
@@ -67,5 +68,5 @@ export function useDriverAvailability(viewModel: DriverMyLocationMapViewModel, i
         subscription.current = null;
     }, []);
 
-    return { available, setAvailable, location, locationUnavailable };
+    return { available: available && canWork === true, setAvailable, location, locationUnavailable };
 }

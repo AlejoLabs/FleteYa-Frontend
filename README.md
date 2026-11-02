@@ -14,6 +14,7 @@ El backend está en [FleteYa-Backend](https://github.com/AlejoLabs/FleteYa-Backe
 - Paga en efectivo o por la app (tarjeta, Nequi o PSE), califica al conductor y puede reportar un problema.
 
 **Conductor**
+- Después de registrarse queda "en revisión" hasta que un administrador aprueba su vehículo y sus documentos desde el panel web del backend. Si lo rechazan, ve el motivo y puede corregir. La app se actualiza sola en cuanto el administrador decide.
 - En el inicio ve lo que ganó hoy (ya sin la comisión), su disponibilidad y avisos de solicitudes nuevas cerca.
 - Solo le aparecen las solicitudes que caben en su vehículo, y puede ofertar con su propio precio.
 - En el viaje: navegación, foto al cargar y al entregar, y cierre con el código de entrega.

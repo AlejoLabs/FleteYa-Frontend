@@ -13,7 +13,11 @@ export interface DriverCarInfo{
     // Capacidad real si es más grande que el típico de su tipo; null = la típica
     capacity_kg?: number | null;
     capacity_m3?: number | null;
-    // Solo los ve el dueño
+    // Verificación del admin: los conductores nuevos esperan en PENDING
+    approval_status?: 'PENDING' | 'APPROVED' | 'REJECTED';
+    // Solo los ve el dueño: qué debe corregir si lo rechazaron, y por qué todavía no puede recibir fletes (null = puede)
+    approval_note?: string | null;
+    block_reason?: string | null;
     license_expires_at?: string | null;
     soat_expires_at?: string | null;
     techno_expires_at?: string | null;

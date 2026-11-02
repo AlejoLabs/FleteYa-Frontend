@@ -52,7 +52,7 @@ export function useRequestDraft(viewModel: ClientSearchMapViewModel) {
             if (!first) return;
             setRoute(decode(first.overview_polyline.points).map(([lat, lng]) => ({ latitude: lat, longitude: lng })));
             const leg = first.legs[0];
-            if (leg) setRouteSummary({ distanceText: formatKm(leg.distance.value), durationText: leg.duration.text });
+            if (leg) setRouteSummary({ distanceText: formatKm(leg.distance.value / 1000), durationText: leg.duration.text });
         });
     }, [draft.origin, draft.destination]);
 

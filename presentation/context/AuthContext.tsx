@@ -27,22 +27,35 @@ export const AuthProvider = ({children, authUseCases, socketService, userUseCase
         getAuthSession();
     },[])
 
-    // El token venció (dura 2 días) o dejó de ser válido: se borra la sesión de este teléfono y se vuelve al inicio.
-    // No se avisa al backend (ya no acepta el token); al entrar de nuevo, el teléfono vuelve a registrar sus avisos
+    // El token venció (dura 2 días), dejó de ser válido o el admin suspendió la cuenta: se borra la sesión de este
+    // teléfono y se vuelve al inicio. No se avisa al backend (ya no acepta el token); al entrar de nuevo, el teléfono
+    // vuelve a registrar sus avisos. Con la cuenta suspendida llega el motivo y se muestra como error
+    const endSession = async (suspendedMessage?: string) => {
+        if (expiring.current) return;
+        expiring.current = true;
+        await authUseCases.removeAuthSession.execute();
+        socketService?.disconnect();
+        setAuthResponse(null);
+        if (navigationRef.isReady()) {
+            navigationRef.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'LoginScreen' }] }));
+        }
+        if (suspendedMessage) showToast(suspendedMessage, 'error');
+        else showToast('Tu sesión venció. Entra de nuevo para seguir.', 'info');
+    }
+
     useEffect(() => {
-        setSessionExpiredHandler(async () => {
-            if (expiring.current) return;
-            expiring.current = true;
-            await authUseCases.removeAuthSession.execute();
-            socketService?.disconnect();
-            setAuthResponse(null);
-            if (navigationRef.isReady()) {
-                navigationRef.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'LoginScreen' }] }));
-            }
-            showToast('Tu sesión venció. Entra de nuevo para seguir.', 'info');
-        });
+        setSessionExpiredHandler(endSession);
         return () => setSessionExpiredHandler(null);
     }, []);
+
+    // La suspensión llega también por el socket, para sacar a la persona aunque no esté haciendo nada en la app
+    useEffect(() => {
+        if (!authResponse?.token || !socketService) return;
+        return socketService.onMessage('account_suspended', (data: any) => {
+            const reason = typeof data?.reason === 'string' && data.reason ? `: ${data.reason}` : '';
+            endSession(`Tu cuenta está suspendida${reason}. Si crees que es un error, escríbenos a soporte`);
+        });
+    }, [authResponse?.token]);
 
     // Con sesión abierta, el backend guarda el token de este teléfono para mandarle notificaciones
     useEffect(() => {

@@ -12,9 +12,9 @@ export const formatCOP = (value?: number | null): string => {
 export const formatThousands = (digits: string): string =>
   digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-// Metros a "8,8 km", con coma decimal como en Colombia (Google la manda con punto)
-export const formatKm = (meters: number): string =>
-  `${(meters / 1000).toFixed(1).replace('.', ',')} km`;
+// Kilómetros a "8,8 km", con coma decimal como en Colombia (Google la manda con punto)
+export const formatKm = (km: number): string =>
+  `${km.toFixed(1).replace('.', ',')} km`;
 
 export const formatTripDate =(value?: string | Date | null): string => {
   if (!value) return '';

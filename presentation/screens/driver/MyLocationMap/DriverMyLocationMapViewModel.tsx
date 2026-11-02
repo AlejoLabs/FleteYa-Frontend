@@ -19,6 +19,12 @@ export interface DocumentAlert {
     title: string;
 }
 
+export interface ApprovalNotice {
+    tone: 'info' | 'danger';
+    title: string;
+    message: string;
+}
+
 // Inicio del conductor: disponibilidad (GPS y socket), lo ganado hoy, sus documentos y cuántas solicitudes tiene cerca
 export class DriverMyLocationMapViewModel {
     private clientRequestUseCases: ClientRequestUseCases;
@@ -87,6 +93,23 @@ export class DriverMyLocationMapViewModel {
 
     async countNearbyRequests(latitude: number, longitude: number) {
         return (await this.getNearbyRequests(latitude, longitude))?.length ?? null;
+    }
+
+    // El admin aprobó o rechazó al conductor mientras tenía la app abierta
+    listenerDriverReviewed(callback: () => void) {
+        return this.socketService.onMessage('driver_reviewed', callback);
+    }
+
+    // Aviso del inicio cuando todavía no puede recibir fletes: en revisión, rechazado o con un documento vencido
+    approvalNotice(car: DriverCarInfo | null): ApprovalNotice | null {
+        if (!car?.block_reason) return null;
+        if (car.approval_status === 'PENDING') {
+            return { tone: 'info', title: 'Tu cuenta está en revisión', message: 'Estamos revisando tu vehículo y tus documentos. Te avisamos apenas esté lista para recibir fletes.' };
+        }
+        if (car.approval_status === 'REJECTED') {
+            return { tone: 'danger', title: 'Revisa los datos de tu vehículo', message: car.block_reason };
+        }
+        return { tone: 'danger', title: 'No puedes recibir fletes', message: car.block_reason };
     }
 
     // Un cliente publicó una solicitud; el inicio decide si le sirve a este conductor
