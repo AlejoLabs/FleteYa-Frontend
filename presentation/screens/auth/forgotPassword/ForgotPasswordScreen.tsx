@@ -97,7 +97,7 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
                             <TextField
                                 label={t('common.correo')}
                                 icon="mail-outline"
-                                placeholder="tu@correo.com"
+                                placeholder={t('common.correoEjemplo')}
                                 value={email}
                                 onChangeText={(value) => { setEmail(value); setEmailError(null); }}
                                 error={emailError}

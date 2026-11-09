@@ -6,7 +6,7 @@ import { getPushToken } from "../utils/PushNotifications";
 import { setSessionExpiredHandler } from "../../data/sources/remote/api/ApiRequestHandler";
 import { navigationRef } from "../navigator/navigationRef";
 import { useToast } from "../components/ui";
-import { currentLanguage, setLanguage } from "../../i18n";
+import { currentLanguage, setLanguage, resetToDeviceLanguage } from "../../i18n";
 import { toSupportedLanguage } from "../../i18n/languages";
 import { useTranslation } from 'react-i18next';
 import { t } from '../../i18n';
@@ -41,6 +41,7 @@ export const AuthProvider = ({children, authUseCases, socketService, userUseCase
         await authUseCases.removeAuthSession.execute();
         socketService?.disconnect();
         setAuthResponse(null);
+        await resetToDeviceLanguage();
         if (navigationRef.isReady()) {
             navigationRef.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'LoginScreen' }] }));
         }
@@ -97,6 +98,7 @@ export const AuthProvider = ({children, authUseCases, socketService, userUseCase
         // El socket quedó autenticado con este usuario: si no se cierra, el siguiente que entre recibiría sus eventos
         socketService?.disconnect();
         setAuthResponse(null);
+        await resetToDeviceLanguage();
     }
 
     return (

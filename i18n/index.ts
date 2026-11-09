@@ -53,6 +53,13 @@ export const loadSavedLanguage = async () => {
     if (saved && saved !== currentLanguage()) await i18n.changeLanguage(saved);
 }
 
+// Al cerrar sesión se vuelve al idioma del celular: la pantalla de entrada siempre sale en el idioma del sistema
+// y, ya adentro, manda el de la cuenta
+export const resetToDeviceLanguage = async () => {
+    await new LocalStorage().remove(LANGUAGE_KEY);
+    await i18n.changeLanguage(deviceLanguage());
+}
+
 export default i18n;
 
 // Marca un texto fijo de un archivo (una lista de pasos, por ejemplo) con su clave: no lo traduce todavía.

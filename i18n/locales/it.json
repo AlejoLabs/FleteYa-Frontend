@@ -14,6 +14,7 @@
     "conductor": "Autista",
     "cliente": "Cliente",
     "correo": "E-mail",
+    "correoEjemplo": "tu@email.it",
     "minimo6Caracteres": "Minimo 6 caratteri",
     "cambiarContrasena": "Cambia password",
     "escribeTuCorreo": "Scrivi la tua e-mail",

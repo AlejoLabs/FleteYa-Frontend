@@ -72,7 +72,7 @@ export default function LoginScreen({ navigation }: Props) {
               tone="dark"
               label={t('common.correo')}
               icon="mail-outline"
-              placeholder="tu@correo.com"
+              placeholder={t('common.correoEjemplo')}
               value={email}
               onChangeText={(value) => { setEmail(value); setErrors({ ...errors, email: undefined }); }}
               error={errors.email}

@@ -14,6 +14,7 @@
     "conductor": "Motorista",
     "cliente": "Cliente",
     "correo": "E-mail",
+    "correoEjemplo": "voce@email.com",
     "minimo6Caracteres": "Mínimo de 6 caracteres",
     "cambiarContrasena": "Alterar senha",
     "escribeTuCorreo": "Digite seu e-mail",

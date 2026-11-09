@@ -14,6 +14,7 @@
     "conductor": "Fahrer",
     "cliente": "Kunde",
     "correo": "E-Mail",
+    "correoEjemplo": "du@email.de",
     "minimo6Caracteres": "Mindestens 6 Zeichen",
     "cambiarContrasena": "Passwort ändern",
     "escribeTuCorreo": "E-Mail eingeben",

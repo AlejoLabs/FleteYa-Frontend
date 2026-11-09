@@ -14,6 +14,7 @@
     "conductor": "Chauffeur",
     "cliente": "Client",
     "correo": "E-mail",
+    "correoEjemplo": "vous@email.fr",
     "minimo6Caracteres": "6 caractères minimum",
     "cambiarContrasena": "Changer le mot de passe",
     "escribeTuCorreo": "Saisissez votre e-mail",
@@ -30,8 +31,8 @@
   "cargoInfo": {
     "soloTransporteTuSubesY": "Transport uniquement : vous chargez et réceptionnez la marchandise.",
     "soloTransporteElClienteSube": "Transport uniquement : le client charge et réceptionne la marchandise.",
-    "cargueEn": "chargement à {{pickupFloor}}",
-    "descargueEn": "déchargement à {{destinationFloor}}",
+    "cargueEn": "chargement au {{pickupFloor}}",
+    "descargueEn": "déchargement au {{destinationFloor}}",
     "fragil": "Fragile",
     "debeIrCubierta": "Doit être bâchée",
     "cm": "{{length_cm}} × {{width_cm}} × {{height_cm}} cm",
@@ -828,9 +829,9 @@
     "cancelado": "Annulé",
     "busquedaVencida": "Recherche expirée",
     "primerPiso": "Rez-de-chaussée",
-    "piso": "Étage {{floor}}",
-    "pisoConAscensor": "Étage {{floor}} avec ascenseur",
-    "pisoSinAscensor": "Étage {{floor}} sans ascenseur"
+    "piso": "{{floor}}e étage",
+    "pisoConAscensor": "{{floor}}e étage avec ascenseur",
+    "pisoSinAscensor": "{{floor}}e étage sans ascenseur"
   },
   "formatters": {
     "nuevo": "Nouveau"

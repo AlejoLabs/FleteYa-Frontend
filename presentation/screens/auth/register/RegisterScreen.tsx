@@ -141,7 +141,7 @@ export default function RegisterScreen({ navigation }: Props) {
                     <TextField
                         ref={emailRef}
                         label={t('common.correo')}
-                        placeholder="tu@correo.com"
+                        placeholder={t('common.correoEjemplo')}
                         value={form.email}
                         onChangeText={update('email')}
                         error={errors.email}
