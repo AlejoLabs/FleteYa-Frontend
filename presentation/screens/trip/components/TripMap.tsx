@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 import MapView, { LatLng, Marker, Polyline } from "react-native-maps";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors, radius } from "../../../theme";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     mapRef: RefObject<MapView | null>;
@@ -19,6 +20,7 @@ interface Props {
 
 // Mapa del viaje en curso: el vehículo, la recogida, el destino y el recorrido que falta
 export default function TripMap({ mapRef, bottomInset, initialCenter, vehicle, vehicleTitle, pickup, destination, route }: Props) {
+    const { t } = useTranslation();
     // Cambiar el margen antes de que Google Maps termine de cargar tumba la app en Android (setPadding sobre un mapa nulo)
     const [ready, setReady] = useState(false);
     return (
@@ -33,11 +35,11 @@ export default function TripMap({ mapRef, bottomInset, initialCenter, vehicle, v
         >
             {route.length > 1 && <Polyline coordinates={route} strokeWidth={5} strokeColor={colors.asphalt} />}
             {pickup &&
-                <Marker coordinate={pickup} anchor={{ x: 0.5, y: 0.5 }} title="Recogida">
+                <Marker coordinate={pickup} anchor={{ x: 0.5, y: 0.5 }} title={t('tripMap.recogida')}>
                     <View style={styles.pickup} />
                 </Marker>
             }
-            <Marker coordinate={destination} anchor={{ x: 0.5, y: 1 }} title="Destino">
+            <Marker coordinate={destination} anchor={{ x: 0.5, y: 1 }} title={t('common.destino')}>
                 <Ionicons name="location" size={36} color={colors.pinDestination} />
             </Marker>
             {vehicle &&

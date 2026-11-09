@@ -6,5 +6,6 @@ export interface UserRepository {
     update(user: User): Promise<User | ErrorResponse>;
     updateWithImage(user: User, image: string): Promise<User | ErrorResponse>;
     saveNotificationToken(token: string | null): Promise<boolean | ErrorResponse>;
+    updateLanguage(language: string): Promise<{ language: string } | ErrorResponse>;
 
 }

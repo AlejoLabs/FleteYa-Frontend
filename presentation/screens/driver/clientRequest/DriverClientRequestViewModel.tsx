@@ -6,6 +6,8 @@ import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import { SocketService } from "../../../../data/sources/remote/services/SocketService";
 import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
+import { t } from '../../../../i18n';
+import { formatNumber } from '../../../utils/Formatters';
 
 export class DriverClientRequestViewModel {
 
@@ -71,13 +73,13 @@ export class DriverClientRequestViewModel {
     arrivalText(request: ClientRequestResponse) {
         const { distance, duration } = request.google_distance_matrix;
         const minutes = Math.max(1, Math.round(duration.value / 60));
-        const km = (distance.value / 1000).toFixed(1).replace('.', ',');
-        return `Llegas en ${minutes} min · a ${km} km`;
+        const km = formatNumber(distance.value / 1000, 1, 1);
+        return t('driverClientRequest.llegasEnMinAKm', { minutes, km });
     }
 
     // Cómo cobra el conductor al entregar; lo ve antes de ofertar
     paymentText(request: ClientRequestResponse) {
-        return request.payment_method === 'WOMPI' ? 'Paga por la app' : 'Paga en efectivo';
+        return request.payment_method === 'WOMPI' ? t('driverClientRequest.pagaPorLaApp') : t('driverClientRequest.pagaEnEfectivo');
     }
 
     async dismissClientRequest(idClientRequest: number) {

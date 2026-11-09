@@ -13,11 +13,13 @@ import { useGoogleSignIn } from '../google/useGoogleSignIn';
 import GoogleLinkDialog from '../google/GoogleLinkDialog';
 import { LoginErrors } from './LoginViewModel';
 import styles from './Styles';
+import { useTranslation } from 'react-i18next';
 
 interface Props extends StackScreenProps<RootStackParamList, 'LoginScreen'> { };
 
 // Inicio de sesión sobre asfalto: correo y contraseña, o Google
 export default function LoginScreen({ navigation }: Props) {
+    const { t } = useTranslation();
 
   const loginViewModel = container.resolve('loginViewModel');
   const { authResponse, saveAuthSession } = useAuth();
@@ -63,12 +65,12 @@ export default function LoginScreen({ navigation }: Props) {
           <View style={styles.form}>
             <BrandMark />
             <AppText variant="body" color="textOnDarkMuted" style={styles.tagline}>
-              Mueve cualquier carga en carry, estacas, furgón o camión. Tú pones el precio.
+              {t('login.mueveCualquierCargaEnCarry')}
             </AppText>
 
             <TextField
               tone="dark"
-              label="Correo"
+              label={t('common.correo')}
               icon="mail-outline"
               placeholder="tu@correo.com"
               value={email}
@@ -83,9 +85,9 @@ export default function LoginScreen({ navigation }: Props) {
             <TextField
               ref={passwordRef}
               tone="dark"
-              label="Contraseña"
+              label={t('login.contrasena')}
               icon="lock-closed-outline"
-              placeholder="Tu contraseña"
+              placeholder={t('login.tuContrasena')}
               value={password}
               onChangeText={(value) => { setPassword(value); setErrors({ ...errors, password: undefined }); }}
               error={errors.password}
@@ -96,12 +98,12 @@ export default function LoginScreen({ navigation }: Props) {
             />
 
             <Pressable onPress={goToForgotPassword} style={styles.forgot} accessibilityRole="link">
-              <AppText variant="smallStrong" color="cargo">¿Olvidaste tu contraseña?</AppText>
+              <AppText variant="smallStrong" color="cargo">{t('login.olvidasteTuContrasena')}</AppText>
             </Pressable>
 
-            <Button title="Entrar" loading={isSending} disabled={google.isBusy} onPress={handleLogin} />
+            <Button title={t('login.entrar')} loading={isSending} disabled={google.isBusy} onPress={handleLogin} />
             <Button
-              title="Continuar con Google"
+              title={t('login.continuarConGoogle')}
               variant="onDark"
               icon="logo-google"
               loading={google.isBusy && !google.link.visible}
@@ -111,9 +113,9 @@ export default function LoginScreen({ navigation }: Props) {
           </View>
 
           <View style={styles.footer}>
-            <AppText variant="body" color="textOnDarkMuted">¿No tienes cuenta?</AppText>
+            <AppText variant="body" color="textOnDarkMuted">{t('login.noTienesCuenta')}</AppText>
             <Pressable onPress={() => navigation.navigate('RegisterScreen')} hitSlop={12} accessibilityRole="link">
-              <AppText variant="bodyStrong" color="cargo">Crear cuenta</AppText>
+              <AppText variant="bodyStrong" color="cargo">{t('login.crearCuenta')}</AppText>
             </Pressable>
           </View>
         </ScrollView>

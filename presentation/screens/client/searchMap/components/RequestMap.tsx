@@ -5,6 +5,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "../../../../theme";
 import { DEFAULT_REGION, DriverMarker } from "../hooks/useClientMap";
 import { PlacePoint } from "../RequestDraft";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     mapRef: RefObject<MapView | null>;
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export default function RequestMap({ mapRef, bottomInset, pickingOrigin, origin, destination, route, drivers, onMoveStart, onMoveEnd }: Props) {
+    const { t } = useTranslation();
     // Cambiar el margen antes de que Google Maps termine de cargar tumba la app en Android (setPadding sobre un mapa nulo)
     const [ready, setReady] = useState(false);
     return (
@@ -38,19 +40,19 @@ export default function RequestMap({ mapRef, bottomInset, pickingOrigin, origin,
                 onRegionChangeComplete={onMoveEnd}
             >
                 {drivers.map((driver) => (
-                    <Marker key={driver.idSocket} coordinate={{ latitude: driver.lat, longitude: driver.lng }} anchor={{ x: 0.5, y: 0.5 }} title="Conductor disponible">
+                    <Marker key={driver.idSocket} coordinate={{ latitude: driver.lat, longitude: driver.lng }} anchor={{ x: 0.5, y: 0.5 }} title={t('requestMap.conductorDisponible')}>
                         <View style={styles.driver}>
                             <MaterialCommunityIcons name="truck" size={16} color={colors.cargo} />
                         </View>
                     </Marker>
                 ))}
                 {!pickingOrigin && origin &&
-                    <Marker coordinate={{ latitude: origin.lat, longitude: origin.lng }} anchor={{ x: 0.5, y: 0.5 }} title="Recoger aquí">
+                    <Marker coordinate={{ latitude: origin.lat, longitude: origin.lng }} anchor={{ x: 0.5, y: 0.5 }} title={t('requestMap.recogerAqui')}>
                         <View style={styles.originDot} />
                     </Marker>
                 }
                 {destination &&
-                    <Marker coordinate={{ latitude: destination.lat, longitude: destination.lng }} anchor={{ x: 0.5, y: 1 }} title="Llevar aquí">
+                    <Marker coordinate={{ latitude: destination.lat, longitude: destination.lng }} anchor={{ x: 0.5, y: 1 }} title={t('requestMap.llevarAqui')}>
                         <Ionicons name="location" size={36} color={colors.pinDestination} />
                     </Marker>
                 }
@@ -60,7 +62,7 @@ export default function RequestMap({ mapRef, bottomInset, pickingOrigin, origin,
             {/* El pin no es un marcador del mapa: se queda quieto en el centro y el mapa se mueve debajo */}
             {pickingOrigin &&
                 <View pointerEvents="none" style={[styles.centerArea, { bottom: bottomInset }]}>
-                    <View style={styles.centerPin} accessibilityLabel="Punto de recogida">
+                    <View style={styles.centerPin} accessibilityLabel={t('requestMap.puntoDeRecogida')}>
                         <Ionicons name="location" size={44} color={colors.pinOrigin} />
                     </View>
                 </View>

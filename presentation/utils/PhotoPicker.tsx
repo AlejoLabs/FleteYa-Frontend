@@ -1,5 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { t } from '../../i18n';
 
 export type PhotoSource = 'camera' | 'library';
 
@@ -17,7 +18,7 @@ export const pickPhoto = async (source: PhotoSource): Promise<PhotoPickResult> =
         ? await ImagePicker.requestCameraPermissionsAsync()
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-        return { ok: false, cancelled: false, message: source === 'camera' ? 'Activa el permiso de la cámara para tomar la foto' : 'Activa el permiso de fotos para elegir una' };
+        return { ok: false, cancelled: false, message: source === 'camera' ? t('photoPicker.activaElPermisoDeLa') : t('photoPicker.activaElPermisoDeFotos') };
     }
 
     const options: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 1 };
@@ -35,7 +36,7 @@ export const pickPhoto = async (source: PhotoSource): Promise<PhotoPickResult> =
         return { ok: true, uri: compressed.uri };
     } catch (error) {
         console.log('No se pudo comprimir la foto', error);
-        return { ok: false, cancelled: false, message: 'No se pudo preparar la foto, intenta con otra' };
+        return { ok: false, cancelled: false, message: t('photoPicker.noSePudoPrepararLa') };
     }
 }
 
@@ -48,7 +49,7 @@ export const setPhotoSourcePresenter = (presenter: PhotoSourcePresenter | null) 
 };
 
 // Pregunta si usar la cámara o la galería y luego toma la foto (cancelled: true si la persona se arrepiente)
-export const choosePhoto = async (title = 'Agregar foto'): Promise<PhotoPickResult> => {
+export const choosePhoto = async (title = t('photoPicker.agregarFoto')): Promise<PhotoPickResult> => {
     const source = presentPhotoSource ? await presentPhotoSource(title) : 'library';
     if (!source) return { ok: false, cancelled: true, message: '' };
     return pickPhoto(source);

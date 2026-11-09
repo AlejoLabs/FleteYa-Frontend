@@ -12,12 +12,15 @@ import { useGoogleSignIn } from "../google/useGoogleSignIn";
 import GoogleLinkDialog from "../google/GoogleLinkDialog";
 import { AccountType, RegisterErrors, RegisterForm, RegisterViewModel } from "./RegisterViewModel";
 import styles from "./Styles";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../i18n';
 
 interface Props extends StackScreenProps<RootStackParamList, 'RegisterScreen'> { };
 
 const EMPTY_FORM: RegisterForm = { name: '', lastname: '', phone: '', email: '', password: '' };
 
 export default function RegisterScreen({ navigation }: Props) {
+    const { t } = useTranslation();
 
     const registerViewModel: RegisterViewModel = container.resolve('registerViewModel');
     const { saveAuthSession } = useAuth();
@@ -60,7 +63,7 @@ export default function RegisterScreen({ navigation }: Props) {
         const response = await registerViewModel.register(account);
         setIsSending(false);
         if ('token' in response) {
-            showToast(`Cuenta creada. ¡Hola, ${account.name}!`, 'success');
+            showToast(t('register.cuentaCreadaHola', { name: account.name }), 'success');
             enter(response);
             return;
         }
@@ -72,23 +75,23 @@ export default function RegisterScreen({ navigation }: Props) {
     return (
         <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
             <AppHeader
-                title="Crear cuenta"
+                title={t('register.crearCuenta')}
                 onBack={() => navigation.goBack()}
-                right={isDriver ? <AppText variant="caption" color="textMuted">Paso 1 de 2</AppText> : undefined}
+                right={isDriver ? <AppText variant="caption" color="textMuted">{t('register.paso1De2')}</AppText> : undefined}
             />
             <KeyboardArea aboveBottomInset style={styles.flex}>
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-                    <AppText variant="label" color="textMuted">¿Cómo vas a usar FleteYa?</AppText>
+                    <AppText variant="label" color="textMuted">{t('register.comoVasAUsarFleteya')}</AppText>
                     <View style={styles.options} accessibilityRole="radiogroup">
                         <OptionCard
-                            title="Quiero mover una carga"
-                            description="Mudanzas, mercancía, materiales y más"
+                            title={t('register.quieroMoverUnaCarga')}
+                            description={t('register.mudanzasMercanciaMaterialesYMas')}
                             selected={!isDriver}
                             onPress={() => setAccountType('CLIENT')}
                         />
                         <OptionCard
-                            title="Quiero transportar"
-                            description="Tengo carry, estacas, furgón o camión"
+                            title={t('register.quieroTransportar')}
+                            description={t('register.tengoCarryEstacasFurgonO')}
                             selected={isDriver}
                             onPress={() => setAccountType('DRIVER')}
                         />
@@ -97,7 +100,7 @@ export default function RegisterScreen({ navigation }: Props) {
                     <View style={styles.row}>
                         <View style={styles.flex}>
                             <TextField
-                                label="Nombre"
+                                label={t('common.nombre')}
                                 value={form.name}
                                 onChangeText={update('name')}
                                 error={errors.name}
@@ -110,7 +113,7 @@ export default function RegisterScreen({ navigation }: Props) {
                         <View style={styles.flex}>
                             <TextField
                                 ref={lastnameRef}
-                                label="Apellido"
+                                label={t('register.apellido')}
                                 value={form.lastname}
                                 onChangeText={update('lastname')}
                                 error={errors.lastname}
@@ -123,7 +126,7 @@ export default function RegisterScreen({ navigation }: Props) {
                     </View>
                     <TextField
                         ref={phoneRef}
-                        label="Celular"
+                        label={t('common.celular')}
                         prefix="+57"
                         placeholder="300 123 4567"
                         value={form.phone}
@@ -137,7 +140,7 @@ export default function RegisterScreen({ navigation }: Props) {
                     />
                     <TextField
                         ref={emailRef}
-                        label="Correo"
+                        label={t('common.correo')}
                         placeholder="tu@correo.com"
                         value={form.email}
                         onChangeText={update('email')}
@@ -150,9 +153,9 @@ export default function RegisterScreen({ navigation }: Props) {
                     />
                     <TextField
                         ref={passwordRef}
-                        label="Contraseña"
-                        placeholder="Mínimo 6 caracteres"
-                        hint="Toca el ojo para revisar lo que escribiste"
+                        label={t('register.contrasena')}
+                        placeholder={t('common.minimo6Caracteres')}
+                        hint={t('register.tocaElOjoParaRevisar')}
                         value={form.password}
                         onChangeText={update('password')}
                         error={errors.password}
@@ -165,7 +168,7 @@ export default function RegisterScreen({ navigation }: Props) {
 
                 <View style={styles.footer}>
                     <Button
-                        title={isDriver ? 'Siguiente: mi vehículo' : 'Crear cuenta'}
+                        title={isDriver ? t('register.siguienteMiVehiculo') : t('register.crearCuenta')}
                         loading={isSending}
                         disabled={google.isBusy}
                         onPress={handleRegister}
@@ -173,7 +176,7 @@ export default function RegisterScreen({ navigation }: Props) {
                     {/* Google crea cuentas de cliente; el conductor necesita registrar su vehículo */}
                     {!isDriver &&
                         <Button
-                            title="Registrarme con Google"
+                            title={t('register.registrarmeConGoogle')}
                             variant="google"
                             icon="logo-google"
                             loading={google.isBusy && !google.link.visible}

@@ -7,7 +7,8 @@ import { ClientRequestUseCases } from "../../../../domain/useCases/clientRequest
 import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
 import { DriverPositionUseCases } from "../../../../domain/useCases/driverPosition/DriverPositionUseCases";
 import { cargoCategoryLabel, vehicleLabel } from "../../../utils/Cargo";
-import { getTripFare } from "../../../utils/Formatters";
+import { getTripFare, formatNumber } from '../../../utils/Formatters';
+import { t } from '../../../../i18n';
 
 export interface DaySummary {
     earned: number;
@@ -26,6 +27,10 @@ export interface ApprovalNotice {
 }
 
 // Inicio del conductor: disponibilidad (GPS y socket), lo ganado hoy, sus documentos y cuántas solicitudes tiene cerca
+// Por qué todavía no puede recibir fletes, escrito en el idioma de la app (el servidor manda el código y los datos)
+const blockReasonText = (car: DriverCarInfo) =>
+    car.block_reason_detail ? t(`errors.${car.block_reason_detail.key}`, car.block_reason_detail.params ?? {}) : car.block_reason ?? '';
+
 export class DriverMyLocationMapViewModel {
     private clientRequestUseCases: ClientRequestUseCases;
     private driverPositionUseCases: DriverPositionUseCases;
@@ -104,12 +109,12 @@ export class DriverMyLocationMapViewModel {
     approvalNotice(car: DriverCarInfo | null): ApprovalNotice | null {
         if (!car?.block_reason) return null;
         if (car.approval_status === 'PENDING') {
-            return { tone: 'info', title: 'Tu cuenta está en revisión', message: 'Estamos revisando tu vehículo y tus documentos. Te avisamos apenas esté lista para recibir fletes.' };
+            return { tone: 'info', title: t('driverMyLocationMap.tuCuentaEstaEnRevision'), message: t('driverMyLocationMap.estamosRevisandoTuVehiculoY') };
         }
         if (car.approval_status === 'REJECTED') {
-            return { tone: 'danger', title: 'Revisa los datos de tu vehículo', message: car.block_reason };
+            return { tone: 'danger', title: t('driverMyLocationMap.revisaLosDatosDeTu'), message: blockReasonText(car) };
         }
-        return { tone: 'danger', title: 'No puedes recibir fletes', message: car.block_reason };
+        return { tone: 'danger', title: t('driverMyLocationMap.noPuedesRecibirFletes'), message: blockReasonText(car) };
     }
 
     // Un cliente publicó una solicitud; el inicio decide si le sirve a este conductor
@@ -119,12 +124,12 @@ export class DriverMyLocationMapViewModel {
 
     // "Mudanza · a 0,3 km · Paga por la app"
     newRequestText(request: ClientRequestResponse) {
-        const km = (Number(request.distance) / 1000).toFixed(1).replace('.', ',');
+        const km = formatNumber(Number(request.distance) / 1000, 1, 1);
         return [
             cargoCategoryLabel(request.cargo_category),
-            `a ${km} km`,
-            request.payment_method === 'WOMPI' ? 'Paga por la app' : 'Paga en efectivo',
-            request.scheduled_at ? 'Programado' : null,
+            t('driverMyLocationMap.aKm', { km }),
+            request.payment_method === 'WOMPI' ? t('driverMyLocationMap.pagaPorLaApp') : t('driverMyLocationMap.pagaEnEfectivo'),
+            request.scheduled_at ? t('driverMyLocationMap.programado') : null,
         ].filter(Boolean).join(' · ');
     }
 
@@ -144,7 +149,7 @@ export class DriverMyLocationMapViewModel {
 
     // "Furgón · VES129"
     vehicleText(carInfo: DriverCarInfo | null) {
-        if (!carInfo) return 'Registra tu vehículo';
+        if (!carInfo) return t('driverMyLocationMap.registraTuVehiculo');
         return `${vehicleLabel(carInfo.vehicle_type)} · ${carInfo.plate}`;
     }
 
@@ -154,7 +159,7 @@ export class DriverMyLocationMapViewModel {
         const doc = pending[0];
         if (!doc) return null;
         // "Se venció" y no "vencido/vencida": sirve igual para la licencia, el SOAT y la revisión
-        if (doc.status === 'EXPIRED') return { tone: 'danger', title: `Se venció: ${doc.label}.` };
-        return { tone: 'warning', title: `${doc.label} vence en ${doc.days_left} ${doc.days_left === 1 ? 'día' : 'días'}.` };
+        if (doc.status === 'EXPIRED') return { tone: 'danger', title: t('driverMyLocationMap.seVencio', { label: t(`docs.${doc.key}`) }) };
+        return { tone: 'warning', title: t('driverMyLocationMap.venceEn', { label: t(`docs.${doc.key}`), count: doc.days_left }) };
     }
 }

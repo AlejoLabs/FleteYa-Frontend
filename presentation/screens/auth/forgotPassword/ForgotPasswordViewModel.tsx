@@ -1,5 +1,6 @@
 import { AuthUseCases } from "../../../../domain/useCases/auth/AuthUseCases";
 import EmailValidator from "../../../utils/EmailValidator";
+import { t } from '../../../../i18n';
 
 export interface ResetErrors {
     code?: string;
@@ -20,14 +21,14 @@ export class ForgotPasswordViewModel {
 
     // Devuelve el problema a mostrar o null si se puede enviar
     validateEmail(email: string): string | null {
-        if (email.trim() === '') return 'Escribe tu correo';
-        return EmailValidator(email.trim()) ? null : 'Escribe un correo completo, por ejemplo nombre@gmail.com';
+        if (email.trim() === '') return t('common.escribeTuCorreo');
+        return EmailValidator(email.trim()) ? null : t('common.escribeUnCorreoCompletoPor');
     }
 
     validateReset(code: string, password: string): ResetErrors {
         const errors: ResetErrors = {};
-        if (!new RegExp(`^\\d{${CODE_LENGTH}}$`).test(code.trim())) errors.code = `El código tiene ${CODE_LENGTH} dígitos`;
-        if (password.length < 6) errors.password = 'La contraseña debe tener al menos 6 caracteres';
+        if (!new RegExp(`^\\d{${CODE_LENGTH}}$`).test(code.trim())) errors.code = t('forgotPassword.elCodigoTieneDigitos', { codeLength: CODE_LENGTH });
+        if (password.length < 6) errors.password = t('forgotPassword.laContrasenaDebeTenerAl');
         return errors;
     }
 

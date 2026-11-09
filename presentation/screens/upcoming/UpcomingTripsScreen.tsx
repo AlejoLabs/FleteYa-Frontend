@@ -8,9 +8,11 @@ import { cargoCategoryLabel, vehicleLabel } from "../../utils/Cargo";
 import { colors, spacing } from "../../theme";
 import TripPlaces from "../trip/components/TripPlaces";
 import { UpcomingTab, UpcomingTripsViewModel } from "./UpcomingTripsViewModel";
+import { useTranslation } from 'react-i18next';
 
 // Búsquedas y viajes en curso o programados del usuario, como cliente o como conductor
 export function UpcomingTripsScreen() {
+    const { t } = useTranslation();
 
     const viewModel: UpcomingTripsViewModel = container.resolve("upcomingTripsViewModel");
     const navigation = useNavigation<any>();
@@ -62,7 +64,7 @@ export function UpcomingTripsScreen() {
         return (
             <View style={styles.screen}>
                 {failed
-                    ? <StateView kind="error" message="No pudimos cargar tus fletes." onAction={refresh} />
+                    ? <StateView kind="error" message={t('upcomingTrips.noPudimosCargarTusFletes')} onAction={refresh} />
                     : <StateView kind="loading" />}
             </View>
         );
@@ -78,8 +80,8 @@ export function UpcomingTripsScreen() {
             <View style={styles.tabs}>
                 <SegmentedTabs
                     options={[
-                        { value: 'ACTIVE' as UpcomingTab, label: `En curso${active.length ? ` (${active.length})` : ''}` },
-                        { value: 'SCHEDULED' as UpcomingTab, label: `Programados${scheduled.length ? ` (${scheduled.length})` : ''}` },
+                        { value: 'ACTIVE' as UpcomingTab, label: active.length ? t('upcomingTrips.enCursoConteo', { total: active.length }) : t('upcomingTrips.enCurso') },
+                        { value: 'SCHEDULED' as UpcomingTab, label: scheduled.length ? t('upcomingTrips.programadosConteo', { total: scheduled.length }) : t('upcomingTrips.programados') },
                     ]}
                     selected={shownTab}
                     onSelect={setTab}
@@ -93,7 +95,7 @@ export function UpcomingTripsScreen() {
                 renderItem={({ item }) => {
                     const status = viewModel.status(item);
                     return (
-                        <Card onPress={() => openTrip(item)} accessibilityLabel={`Abrir el flete a ${item.destination_description}`}>
+                        <Card onPress={() => openTrip(item)} accessibilityLabel={t('upcomingTrips.abrirElFleteA', { destination_description: item.destination_description })}>
                             <View style={styles.top}>
                                 <View style={styles.flex}>
                                     <AppText variant="smallStrong" color={item.scheduled_at && item.status !== 'FINISHED' ? 'text' : 'textMuted'}>
@@ -105,7 +107,7 @@ export function UpcomingTripsScreen() {
                             </View>
                             <TripPlaces pickup={item.pickup_description} destination={item.destination_description} pickupDone={item.status === 'TRAVELING'} />
                             <AppText variant="small" color="textMuted">
-                                {cargoCategoryLabel(item.cargo_category)} · {vehicleLabel(item.required_vehicle)}{item.role === 'DRIVER' ? ' · Lo llevas tú' : ''}
+                                {cargoCategoryLabel(item.cargo_category)} · {vehicleLabel(item.required_vehicle)}{item.role === 'DRIVER' ? t('upcomingTrips.loLlevasTu') : ''}
                             </AppText>
                         </Card>
                     );
@@ -115,17 +117,17 @@ export function UpcomingTripsScreen() {
                         ? <StateView
                             kind="empty"
                             icon="calendar-outline"
-                            title="No tienes fletes programados"
-                            message={canRequest ? 'Al pedir un flete elige "Programar" y aparece aquí con su fecha.' : 'Los fletes que aceptes para otro día aparecen aquí con su fecha.'}
-                            actionLabel={canRequest ? 'Pedir un flete' : undefined}
+                            title={t('upcomingTrips.noTienesFletesProgramados')}
+                            message={canRequest ? t('upcomingTrips.alPedirUnFleteElige') : t('upcomingTrips.losFletesQueAceptesPara')}
+                            actionLabel={canRequest ? t('upcomingTrips.pedirUnFlete') : undefined}
                             onAction={canRequest ? () => navigation.navigate('ClientMapStackNavigator', { screen: 'ClientSearchMapScreen' }) : undefined}
                         />
                         : <StateView
                             kind="empty"
                             icon="cube-outline"
-                            title="No tienes fletes en curso"
-                            message={canRequest ? 'Cuando pidas un flete, aquí lo sigues.' : 'Cuando un cliente acepte tu oferta, el viaje aparece aquí.'}
-                            actionLabel={canRequest ? 'Pedir un flete' : undefined}
+                            title={t('upcomingTrips.noTienesFletesEnCurso')}
+                            message={canRequest ? t('upcomingTrips.cuandoPidasUnFleteAqui') : t('upcomingTrips.cuandoUnClienteAcepteTu')}
+                            actionLabel={canRequest ? t('upcomingTrips.pedirUnFlete') : undefined}
                             onAction={canRequest ? () => navigation.navigate('ClientMapStackNavigator', { screen: 'ClientSearchMapScreen' }) : undefined}
                         />
                 }

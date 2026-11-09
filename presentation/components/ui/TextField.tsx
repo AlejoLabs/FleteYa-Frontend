@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, TextInput, TextInputProps, View } from "react-na
 import { Ionicons } from "@expo/vector-icons";
 import { colors, fonts, radius, spacing, touchTarget } from "../../theme";
 import AppText from "./AppText";
+import { useTranslation } from 'react-i18next';
 
 interface Props extends TextInputProps {
     label?: string;
@@ -18,6 +19,7 @@ interface Props extends TextInputProps {
 // Campo con etiqueta arriba y ayuda o error abajo. Con secureTextEntry agrega el ojo para ver la contraseña
 const TextField = forwardRef<TextInput, Props>(function TextField(
     { label, hint, error, icon, prefix, tone = 'light', secureTextEntry, editable = true, style, ...inputProps }, ref) {
+    const { t } = useTranslation();
     const [focused, setFocused] = useState(false);
     const [hidden, setHidden] = useState(true);
     const dark = tone === 'dark';
@@ -50,7 +52,7 @@ const TextField = forwardRef<TextInput, Props>(function TextField(
                     onBlur={(e) => { setFocused(false); inputProps.onBlur?.(e); }}
                 />
                 {secureTextEntry &&
-                    <Pressable onPress={() => setHidden(!hidden)} hitSlop={12} accessibilityRole="button" accessibilityLabel={hidden ? 'Mostrar contraseña' : 'Ocultar contraseña'}>
+                    <Pressable onPress={() => setHidden(!hidden)} hitSlop={12} accessibilityRole="button" accessibilityLabel={hidden ? t('textField.mostrarContrasena') : t('textField.ocultarContrasena')}>
                         <Ionicons name={hidden ? 'eye-outline' : 'eye-off-outline'} size={20} color={mutedColor} />
                     </Pressable>
                 }

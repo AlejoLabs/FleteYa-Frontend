@@ -5,9 +5,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { Amount, AppText, Card, PersonRow, StateView, StatusPill } from "../../../components/ui";
-import { formatCOP, formatTripDate, getTripFare } from "../../../utils/Formatters";
+import { formatCOP, formatTripDate, getTripFare, formatNumber } from '../../../utils/Formatters';
 import { colors, spacing } from "../../../theme";
 import TripPlaces from "../components/TripPlaces";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../i18n';
 
 type Role = 'CLIENT' | 'DRIVER';
 
@@ -19,6 +21,7 @@ interface Props {
 
 // Historial de fletes entregados, el más reciente primero. Se recarga al volver a la pantalla y al deslizar hacia abajo
 export default function TripHistoryList({ role, load }: Props) {
+    const { t } = useTranslation();
     const [trips, setTrips] = useState<ClientRequestResponse[] | null>(null);
     const [failed, setFailed] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -47,8 +50,8 @@ export default function TripHistoryList({ role, load }: Props) {
         return (
             <View style={styles.screen}>
                 {failed
-                    ? <StateView kind="error" message="No pudimos cargar tu historial." onAction={refresh} />
-                    : <StateView kind="loading" message="Cargando tu historial…" />}
+                    ? <StateView kind="error" message={t('tripHistoryList.noPudimosCargarTuHistorial')} onAction={refresh} />
+                    : <StateView kind="loading" message={t('tripHistoryList.cargandoTuHistorial')} />}
             </View>
         );
     }
@@ -65,8 +68,8 @@ export default function TripHistoryList({ role, load }: Props) {
                 <StateView
                     kind="empty"
                     icon="time-outline"
-                    title="Todavía no tienes fletes entregados"
-                    message={role === 'CLIENT' ? 'Cuando un conductor entregue tu carga, el flete aparece aquí.' : 'Cuando entregues tu primera carga, el flete aparece aquí.'}
+                    title={t('tripHistoryList.todaviaNoTienesFletesEntregados')}
+                    message={role === 'CLIENT' ? t('tripHistoryList.cuandoUnConductorEntregueTu') : t('tripHistoryList.cuandoEntreguesTuPrimeraCarga')}
                 />
             }
         />
@@ -76,14 +79,15 @@ export default function TripHistoryList({ role, load }: Props) {
 // El conductor ve lo que le quedó (sin la comisión de FleteYa); el cliente, lo que pagó. Debajo, cómo se pagó
 const tripAmounts = (trip: ClientRequestResponse, role: Role) => {
     const fare = getTripFare(trip);
-    const method = trip.payment_method === 'WOMPI' ? 'Pagado por la app' : 'En efectivo';
+    const method = trip.payment_method === 'WOMPI' ? t('tripHistoryList.pagadoPorLaApp') : t('tripHistoryList.enEfectivo');
     if (role === 'DRIVER' && trip.commission) {
-        return { amount: fare - trip.commission, breakdown: `Te quedó: flete ${formatCOP(fare)} − comisión ${formatCOP(trip.commission)}`, method };
+        return { amount: fare - trip.commission, breakdown: t('tripHistoryList.teQuedoFleteComision', { amount: formatCOP(fare), amount2: formatCOP(trip.commission) }), method };
     }
     return { amount: fare, breakdown: null, method };
 }
 
 function TripHistoryCard({ trip, role }: { trip: ClientRequestResponse; role: Role }) {
+    const { t } = useTranslation();
     const other = role === 'CLIENT' ? trip.driver : trip.client;
     const { amount, breakdown, method } = tripAmounts(trip, role);
     const paid = Boolean(trip.paid_at);
@@ -99,19 +103,19 @@ function TripHistoryCard({ trip, role }: { trip: ClientRequestResponse; role: Ro
                     <AppText variant="caption" color="textMuted">{method}</AppText>
                 </View>
                 {/* Entregado pero sin pagar: el cobro sigue abierto en "Próximos fletes" */}
-                <StatusPill label={paid ? 'Entregado' : 'Pendiente de pago'} tone={paid ? 'success' : 'warning'} />
+                <StatusPill label={paid ? t('common.entregado') : t('tripHistoryList.pendienteDePago')} tone={paid ? 'success' : 'warning'} />
             </View>
             <TripPlaces pickup={trip.pickup_description} destination={trip.destination_description} pickupDone={false} />
             <PersonRow
                 name={`${other.name} ${other.lastname}`}
-                subtitle={role === 'CLIENT' ? 'Conductor' : 'Cliente'}
+                subtitle={role === 'CLIENT' ? t('common.conductor') : t('common.cliente')}
                 imageUri={other.image}
                 right={typeof myStars === 'number'
-                    ? <View style={styles.stars} accessibilityLabel={`Le diste ${myStars} estrellas`}>
+                    ? <View style={styles.stars} accessibilityLabel={t('tripHistoryList.leDisteEstrellas', { myStars })}>
                         <Ionicons name="star" size={14} color={colors.star} />
-                        <AppText variant="smallStrong">{String(myStars).replace('.', ',')}</AppText>
+                        <AppText variant="smallStrong">{formatNumber(myStars, 1)}</AppText>
                     </View>
-                    : <AppText variant="caption" color="textMuted">Sin calificar</AppText>}
+                    : <AppText variant="caption" color="textMuted">{t('tripHistoryList.sinCalificar')}</AppText>}
             />
         </Card>
     );

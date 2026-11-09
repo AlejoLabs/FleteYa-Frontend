@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../hooks/useAuth";
 import { AppText, Avatar, BrandMark } from "../components/ui";
 import { colors, radius, spacing } from "../theme";
+import { useTranslation } from 'react-i18next';
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
@@ -24,6 +25,7 @@ const ICONS: Record<string, [IconName, IconName]> = {
 
 // Menú lateral en asfalto de arriba abajo: la marca, quién tiene la sesión abierta, las pantallas del rol y cerrar sesión
 export const AppDrawerContent = (props: DrawerContentComponentProps) => {
+    const { t } = useTranslation();
 
     const { state, descriptors, navigation } = props;
     const { authResponse, removeAuthSession } = useAuth();
@@ -65,7 +67,7 @@ export const AppDrawerContent = (props: DrawerContentComponentProps) => {
                         <View style={styles.flex}>
                             <AppText variant="bodyStrong" color="textOnDark" numberOfLines={1}>{user.name} {user.lastname}</AppText>
                             <View style={styles.role}>
-                                <AppText variant="caption" style={styles.roleText}>{isDriver ? 'Conductor' : 'Cliente'}</AppText>
+                                <AppText variant="caption" style={styles.roleText}>{isDriver ? t('common.conductor') : t('common.cliente')}</AppText>
                             </View>
                         </View>
                     </View>
@@ -98,7 +100,7 @@ export const AppDrawerContent = (props: DrawerContentComponentProps) => {
                 style={({ pressed }) => [styles.item, styles.logout, pressed && styles.itemPressed]}
             >
                 <MaterialCommunityIcons name="logout" size={24} color={colors.dangerOnDark} />
-                <AppText variant="bodyStrong" style={{ color: colors.dangerOnDark }}>Cerrar sesión</AppText>
+                <AppText variant="bodyStrong" style={{ color: colors.dangerOnDark }}>{t('appDrawerContent.cerrarSesion')}</AppText>
             </Pressable>
         </View>
     )

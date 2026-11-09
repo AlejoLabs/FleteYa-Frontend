@@ -18,11 +18,13 @@ import { useDriverApproval } from "./hooks/useDriverApproval";
 import { useNewRequestAlert } from "./hooks/useNewRequestAlert";
 import AvailabilitySwitch from "./components/AvailabilitySwitch";
 import NewRequestCard from "./components/NewRequestCard";
+import { useTranslation } from 'react-i18next';
 
 type Props = DrawerScreenProps<ParamListBase>;
 
 // Inicio del conductor: lo ganado hoy, si está disponible, su posición en el mapa y el camino a las solicitudes cercanas
 export default function DriverMyLocationMapScreen({ navigation }: Props) {
+    const { t } = useTranslation();
 
     const viewModel: DriverMyLocationMapViewModel = container.resolve('driverMyLocationMapViewModel');
     const { authResponse } = useAuth();
@@ -63,21 +65,21 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
             {isFocused && <StatusBar style="light" />}
             <View style={[styles.header, { paddingTop: insets.top + spacing.xs }]}>
                 <View style={styles.headerRow}>
-                    <Pressable onPress={navigation.openDrawer} hitSlop={8} style={styles.menu} accessibilityRole="button" accessibilityLabel="Abrir menú">
+                    <Pressable onPress={navigation.openDrawer} hitSlop={8} style={styles.menu} accessibilityRole="button" accessibilityLabel={t('common.abrirMenu')}>
                         <Ionicons name="menu" size={26} color={colors.textOnDark} />
                     </Pressable>
                     <View style={styles.flex}>
-                        <AppText variant="bodyStrong" color="textOnDark" numberOfLines={1}>Hola, {authResponse?.user.name}</AppText>
+                        <AppText variant="bodyStrong" color="textOnDark" numberOfLines={1}>{t('driverMyLocationMap.hola', { name: authResponse?.user.name })}</AppText>
                         <AppText variant="small" color="textOnDarkMuted" numberOfLines={1}>{viewModel.vehicleText(approval.carInfo)}</AppText>
                     </View>
                     <RatingBadge rating={summary.rating} tone="dark" />
                 </View>
                 <View style={styles.earningsRow}>
                     <View style={styles.flex}>
-                        <AppText variant="label" color="textOnDarkMuted">Ganado hoy</AppText>
+                        <AppText variant="label" color="textOnDarkMuted">{t('driverMyLocationMap.ganadoHoy')}</AppText>
                         <Amount value={summary.today.earned} size="lg" color="cargo" />
                         <AppText variant="small" color="textOnDarkMuted">
-                            {summary.today.trips === 0 ? 'Todavía sin fletes hoy' : `${summary.today.trips} ${summary.today.trips === 1 ? 'flete entregado' : 'fletes entregados'}`}
+                            {summary.today.trips === 0 ? t('driverMyLocationMap.todaviaSinFletesHoy') : t('driverMyLocationMap.fletesEntregados', { count: summary.today.trips })}
                         </AppText>
                     </View>
                     <AvailabilitySwitch value={available} onChange={changeAvailability} />
@@ -95,7 +97,7 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
                     toolbarEnabled={false}
                 >
                     {location &&
-                        <Marker coordinate={location} anchor={{ x: 0.5, y: 0.5 }} title="Tú">
+                        <Marker coordinate={location} anchor={{ x: 0.5, y: 0.5 }} title={t('driverMyLocationMap.tu')}>
                             <View style={[styles.vehicle, !available && styles.vehicleOff]}>
                                 <MaterialCommunityIcons name="truck" size={18} color={available ? colors.asphalt : colors.textOnDark} />
                             </View>
@@ -113,14 +115,14 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
                             tone={approval.notice.tone}
                             title={approval.notice.title}
                             message={approval.notice.message}
-                            actionLabel="Ver mi vehículo"
+                            actionLabel={t('driverMyLocationMap.verMiVehiculo')}
                             onAction={() => navigation.navigate('DriverCarInfoScreen')}
                         />
                     }
                     {!available && !approval.notice && approval.canWork !== null &&
-                        <Notice tone="info" message="No estás disponible: no te llegan solicitudes y los clientes no te ven en el mapa." />}
+                        <Notice tone="info" message={t('driverMyLocationMap.noEstasDisponibleNoTe')} />}
                     {available && locationUnavailable &&
-                        <Notice tone="warning" message="No tenemos tu ubicación. Actívala en los ajustes del teléfono para recibir solicitudes." />}
+                        <Notice tone="warning" message={t('driverMyLocationMap.noTenemosTuUbicacionActivala')} />}
                     {newRequest.alert &&
                         <NewRequestCard
                             fare={newRequest.alert.fare_offered}
@@ -133,18 +135,18 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
                         <Notice
                             tone={summary.documentAlert.tone}
                             title={summary.documentAlert.title}
-                            message="Renueva el documento para seguir recibiendo fletes."
-                            actionLabel="Ver mis documentos"
+                            message={t('driverMyLocationMap.renuevaElDocumentoParaSeguir')}
+                            actionLabel={t('driverMyLocationMap.verMisDocumentos')}
                             onAction={() => navigation.navigate('DriverCarInfoScreen')}
                         />
                     }
                     <Pressable
                         onPress={openRequests}
                         accessibilityRole="button"
-                        accessibilityLabel={summary.nearby ? `Ver solicitudes cerca, hay ${summary.nearby}` : 'Ver solicitudes cerca'}
+                        accessibilityLabel={summary.nearby ? t('driverMyLocationMap.verSolicitudesCercaHay', { nearby: summary.nearby }) : t('driverMyLocationMap.verSolicitudesCerca')}
                         style={({ pressed }) => [styles.requests, pressed && styles.requestsPressed]}
                     >
-                        <AppText variant="button">Ver solicitudes cerca</AppText>
+                        <AppText variant="button">{t('driverMyLocationMap.verSolicitudesCerca')}</AppText>
                         {available && summary.nearby !== null && summary.nearby > 0 &&
                             <View style={styles.count}>
                                 <AppText variant="smallStrong" color="cargo">{summary.nearby > 99 ? '99+' : summary.nearby}</AppText>

@@ -2,6 +2,8 @@ import { Modal, Pressable, StyleSheet, View } from "react-native";
 import { colors, radius, spacing } from "../../theme";
 import AppText from "./AppText";
 import Button from "./Button";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../i18n';
 
 interface Props {
     visible: boolean;
@@ -19,11 +21,12 @@ interface Props {
 }
 
 // Pregunta que pide decidir. El botón de confirmar dice qué pasa ("Cancelar flete"), nunca solo "Aceptar"
-export default function ConfirmDialog({ visible, title, message, confirmLabel, cancelLabel = 'Volver', tone = 'default', loading = false, onConfirm, onCancel, children }: Props) {
+export default function ConfirmDialog({ visible, title, message, confirmLabel, cancelLabel = t('confirmDialog.volver'), tone = 'default', loading = false, onConfirm, onCancel, children }: Props) {
+    const { t } = useTranslation();
     return (
         <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel} statusBarTranslucent>
             <View style={styles.overlay}>
-                <Pressable style={StyleSheet.absoluteFill} onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cerrar" />
+                <Pressable style={StyleSheet.absoluteFill} onPress={onCancel} accessibilityRole="button" accessibilityLabel={t('common.cerrar')} />
                 <View style={styles.dialog} accessibilityViewIsModal>
                     <AppText variant="title">{title}</AppText>
                     {message && <AppText variant="body" color="textMuted">{message}</AppText>}

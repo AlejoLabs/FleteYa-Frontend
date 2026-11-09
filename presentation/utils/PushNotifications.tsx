@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { t } from '../../i18n';
 
 // Chat que la persona tiene abierto: sus mensajes ya se ven en pantalla, no hace falta el aviso
 let openChatTrip: number | null = null;
@@ -26,7 +27,7 @@ export const getPushToken = async (): Promise<string | null> => {
         if (Platform.OS === 'android') {
             // Sin "sound": así usa el sonido del sistema (un nombre ahí se busca como archivo de sonido propio)
             await Notifications.setNotificationChannelAsync(TRIPS_CHANNEL, {
-                name: 'Fletes',
+                name: t('pushNotifications.fletes'),
                 importance: Notifications.AndroidImportance.HIGH,
             });
         }

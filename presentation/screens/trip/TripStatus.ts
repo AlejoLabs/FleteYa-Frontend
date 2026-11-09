@@ -1,6 +1,7 @@
 import { LatLng } from "react-native-maps";
 import { ClientRequestResponse, Position } from "../../../domain/models/ClientRequestResponse";
 import { Status } from "../../../domain/repository/ClientRequestRepository";
+import { currentLocale } from '../../../i18n';
 
 // Reglas del viaje en curso que comparten el cliente y el conductor
 
@@ -21,4 +22,4 @@ export const shortPlace = (address?: string | null) => address?.split(',')[0].tr
 
 // "llega cerca de las 11:09": la hora en que se cumplen los minutos estimados, con la hora del teléfono
 export const arrivalTime = (minutes: number): string =>
-    new Date(Date.now() + minutes * 60_000).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' });
+    new Date(Date.now() + minutes * 60_000).toLocaleTimeString(currentLocale(), { hour: 'numeric', minute: '2-digit' });

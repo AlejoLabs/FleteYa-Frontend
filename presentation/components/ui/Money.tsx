@@ -3,6 +3,8 @@ import { colors, spacing } from "../../theme";
 import { formatCOP } from "../../utils/Formatters";
 import AppText from "./AppText";
 import Card from "./Card";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../i18n';
 
 interface AmountProps {
     value: number;
@@ -13,7 +15,7 @@ interface AmountProps {
 // Un precio en pesos con la tipografía de placa: ofertas, valor acordado, ganancias
 export function Amount({ value, size = 'md', color = 'text' }: AmountProps) {
     return (
-        <AppText variant={size === 'lg' ? 'priceLarge' : 'price'} color={color}accessibilityLabel={`${value} pesos`}>
+        <AppText variant={size === 'lg' ? 'priceLarge' : 'price'} color={color}accessibilityLabel={t('common.pesos', { value })}>
             {formatCOP(value)}
         </AppText>
     );
@@ -51,7 +53,8 @@ interface ReceiptProps {
 }
 
 // Recibo del viaje (Fase 7): detalle, total y una nota como "Pagado en efectivo"
-export function ReceiptCard({ title = 'Resumen del pago', lines, totalLabel = 'Total', total, footnote }: ReceiptProps) {
+export function ReceiptCard({ title = t('money.resumenDelPago'), lines, totalLabel = t('money.total'), total, footnote }: ReceiptProps) {
+    const { t } = useTranslation();
     return (
         <Card variant="outlined">
             <AppText variant="label" color="textMuted">{title}</AppText>

@@ -6,6 +6,7 @@ import { ClientRequestResponse } from "../../../../domain/models/ClientRequestRe
 import { TripPayment } from "../../../../domain/models/TripPayment";
 import { ReceiptLine } from "../../../components/ui";
 import { formatCOP } from "../../../utils/Formatters";
+import { t } from '../../../../i18n';
 
 export type PaymentRole = 'CLIENT' | 'DRIVER';
 
@@ -94,35 +95,35 @@ export class TripPaymentViewModel {
 
     // "Pagado con Nequi", "Pagado en efectivo"
     paidText(payment: TripPayment) {
-        if (payment.payment_method === 'CASH') return 'Pagado en efectivo';
+        if (payment.payment_method === 'CASH') return t('tripPayment.pagadoEnEfectivo');
         const method = payment.last_payment?.wompi_method;
-        return method ? `Pagado con ${ONLINE_METHODS[method] ?? method} por la app` : 'Pagado por la app';
+        return method ? t('tripPayment.pagadoConPorLaApp', { value: ONLINE_METHODS[method] ?? method }) : t('tripPayment.pagadoPorLaApp');
     }
 
     // El cliente ve lo que paga y que la comisión ya va incluida; el conductor, lo que le queda después de la comisión
     receipt(request: ClientRequestResponse, payment: TripPayment, role: PaymentRole): Receipt {
         const percent = this.commissionPercent(request);
-        const commissionLabel = `comisión FleteYa${percent ? ` (${percent} %)` : ''}`;
+        const commissionLabel = percent ? t('tripPayment.comisionFleteYaPorcentaje', { percent }) : t('tripPayment.comisionFleteYa');
         const footnote = payment.paid_at ? this.paidText(payment) : undefined;
         if (role === 'CLIENT') {
             return {
-                title: 'Resumen del pago',
+                title: t('tripPayment.resumenDelPago'),
                 lines: [
-                    { label: 'Transporte de la carga', value: payment.amount },
-                    ...(payment.commission > 0 ? [{ label: `Incluye ${commissionLabel}`, value: payment.commission, kind: 'fee' as const }] : []),
+                    { label: t('tripPayment.transporteDeLaCarga'), value: payment.amount },
+                    ...(payment.commission > 0 ? [{ label: t('tripPayment.incluye', { commissionLabel }), value: payment.commission, kind: 'fee' as const }] : []),
                 ],
-                totalLabel: payment.paid_at ? 'Total pagado' : 'Total a pagar',
+                totalLabel: payment.paid_at ? t('tripPayment.totalPagado') : t('tripPayment.totalAPagar'),
                 total: payment.amount,
                 footnote,
             };
         }
         return {
-            title: 'Tu ganancia',
+            title: t('tripPayment.tuGanancia'),
             lines: [
-                { label: 'Valor del flete', value: payment.amount },
-                { label: `Menos ${commissionLabel}`, value: payment.commission, kind: 'fee' },
+                { label: t('tripPayment.valorDelFlete'), value: payment.amount },
+                { label: t('tripPayment.menos', { commissionLabel }), value: payment.commission, kind: 'fee' },
             ],
-            totalLabel: 'Te queda',
+            totalLabel: t('tripPayment.teQueda'),
             total: payment.amount - payment.commission,
             footnote,
         };
@@ -133,12 +134,12 @@ export class TripPaymentViewModel {
         const amount = formatCOP(payment.amount);
         if (role === 'CLIENT') {
             return payment.payment_method === 'CASH'
-                ? `Entrégale ${amount} en efectivo al conductor. Él confirma el pago desde su app.`
-                : `Paga ${amount} con Nequi, tarjeta o PSE. Se abre la página de pago y luego vuelves aquí.`;
+                ? t('tripPayment.entregaleEnEfectivoAlConductor', { amount })
+                : t('tripPayment.pagaConNequiTarjetaO', { amount });
         }
         return payment.payment_method === 'CASH'
-            ? `Cobra ${amount} en efectivo y confirma cuando lo recibas.`
-            : 'El cliente va a pagar por la app. Te avisamos cuando el pago se apruebe.';
+            ? t('tripPayment.cobraEnEfectivoYConfirma', { amount })
+            : t('tripPayment.elClienteVaAPagar');
     }
 
     wasDeclined(payment: TripPayment) {

@@ -8,6 +8,8 @@ import { Status } from "../../../../../domain/repository/ClientRequestRepository
 import { useToast } from "../../../../components/ui";
 import { formatErrorMessage } from "../../../../utils/Formatters";
 import { ClientTripMapViewModel } from "../ClientTripMapViewModel";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../../i18n';
 
 interface Callbacks {
     // La carga se entregó: se pasa a pagar
@@ -18,6 +20,7 @@ interface Callbacks {
 
 // Estado del viaje del lado del cliente: el paso en que va, dónde está el conductor, sus fotos, confirmar la entrega y cancelar
 export function useClientTrip(viewModel: ClientTripMapViewModel, idClientRequest: number, idDriver: number, callbacks: Callbacks) {
+    const { t } = useTranslation();
     const { showToast } = useToast();
     const [request, setRequest] = useState<ClientRequestResponse | null>(null);
     const [loadFailed, setLoadFailed] = useState(false);
@@ -72,14 +75,14 @@ export function useClientTrip(viewModel: ClientTripMapViewModel, idClientRequest
         loadPhotos();
         listeners.current.push(
             viewModel.listenerTripCanceled(idClientRequest, (reason) => {
-                showToast(`El conductor canceló el viaje${reason ? `: ${reason}` : ''}`, 'error');
+                showToast(reason ? t('clientTrip.conductorCanceloConMotivo', { reason }) : t('clientTrip.conductorCancelo'), 'error');
                 callbacksRef.current.onLeft();
             }),
             // El conductor tomó una foto al cargar o al entregar
             viewModel.listenerTripPhoto(idClientRequest, loadPhotos),
             viewModel.listenerDeliveryLocked(idClientRequest, () => {
                 setDeliveryLocked(true);
-                showToast('El conductor no pudo cerrar con el código: confirma tú si ya tienes la carga', 'info');
+                showToast(t('clientTrip.elConductorNoPudoCerrar'), 'info');
             }),
         );
         return () => {
@@ -101,7 +104,7 @@ export function useClientTrip(viewModel: ClientTripMapViewModel, idClientRequest
         const response = await viewModel.confirmDelivery(idClientRequest);
         setConfirming(false);
         if (response === true) {
-            showToast('Entrega confirmada', 'success');
+            showToast(t('clientTrip.entregaConfirmada'), 'success');
             setStatus(Status.FINISHED);
             return true;
         }
@@ -112,7 +115,7 @@ export function useClientTrip(viewModel: ClientTripMapViewModel, idClientRequest
     const cancel = async (reason: string) => {
         const response = await viewModel.cancelTrip(idClientRequest, reason);
         if (response === true) {
-            showToast('Cancelaste el flete', 'info');
+            showToast(t('clientTrip.cancelasteElFlete'), 'info');
             callbacksRef.current.onLeft();
         } else {
             showToast(formatErrorMessage((response as ErrorResponse).message), 'error');

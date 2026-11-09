@@ -8,11 +8,14 @@ import { useToast } from "../../../components/ui";
 import { formatErrorMessage } from "../../../utils/Formatters";
 import TripRatingView from "../../trip/rating/TripRatingView";
 import { DriverTripRatingViewModel } from "./DriverTripRatingViewModel";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../i18n';
 
 interface Props extends StackScreenProps<DriverMapStackParamList, 'DriverTripRatingScreen'> { }
 
 // El conductor califica al cliente al entregar la carga
 export function DriverTripRatingScreen({ navigation, route }: Props) {
+    const { t } = useTranslation();
 
     const { clientRequest } = route.params;
     const rootNavigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -30,7 +33,7 @@ export function DriverTripRatingScreen({ navigation, route }: Props) {
         const response = await viewModel.updateClientRating(clientRequest.id, rating);
         setSending(false);
         if (typeof response === 'boolean') {
-            showToast('¡Gracias por calificar!', 'success');
+            showToast(t('driverTripRating.graciasPorCalificar'), 'success');
         } else {
             showToast(formatErrorMessage(response.message), 'error');
             // 409: ya estaba calificado, así que igual se sale
@@ -43,7 +46,7 @@ export function DriverTripRatingScreen({ navigation, route }: Props) {
         <TripRatingView
             request={clientRequest}
             person={clientRequest.client}
-            fareLabel="Lo que cobras por este flete"
+            fareLabel={t('driverTripRating.loQueCobrasPorEste')}
             sending={sending}
             onSubmit={handleSubmit}
             onReport={() => navigation.navigate('IncidentReportScreen', { idClientRequest: clientRequest.id })}

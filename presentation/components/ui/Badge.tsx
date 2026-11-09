@@ -1,12 +1,14 @@
 import { StyleSheet, View } from "react-native";
 import { colors, radius, spacing } from "../../theme";
 import AppText from "./AppText";
+import { useTranslation } from 'react-i18next';
 
 // Contador de no leídos sobre un botón o un ícono
 export function CountBadge({ count }: { count: number }) {
+    const { t } = useTranslation();
     if (count <= 0) return null;
     return (
-        <View style={styles.count} accessibilityLabel={`${count} sin leer`}>
+        <View style={styles.count} accessibilityLabel={t('badge.sinLeer', { count })}>
             <AppText variant="caption" color="asphalt">{count > 9 ? '9+' : count}</AppText>
         </View>
     );

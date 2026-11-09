@@ -11,6 +11,8 @@ import { spacing } from "../../../theme";
 import TripPlaces from "../../trip/components/TripPlaces";
 import { DriverClientRequestViewModel } from "./DriverClientRequestViewModel";
 import CounterOfferDialog from "./CounterOfferDialog";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../i18n';
 
 interface Props {
     clientRequestResponse: ClientRequestResponse;
@@ -22,6 +24,7 @@ interface Props {
 
 // Una solicitud cercana: cuánto ofrece el cliente, qué tan lejos está, la ruta, la carga y las tres respuestas posibles
 export function DriverClientRequestItem({ clientRequestResponse: request, viewModel, idDriver, onChanged }: Props) {
+    const { t } = useTranslation();
     const { showToast } = useToast();
     const clientFare = request.fare_offered;
     const myOffer = request.my_offer ?? null;
@@ -48,7 +51,7 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
         setIsSending(false);
         if ('id_client_request' in response) {
             setIsOfferVisible(false);
-            showToast(`Oferta de ${formatCOP(fare)} enviada`, 'success');
+            showToast(t('driverClientRequestItem.ofertaDeEnviada', { amount: formatCOP(fare) }), 'success');
             onChanged();
         } else {
             showToast(formatErrorMessage(response.message), 'error');
@@ -58,7 +61,7 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
     const handleDismiss = async () => {
         const response = await viewModel.dismissClientRequest(request.id);
         if (response === true) {
-            showToast('No volverás a ver esta solicitud', 'info');
+            showToast(t('driverClientRequestItem.noVolverasAVerEsta'), 'info');
             onChanged();
         } else {
             showToast(formatErrorMessage((response as ErrorResponse).message), 'error');
@@ -78,14 +81,14 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
             </View>
 
             {myOffer !== null &&
-                <Notice tone="success" message={`Tu oferta: ${formatCOP(myOffer)} · esperando al cliente`} />}
+                <Notice tone="success" message={t('driverClientRequestItem.tuOfertaEsperandoAlCliente', { amount: formatCOP(myOffer) })} />}
 
             <TripPlaces pickup={request.pickup_description} destination={request.destination_description} pickupDone={false} />
             <CargoInfo request={request} offerHint />
             {cargoPhotos > 0 &&
                 <View style={styles.photos}>
                     <Button
-                        title={photos ? 'Ocultar fotos' : `Ver fotos de la carga (${cargoPhotos})`}
+                        title={photos ? t('driverClientRequestItem.ocultarFotos') : t('driverClientRequestItem.verFotosDeLaCarga', { cargoPhotos })}
                         icon="images-outline"
                         variant="text"
                         size="sm"
@@ -97,19 +100,19 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
             }
             <PersonRow
                 name={`${request.client.name} ${request.client.lastname}`}
-                subtitle="Cliente"
+                subtitle={t('common.cliente')}
                 imageUri={request.client.image}
                 rating={request.client.rating}
             />
 
             <View style={styles.actions}>
-                <Button title={`Aceptar por ${formatCOP(clientFare)}`} loading={isSending && !isOfferVisible} onPress={() => sendOffer(clientFare)} />
+                <Button title={t('driverClientRequestItem.aceptarPor', { amount: formatCOP(clientFare) })} loading={isSending && !isOfferVisible} onPress={() => sendOffer(clientFare)} />
                 <View style={styles.row}>
                     <View style={styles.flex}>
-                        <Button title={myOffer !== null ? 'Cambiar oferta' : 'Contraofertar'} variant="secondary" onPress={() => setIsOfferVisible(true)} />
+                        <Button title={myOffer !== null ? t('driverClientRequestItem.cambiarOferta') : t('driverClientRequestItem.contraofertar')} variant="secondary" onPress={() => setIsOfferVisible(true)} />
                     </View>
                     <View style={styles.flex}>
-                        <Button title="No me interesa" variant="text" onPress={handleDismiss} />
+                        <Button title={t('driverClientRequestItem.noMeInteresa')} variant="text" onPress={handleDismiss} />
                     </View>
                 </View>
             </View>

@@ -3,6 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../theme";
 import AppText from "./AppText";
 import Button from "./Button";
+import { useTranslation } from 'react-i18next';
+import { tk } from '../../../i18n';
 
 export type StateKind = 'loading' | 'empty' | 'error' | 'offline';
 
@@ -17,9 +19,9 @@ interface Props {
 }
 
 const DEFAULTS: Record<Exclude<StateKind, 'loading'>, { icon: keyof typeof Ionicons.glyphMap; title: string; message: string }> = {
-    empty: { icon: 'cube-outline', title: 'Todavía no hay nada aquí', message: '' },
-    error: { icon: 'warning-outline', title: 'Algo salió mal', message: 'No pudimos cargar la información. Intenta de nuevo.' },
-    offline: { icon: 'cloud-offline-outline', title: 'Sin conexión', message: 'Revisa tu internet. Cuando vuelva, toca reintentar.' },
+    empty: { icon: 'cube-outline', title: tk('state.todaviaNoHayNadaAqui'), message: '' },
+    error: { icon: 'warning-outline', title: tk('state.algoSalioMal'), message: tk('state.noPudimosCargarLaInformacion') },
+    offline: { icon: 'cloud-offline-outline', title: tk('state.sinConexion'), message: tk('state.revisaTuInternetCuandoVuelva') },
 };
 
 const CIRCLE: Record<Exclude<StateKind, 'loading'>, { background: string; icon: string }> = {
@@ -30,25 +32,26 @@ const CIRCLE: Record<Exclude<StateKind, 'loading'>, { background: string; icon: 
 
 // Un solo patrón para cargando, vacío, error y sin conexión en todas las pantallas
 export default function StateView({ kind, title, message, actionLabel, onAction, icon }: Props) {
+    const { t } = useTranslation();
     if (kind === 'loading') {
         return (
             <View style={styles.container} accessibilityLiveRegion="polite">
                 <ActivityIndicator size="large" color={colors.asphalt} />
-                <AppText variant="small" color="textMuted" align="center">{message ?? 'Cargando…'}</AppText>
+                <AppText variant="small" color="textMuted" align="center">{message ?? t('state.cargando')}</AppText>
             </View>
         );
     }
 
     const preset = DEFAULTS[kind];
-    const text = message ?? preset.message;
+    const text = message ?? (preset.message ? t(preset.message) : '');
     return (
         <View style={styles.container} accessibilityLiveRegion="polite">
             <View style={[styles.iconCircle, { backgroundColor: CIRCLE[kind].background }]}>
                 <Ionicons name={icon ?? preset.icon} size={32} color={CIRCLE[kind].icon} />
             </View>
-            <AppText variant="heading" align="center">{title ?? preset.title}</AppText>
+            <AppText variant="heading" align="center">{title ?? t(preset.title)}</AppText>
             {text ? <AppText variant="small" color="textMuted" align="center">{text}</AppText> : null}
-            {onAction && <Button title={actionLabel ?? 'Reintentar'} variant="dark" size="sm" onPress={onAction} style={styles.action} />}
+            {onAction && <Button title={actionLabel ?? t('state.reintentar')} variant="dark" size="sm" onPress={onAction} style={styles.action} />}
         </View>
     );
 }

@@ -6,11 +6,13 @@ import DriverMyLocationMapScreen from "../screens/driver/MyLocationMap/DriverMyL
 import ProfileInfoScreen from "../screens/profile/info/ProfileInfoScreen";
 import ProfileUpdateScreen from "../screens/profile/update/ProfileUpdateScreen";
 import ChangePasswordScreen from "../screens/profile/changePassword/ChangePasswordScreen";
+import ProfileLanguageScreen from "../screens/profile/language/ProfileLanguageScreen";
 
 export type ProfileStackParamList = {
     ProfileInfoScreen: undefined,
     ProfileUpdateScreen: undefined,
     ChangePasswordScreen: undefined,
+    ProfileLanguageScreen: undefined,
 }
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -39,6 +41,12 @@ export const ProfileStackNavigator = () => {
                 options={{ headerShown: false }}
                 name="ChangePasswordScreen"
                 component={ChangePasswordScreen}
+            />
+
+            <Stack.Screen
+                options={{ headerShown: false }}
+                name="ProfileLanguageScreen"
+                component={ProfileLanguageScreen}
             />
 
 

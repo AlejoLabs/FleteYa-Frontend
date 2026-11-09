@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, spacing, touchTarget } from "../../theme";
 import { Amount } from "./Money";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     value: number;
@@ -15,16 +16,17 @@ interface Props {
 
 // Precio con − y +, como al ofrecer o subir el precio del flete
 export default function PriceStepper({ value, onChange, step = 1000, min = 0, max = Number.MAX_SAFE_INTEGER, onPressValue }: Props) {
+    const { t } = useTranslation();
     const canDecrease = value - step >= min;
     const canIncrease = value + step <= max;
 
     return (
-        <View style={styles.container} accessibilityRole="adjustable" accessibilityValue={{ text: `${value} pesos` }}>
-            <StepButton icon="remove" label={`Bajar ${step} pesos`} disabled={!canDecrease} onPress={() => onChange(value - step)} />
-            <Pressable onPress={onPressValue} disabled={!onPressValue} style={styles.value} accessibilityLabel="Escribir el precio">
+        <View style={styles.container} accessibilityRole="adjustable" accessibilityValue={{ text: t('common.pesos', { value }) }}>
+            <StepButton icon="remove" label={t('priceStepper.bajarPesos', { step })} disabled={!canDecrease} onPress={() => onChange(value - step)} />
+            <Pressable onPress={onPressValue} disabled={!onPressValue} style={styles.value} accessibilityLabel={t('priceStepper.escribirElPrecio')}>
                 <Amount value={value} size="lg" />
             </Pressable>
-            <StepButton icon="add" label={`Subir ${step} pesos`} disabled={!canIncrease} onPress={() => onChange(value + step)} />
+            <StepButton icon="add" label={t('priceStepper.subirPesos', { step })} disabled={!canIncrease} onPress={() => onChange(value + step)} />
         </View>
     );
 }

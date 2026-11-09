@@ -2,6 +2,7 @@ import { ActiveTrip } from "../../../domain/models/ClientRequestResponse";
 import { ClientRequestUseCases } from "../../../domain/useCases/clientRequest/ClientRequestUseCases";
 import { StatusTone } from "../../components/ui";
 import { formatScheduledDate } from "../../utils/Formatters";
+import { t, tk } from '../../../i18n';
 
 export type UpcomingTab = 'ACTIVE' | 'SCHEDULED';
 
@@ -9,13 +10,13 @@ export type UpcomingTab = 'ACTIVE' | 'SCHEDULED';
 const WAITING = ['CREATED', 'ACCEPTED'];
 
 const STATUS: Record<string, { label: string; tone: StatusTone }> = {
-    CREATED: { label: 'Buscando conductor', tone: 'warning' },
-    ACCEPTED: { label: 'Conductor asignado', tone: 'success' },
-    ON_THE_WAY: { label: 'Conductor en camino', tone: 'success' },
-    ARRIVED: { label: 'En la recogida', tone: 'success' },
-    TRAVELING: { label: 'Carga en camino', tone: 'cargo' },
+    CREATED: { label: tk('upcomingTrips.buscandoConductor'), tone: 'warning' },
+    ACCEPTED: { label: tk('upcomingTrips.conductorAsignado'), tone: 'success' },
+    ON_THE_WAY: { label: tk('upcomingTrips.conductorEnCamino'), tone: 'success' },
+    ARRIVED: { label: tk('upcomingTrips.enLaRecogida'), tone: 'success' },
+    TRAVELING: { label: tk('upcomingTrips.cargaEnCamino'), tone: 'cargo' },
     // Entregado y sin pagar: sigue aquí hasta que se pague
-    FINISHED: { label: 'Pendiente de pago', tone: 'warning' },
+    FINISHED: { label: tk('upcomingTrips.pendienteDePago'), tone: 'warning' },
 };
 
 // Búsquedas y viajes en curso o programados del usuario, como cliente o como conductor
@@ -45,11 +46,12 @@ export class UpcomingTripsViewModel {
 
     // Arriba de cada tarjeta: para cuándo es, o "Entregado" si solo falta el pago
     whenText(trip: ActiveTrip) {
-        if (trip.status === 'FINISHED') return 'Entregado';
-        return trip.scheduled_at ? formatScheduledDate(trip.scheduled_at) : 'Ahora';
+        if (trip.status === 'FINISHED') return t('common.entregado');
+        return trip.scheduled_at ? formatScheduledDate(trip.scheduled_at) : t('upcomingTrips.ahora');
     }
 
     status(trip: ActiveTrip) {
-        return STATUS[trip.status] ?? { label: trip.status, tone: 'neutral' as StatusTone };
+        const status = STATUS[trip.status];
+        return status ? { ...status, label: t(status.label) } : { label: trip.status, tone: 'neutral' as StatusTone };
     }
 }

@@ -3,6 +3,7 @@ import { Animated, Pressable, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Amount, AppText, Button } from "../../../../components/ui";
 import { colors, radius, shadows, spacing } from "../../../../theme";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     fare: number;
@@ -14,6 +15,7 @@ interface Props {
 
 // Tarjeta que sube desde abajo cuando llega una solicitud nueva que le sirve al conductor
 export default function NewRequestCard({ fare, detail, onOpen, onDismiss }: Props) {
+    const { t } = useTranslation();
     const enter = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
@@ -28,15 +30,15 @@ export default function NewRequestCard({ fare, detail, onOpen, onDismiss }: Prop
             <View style={styles.top}>
                 <View style={styles.badge}>
                     <Ionicons name="notifications" size={14} color={colors.asphalt} />
-                    <AppText variant="caption" style={styles.badgeText}>Nueva solicitud cerca</AppText>
+                    <AppText variant="caption" style={styles.badgeText}>{t('newRequestCard.nuevaSolicitudCerca')}</AppText>
                 </View>
-                <Pressable onPress={onDismiss} hitSlop={12} accessibilityRole="button" accessibilityLabel="Cerrar aviso">
+                <Pressable onPress={onDismiss} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('newRequestCard.cerrarAviso')}>
                     <Ionicons name="close" size={22} color={colors.textOnDarkMuted} />
                 </Pressable>
             </View>
             <Amount value={fare} size="lg" color="textOnDark" />
             <AppText variant="small" color="textOnDarkMuted">{detail}</AppText>
-            <Button title="Ver solicitud" onPress={onOpen} />
+            <Button title={t('newRequestCard.verSolicitud')} onPress={onOpen} />
         </Animated.View>
     );
 }

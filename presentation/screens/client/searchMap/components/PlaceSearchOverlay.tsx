@@ -6,6 +6,7 @@ import { PlacePrediction } from "../../../../../domain/models/PlacePrediction";
 import { AppHeader, AppText, TextField } from "../../../../components/ui";
 import { colors, spacing, touchTarget } from "../../../../theme";
 import { ClientSearchMapViewModel } from "../ClientSearchMapViewModel";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     viewModel: ClientSearchMapViewModel;
@@ -23,6 +24,7 @@ const MIN_LENGTH = 3;
 // Buscador de direcciones a pantalla completa, para el origen o el destino.
 // Es una capa y no un Modal: un Modal abre otra ventana y taparía los avisos de la app
 export default function PlaceSearchOverlay({ viewModel, title, placeholder, onClose, onSelect }: Props) {
+    const { t } = useTranslation();
     // El teclado se cierra antes de quitar la capa: si el campo desaparece con el teclado abierto,
     // Android no avisa que se cerró y la hoja de abajo se queda subida
     const close = () => { Keyboard.dismiss(); onClose(); };
@@ -105,10 +107,10 @@ export default function PlaceSearchOverlay({ viewModel, title, placeholder, onCl
                 ListEmptyComponent={loading ? null :
                     <AppText variant="small" color="textMuted" style={styles.empty}>
                         {!searched
-                            ? 'Escribe la dirección o el nombre del lugar, por ejemplo "Calle 26 # 68" o "Centro Mayor".'
+                            ? t('placeSearchOverlay.escribeLaDireccionOEl')
                             : failed
-                                ? 'No pudimos buscar direcciones. Revisa tu conexión e intenta de nuevo.'
-                                : 'No encontramos ese lugar. Prueba escribiendo la dirección.'}
+                                ? t('placeSearchOverlay.noPudimosBuscarDireccionesRevisa')
+                                : t('placeSearchOverlay.noEncontramosEseLugarPrueba')}
                     </AppText>
                 }
             />

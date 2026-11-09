@@ -15,11 +15,14 @@ import { colors, fonts, radius, spacing } from "../../../theme";
 import { DocumentsForm, DocumentsFormErrors, DriverCarInfoViewModel, VehicleForm, VehicleFormErrors } from "./DriverCarInfoViewModel";
 import VehicleEditForm from "./components/VehicleEditForm";
 import DocumentsEditForm from "./components/DocumentsEditForm";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../i18n';
 
 const MAX_VEHICLE_PHOTOS = 4;
 
 // Mi vehículo: lo que ven los clientes al comparar ofertas y el estado de los documentos
 export function DriverCarInfoScreen() {
+    const { t } = useTranslation();
 
     const viewModel: DriverCarInfoViewModel = container.resolve('driverCarInfoViewModel');
     const { authResponse } = useAuth();
@@ -56,7 +59,7 @@ export function DriverCarInfoScreen() {
     }, []));
 
     const handleAddPhoto = async () => {
-        const result = await choosePhoto('Foto del vehículo');
+        const result = await choosePhoto(t('driverCarInfo.fotoDelVehiculo'));
         if (!result.ok) {
             if (!result.cancelled) showToast(result.message, 'error');
             return;
@@ -76,7 +79,7 @@ export function DriverCarInfoScreen() {
         const response = await viewModel.deleteVehiclePhoto(Number(key));
         if (response === true) {
             setPhotos((current) => current.filter((photo) => String(photo.id) !== key));
-            showToast('Foto quitada', 'info');
+            showToast(t('driverCarInfo.fotoQuitada'), 'info');
         } else {
             showToast(formatErrorMessage((response as any).message), 'error');
         }
@@ -124,7 +127,7 @@ export function DriverCarInfoScreen() {
         if ('brand' in response) {
             setCar((current) => current ? { ...current, ...response } : response);
             setVehicleForm(null);
-            showToast('Datos del vehículo guardados', 'success');
+            showToast(t('driverCarInfo.datosDelVehiculoGuardados'), 'success');
         } else {
             showToast(formatErrorMessage(response.message), 'error');
         }
@@ -141,7 +144,7 @@ export function DriverCarInfoScreen() {
         if (Array.isArray(response)) {
             setDocuments(response);
             setDocumentsForm(null);
-            showToast('Documentos actualizados', 'success');
+            showToast(t('driverCarInfo.documentosActualizados'), 'success');
             // Trae la categoría y las fechas guardadas para la próxima edición
             const updated = await viewModel.getDriverCarInfo(idDriver);
             if ('brand' in updated) setCar(updated);
@@ -154,8 +157,8 @@ export function DriverCarInfoScreen() {
         return (
             <View style={styles.screen}>
                 {loadFailed
-                    ? <StateView kind="error" message="No pudimos cargar tu vehículo." onAction={load} />
-                    : <StateView kind="loading" message="Cargando tu vehículo…" />}
+                    ? <StateView kind="error" message={t('driverCarInfo.noPudimosCargarTuVehiculo')} onAction={load} />
+                    : <StateView kind="loading" message={t('driverCarInfo.cargandoTuVehiculo')} />}
             </View>
         );
     }
@@ -170,13 +173,13 @@ export function DriverCarInfoScreen() {
                         <View style={styles.flex}>
                             <AppText variant="heading">{viewModel.vehicleTitle(car)}</AppText>
                             <AppText variant="small" color="textMuted">
-                                {[car.color, car.is_covered ? 'carrocería cerrada' : 'carrocería abierta'].filter(Boolean).join(' · ')}
+                                {[car.color, car.is_covered ? t('driverCarInfo.carroceriaCerrada') : t('driverCarInfo.carroceriaAbierta')].filter(Boolean).join(' · ')}
                             </AppText>
                         </View>
-                        {car.license_category && <StatusPill label={`Licencia ${car.license_category}`} tone="neutral" />}
+                        {car.license_category && <StatusPill label={t('driverCarInfo.licencia', { license_category: car.license_category })} tone="neutral" />}
                     </View>
                     {/* Como la placa amarilla de los vehículos en Colombia */}
-                    <View style={styles.plate} accessibilityLabel={`Placa ${car.plate.split('').join(' ')}`}>
+                    <View style={styles.plate} accessibilityLabel={t('driverCarInfo.placa', { split: car.plate.split('').join(' ') })}>
                         <AppText style={styles.plateText}>{viewModel.plateText(car.plate)}</AppText>
                     </View>
                     {capacity && <AppText variant="small" color="textMuted">{capacity}</AppText>}
@@ -191,13 +194,13 @@ export function DriverCarInfoScreen() {
                             onSave={handleSaveVehicle}
                             onCancel={() => setVehicleForm(null)}
                         />
-                        : <Button title="Cambiar vehículo o capacidad" icon="create-outline" variant="secondary" onPress={() => editVehicle(car)} />
+                        : <Button title={t('driverCarInfo.cambiarVehiculoOCapacidad')} icon="create-outline" variant="secondary" onPress={() => editVehicle(car)} />
                     }
                 </Card>
 
                 <View style={styles.section}>
-                    <AppText variant="label" color="textMuted">Fotos del vehículo</AppText>
-                    <AppText variant="small" color="textMuted">Los clientes las ven al comparar ofertas. Toca la ✕ para quitar una.</AppText>
+                    <AppText variant="label" color="textMuted">{t('driverCarInfo.fotosDelVehiculo')}</AppText>
+                    <AppText variant="small" color="textMuted">{t('driverCarInfo.losClientesLasVenAl')}</AppText>
                     <PhotoStrip
                         items={photos.map((photo) => ({ key: String(photo.id), path: photo.url }))}
                         maxItems={MAX_VEHICLE_PHOTOS}
@@ -207,7 +210,7 @@ export function DriverCarInfoScreen() {
                 </View>
 
                 <View style={styles.section}>
-                    <AppText variant="label" color="textMuted">Documentos</AppText>
+                    <AppText variant="label" color="textMuted">{t('driverCarInfo.documentos')}</AppText>
                     <Card style={styles.documents}>
                         {documentsForm
                             ? <View style={styles.documentsForm}>
@@ -225,8 +228,8 @@ export function DriverCarInfoScreen() {
                                 {documents.length > 0
                                     ? <DocumentsStatus documents={documents} />
                                     // Conductores registrados antes de que la app pidiera los documentos
-                                    : <AppText variant="small" color="textMuted" style={styles.noDocuments}>No tienes fechas de vencimiento registradas.</AppText>}
-                                <Button title="Actualizar documentos" icon="refresh-outline" variant="secondary" onPress={() => editDocuments(car)} style={styles.documentsButton} />
+                                    : <AppText variant="small" color="textMuted" style={styles.noDocuments}>{t('driverCarInfo.noTienesFechasDeVencimiento')}</AppText>}
+                                <Button title={t('driverCarInfo.actualizarDocumentos')} icon="refresh-outline" variant="secondary" onPress={() => editDocuments(car)} style={styles.documentsButton} />
                             </>
                         }
                     </Card>
@@ -235,9 +238,9 @@ export function DriverCarInfoScreen() {
 
             <ConfirmDialog
                 visible={photoToRemove !== null}
-                title="Quitar foto"
-                message="Los clientes ya no la verán al comparar ofertas."
-                confirmLabel="Quitar foto"
+                title={t('driverCarInfo.quitarFoto')}
+                message={t('driverCarInfo.losClientesYaNoLa')}
+                confirmLabel={t('driverCarInfo.quitarFoto')}
                 tone="danger"
                 onConfirm={handleRemovePhoto}
                 onCancel={() => setPhotoToRemove(null)}

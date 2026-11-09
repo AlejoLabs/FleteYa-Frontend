@@ -20,6 +20,8 @@ import CargoStep from "./steps/CargoStep";
 import SizeStep from "./steps/SizeStep";
 import PriceStep from "./steps/PriceStep";
 import { StepActions } from "./components/StepParts";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../i18n';
 
 interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientSearchMapScreen'> { };
 
@@ -30,6 +32,7 @@ const SHEET_MAX = 0.62;
 
 // Pedir un flete: mapa a pantalla completa y la solicitud en una hoja inferior de cuatro pasos
 export default function ClientSearchMapScreen({ navigation, route }: Props) {
+    const { t } = useTranslation();
 
     const viewModel: ClientSearchMapViewModel = container.resolve("clientSearchMapViewModel");
     const { authResponse } = useAuth();
@@ -95,7 +98,7 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
         setSearchTarget(null);
         const place = await request.placeFromId(placeId);
         if (!place) {
-            showToast('No pudimos ubicar esa dirección. Prueba con otra', 'error');
+            showToast(t('clientSearchMap.noPudimosUbicarEsaDireccion'), 'error');
             return;
         }
         if (target === 'origin') {
@@ -115,7 +118,7 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
             showToast(formatErrorMessage(response.message), 'error');
             return;
         }
-        if (response.failedPhotos) showToast(`El flete se publicó, pero no se pudieron subir ${response.failedPhotos} fotos`, 'error');
+        if (response.failedPhotos) showToast(t('clientSearchMap.elFleteSePublicoPero', { failedPhotos: response.failedPhotos }), 'error');
         setActiveSearchId(response.id);
         request.reset();
     }
@@ -135,13 +138,13 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
             />
 
             <View style={[styles.topBar, { top: insets.top + spacing.sm }]} pointerEvents="box-none">
-                <MapButton icon="menu" label="Abrir menú" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
+                <MapButton icon="menu" label={t('common.abrirMenu')} onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
             </View>
 
             <KeyboardArea style={styles.sheetArea} pointerEvents="box-none">
                 {step === 0 && map.userLocation &&
                     <View style={styles.locateRow} pointerEvents="box-none">
-                        <MapButton icon="locate" label="Ir a mi ubicación" onPress={() => { userDragged.current = true; map.centerOnUser(); }} />
+                        <MapButton icon="locate" label={t('clientSearchMap.irAMiUbicacion')} onPress={() => { userDragged.current = true; map.centerOnUser(); }} />
                     </View>
                 }
                 <View onLayout={(event) => setSheetHeight(event.nativeEvent.layout.height)}>
@@ -154,7 +157,7 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                             <StepActions
                                 onBack={step > 0 ? request.back : undefined}
                                 onNext={step === 3 ? handlePublish : request.next}
-                                nextLabel={step < 3 ? 'Continuar' : draft.scheduledAt ? 'Programar flete' : 'Publicar flete'}
+                                nextLabel={step < 3 ? t('clientSearchMap.continuar') : draft.scheduledAt ? t('clientSearchMap.programarFlete') : t('clientSearchMap.publicarFlete')}
                                 loading={publishing}
                             />
                         }
@@ -171,8 +174,8 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
             {searchTarget !== null &&
                 <PlaceSearchOverlay
                 viewModel={viewModel}
-                title={searchTarget === 'origin' ? '¿Dónde recogemos la carga?' : '¿A dónde la llevamos?'}
-                placeholder={searchTarget === 'origin' ? 'Dirección de recogida' : 'Dirección de entrega'}
+                title={searchTarget === 'origin' ? t('clientSearchMap.dondeRecogemosLaCarga') : t('clientSearchMap.aDondeLaLlevamos')}
+                placeholder={searchTarget === 'origin' ? t('clientSearchMap.direccionDeRecogida') : t('clientSearchMap.direccionDeEntrega')}
                 onClose={() => setSearchTarget(null)}
                 onSelect={handleSelectPlace}
                 />

@@ -8,11 +8,14 @@ import { AppHeader, AppText, Button, CodeInput, KeyboardArea, Notice, TextField,
 import { colors, spacing } from "../../../theme";
 import { formatCountdown, formatErrorMessage } from "../../../utils/Formatters";
 import { CODE_LENGTH, RESEND_WAIT_SECONDS, ResetErrors } from "./ForgotPasswordViewModel";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../i18n';
 
 interface Props extends StackScreenProps<RootStackParamList, 'ForgotPasswordScreen'> { };
 
 // Dos pasos: pedir el código al correo y luego escribirlo con la contraseña nueva
 export default function ForgotPasswordScreen({ navigation, route }: Props) {
+    const { t } = useTranslation();
 
     const viewModel = container.resolve('forgotPasswordViewModel');
     const { showToast } = useToast();
@@ -44,7 +47,7 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
         }
         setCodeSent(true);
         setResendIn(RESEND_WAIT_SECONDS);
-        showToast('Te enviamos el código', 'success');
+        showToast(t('forgotPassword.teEnviamosElCodigo'), 'success');
     }
 
     const handleReset = async () => {
@@ -59,7 +62,7 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
             setErrors({ code: formatErrorMessage(response.message) });
             return;
         }
-        showToast('Contraseña cambiada. Ya puedes entrar con ella', 'success');
+        showToast(t('forgotPassword.contrasenaCambiadaYaPuedesEntrar'), 'success');
         navigation.goBack();
     }
 
@@ -77,22 +80,22 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
     return (
         <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
             <AppHeader
-                title="Recuperar contraseña"
+                title={t('forgotPassword.recuperarContrasena')}
                 onBack={handleBack}
-                right={<AppText variant="caption" color="textMuted">{codeSent ? '2 de 2' : '1 de 2'}</AppText>}
+                right={<AppText variant="caption" color="textMuted">{codeSent ? t('forgotPassword.t2De2') : t('forgotPassword.t1De2')}</AppText>}
             />
             <KeyboardArea aboveBottomInset style={styles.flex}>
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                     {!codeSent ?
                         <>
                             <View style={styles.intro}>
-                                <AppText variant="title">¿A qué correo te enviamos el código?</AppText>
+                                <AppText variant="title">{t('forgotPassword.aQueCorreoTeEnviamos')}</AppText>
                                 <AppText variant="body" color="textMuted">
-                                    Usa el correo de tu cuenta. Si la creaste con Google, así también puedes ponerle una contraseña.
+                                    {t('forgotPassword.usaElCorreoDeTu')}
                                 </AppText>
                             </View>
                             <TextField
-                                label="Correo"
+                                label={t('common.correo')}
                                 icon="mail-outline"
                                 placeholder="tu@correo.com"
                                 value={email}
@@ -108,13 +111,11 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
                         :
                         <>
                             <View style={styles.intro}>
-                                <AppText variant="title">Escribe el código que te enviamos</AppText>
-                                <AppText variant="body" color="textMuted">
-                                    Lo mandamos a {viewModel.maskEmail(email)}. Vence en 15 minutos.
-                                </AppText>
+                                <AppText variant="title">{t('forgotPassword.escribeElCodigoQueTe')}</AppText>
+                                <AppText variant="body" color="textMuted">{t('forgotPassword.loMandamosAVenceEn', { maskEmail: viewModel.maskEmail(email) })}</AppText>
                             </View>
                             <CodeInput
-                                label="Código"
+                                label={t('forgotPassword.codigo')}
                                 length={CODE_LENGTH}
                                 value={code}
                                 onChangeText={(value) => { setCode(value); setErrors({ ...errors, code: undefined }); }}
@@ -122,8 +123,8 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
                                 autoFocus
                             />
                             <TextField
-                                label="Nueva contraseña"
-                                placeholder="Mínimo 6 caracteres"
+                                label={t('forgotPassword.nuevaContrasena')}
+                                placeholder={t('common.minimo6Caracteres')}
                                 value={password}
                                 onChangeText={(value) => { setPassword(value); setErrors({ ...errors, password: undefined }); }}
                                 error={errors.password}
@@ -134,9 +135,9 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
                             />
                             <Notice
                                 message={resendIn > 0
-                                    ? `¿No te llegó? Revisa la carpeta de spam. Puedes pedir otro en ${formatCountdown(resendIn * 1000)}.`
-                                    : '¿No te llegó? Revisa la carpeta de spam o pide otro código.'}
-                                actionLabel={resendIn > 0 || isSending ? undefined : 'Pedir otro código'}
+                                    ? t('forgotPassword.noTeLlegoRevisaLa', { countdown: formatCountdown(resendIn * 1000) })
+                                    : t('forgotPassword.noTeLlegoRevisaLa2')}
+                                actionLabel={resendIn > 0 || isSending ? undefined : t('forgotPassword.pedirOtroCodigo')}
                                 onAction={handleSendCode}
                             />
                         </>
@@ -145,7 +146,7 @@ export default function ForgotPasswordScreen({ navigation, route }: Props) {
 
                 <View style={styles.footer}>
                     <Button
-                        title={codeSent ? 'Cambiar contraseña' : 'Enviar código'}
+                        title={codeSent ? t('common.cambiarContrasena') : t('forgotPassword.enviarCodigo')}
                         loading={isSending}
                         onPress={codeSent ? handleReset : handleSendCode}
                     />

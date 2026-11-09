@@ -14,11 +14,14 @@ import PhotoStrip from "../../../components/PhotoStrip";
 import { choosePhoto } from "../../../utils/PhotoPicker";
 import { formatErrorMessage, formatTripDate } from "../../../utils/Formatters";
 import { colors, spacing } from "../../../theme";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../i18n';
 
 type Props = NativeStackScreenProps<TripSharedParamList, 'IncidentReportScreen'>;
 
 // Reportar un problema del viaje (daño, pérdida, demora, mal trato) con fotos para el equipo de FleteYa
 export function IncidentReportScreen({ navigation, route }: Props) {
+    const { t } = useTranslation();
 
     const { idClientRequest } = route.params;
     const viewModel: IncidentReportViewModel = container.resolve('incidentReportViewModel');
@@ -36,7 +39,7 @@ export function IncidentReportScreen({ navigation, route }: Props) {
     const update = (changes: Partial<IncidentForm>) => setForm((current) => ({ ...current, ...changes }));
 
     const handleAddPhoto = async () => {
-        const result = await choosePhoto('Foto del problema');
+        const result = await choosePhoto(t('incidentReport.fotoDelProblema'));
         if (!result.ok) {
             if (!result.cancelled) showToast(result.message, 'error');
             return;
@@ -56,7 +59,7 @@ export function IncidentReportScreen({ navigation, route }: Props) {
         setIsSending(false);
         if ('id' in response) {
             // El aviso queda arriba aunque la pantalla se cierre: el proveedor de avisos vive en la raíz de la app
-            showToast('Recibimos tu reporte. El equipo de FleteYa lo va a revisar.', 'success');
+            showToast(t('incidentReport.recibimosTuReporteElEquipo'), 'success');
             navigation.goBack();
         } else {
             showToast(formatErrorMessage(response.message), 'error');
@@ -65,29 +68,29 @@ export function IncidentReportScreen({ navigation, route }: Props) {
 
     return (
         <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-            <AppHeader title="Reportar un problema" subtitle={`Flete #${idClientRequest}`} onBack={() => navigation.goBack()} />
+            <AppHeader title={t('common.reportarUnProblema')} subtitle={t('incidentReport.flete', { idClientRequest })} onBack={() => navigation.goBack()} />
             <KeyboardArea style={styles.flex} aboveBottomInset>
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                     {previous.length > 0 &&
                         <Card variant="muted" style={styles.previous}>
-                            <AppText variant="smallStrong">Tus reportes de este viaje</AppText>
+                            <AppText variant="smallStrong">{t('incidentReport.tusReportesDeEsteViaje')}</AppText>
                             {previous.map((report) => (
                                 <AppText key={report.id} variant="small" color="textMuted">
-                                    {incidentKindLabel(report.kind)} · {INCIDENT_STATUS_LABELS[report.status]} · {formatTripDate(report.created_at)}
+                                    {incidentKindLabel(report.kind)} · {t(INCIDENT_STATUS_LABELS[report.status])} · {formatTripDate(report.created_at)}
                                 </AppText>
                             ))}
                         </Card>
                     }
 
                     <View style={styles.block}>
-                        <AppText variant="label" color="textMuted">¿Qué pasó?</AppText>
-                        <ChipGroup options={INCIDENT_KINDS} selected={form.kind} onSelect={(kind) => update({ kind })} />
+                        <AppText variant="label" color="textMuted">{t('incidentReport.quePaso')}</AppText>
+                        <ChipGroup options={INCIDENT_KINDS.map((kind) => ({ ...kind, label: t(kind.label) }))} selected={form.kind} onSelect={(kind) => update({ kind })} />
                     </View>
 
                     <View style={styles.block}>
                         <TextField
-                            label="Cuéntanos"
-                            placeholder="Qué se dañó o faltó, en qué momento del viaje y cualquier dato que ayude"
+                            label={t('incidentReport.cuentanos')}
+                            placeholder={t('incidentReport.queSeDanoOFalto')}
                             value={form.description}
                             onChangeText={(description) => update({ description })}
                             maxLength={MAX_DESCRIPTION_LENGTH}
@@ -99,7 +102,7 @@ export function IncidentReportScreen({ navigation, route }: Props) {
                     </View>
 
                     <View style={styles.block}>
-                        <AppText variant="label" color="textMuted">Fotos · hasta {MAX_INCIDENT_PHOTOS}</AppText>
+                        <AppText variant="label" color="textMuted">{t('incidentReport.fotosHasta', { maxIncidentPhotos: MAX_INCIDENT_PHOTOS })}</AppText>
                         <PhotoStrip
                             items={form.photoUris.map((uri) => ({ key: uri, localUri: uri }))}
                             maxItems={MAX_INCIDENT_PHOTOS}
@@ -108,10 +111,10 @@ export function IncidentReportScreen({ navigation, route }: Props) {
                         />
                     </View>
 
-                    <AppText variant="small" color="textMuted">Solo tú y el equipo de FleteYa ven este reporte.</AppText>
+                    <AppText variant="small" color="textMuted">{t('incidentReport.soloTuYElEquipo')}</AppText>
                 </ScrollView>
                 <View style={styles.footer}>
-                    <Button title="Enviar reporte" variant="dark" loading={isSending} onPress={handleSubmit} />
+                    <Button title={t('incidentReport.enviarReporte')} variant="dark" loading={isSending} onPress={handleSubmit} />
                 </View>
             </KeyboardArea>
         </SafeAreaView>

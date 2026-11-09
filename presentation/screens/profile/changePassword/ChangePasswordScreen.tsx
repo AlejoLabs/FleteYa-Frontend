@@ -9,11 +9,13 @@ import { AppHeader, AppText, Button, KeyboardArea, TextField, useToast } from ".
 import { formatErrorMessage } from "../../../utils/Formatters";
 import { colors, spacing } from "../../../theme";
 import { ChangePasswordViewModel, PasswordErrors, PasswordForm } from "./ChangePasswordViewModel";
+import { useTranslation } from 'react-i18next';
 
 interface Props extends StackScreenProps<ProfileStackParamList, 'ChangePasswordScreen'> { };
 
 // Cambiar la contraseña con la sesión abierta. Una cuenta creada con Google no tiene contraseña y aquí la crea
 export default function ChangePasswordScreen({ navigation }: Props) {
+    const { t } = useTranslation();
 
     const viewModel: ChangePasswordViewModel = container.resolve('changePasswordViewModel');
     const { authResponse } = useAuth();
@@ -44,7 +46,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
         navigation.goBack();
     }
 
-    const title = hasPassword ? 'Cambiar contraseña' : 'Crear contraseña';
+    const title = hasPassword ? t('common.cambiarContrasena') : t('changePassword.crearContrasena');
 
     return (
         <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -53,16 +55,16 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                     <AppText variant="body" color="textMuted">
                         {hasPassword
-                            ? 'Por seguridad, primero escribe tu contraseña actual.'
-                            : 'Tu cuenta se creó con Google. Con una contraseña también podrás entrar con tu correo.'}
+                            ? t('changePassword.porSeguridadPrimeroEscribeTu')
+                            : t('changePassword.tuCuentaSeCreoCon')}
                     </AppText>
                     {hasPassword &&
-                        <TextField label="Contraseña actual" value={form.current} onChangeText={update('current')} error={errors.current} secureTextEntry autoComplete="current-password" />}
-                    <TextField label="Contraseña nueva" placeholder="Mínimo 6 caracteres" value={form.next} onChangeText={update('next')} error={errors.next} secureTextEntry autoComplete="new-password" />
-                    <TextField label="Repite la contraseña nueva" value={form.confirm} onChangeText={update('confirm')} error={errors.confirm} secureTextEntry autoComplete="new-password" />
+                        <TextField label={t('changePassword.contrasenaActual')} value={form.current} onChangeText={update('current')} error={errors.current} secureTextEntry autoComplete="current-password" />}
+                    <TextField label={t('changePassword.contrasenaNueva')} placeholder={t('common.minimo6Caracteres')} value={form.next} onChangeText={update('next')} error={errors.next} secureTextEntry autoComplete="new-password" />
+                    <TextField label={t('changePassword.repiteLaContrasenaNueva')} value={form.confirm} onChangeText={update('confirm')} error={errors.confirm} secureTextEntry autoComplete="new-password" />
                 </ScrollView>
                 <View style={styles.footer}>
-                    <Button title="Guardar contraseña" loading={isSending} onPress={handleSave} />
+                    <Button title={t('changePassword.guardarContrasena')} loading={isSending} onPress={handleSave} />
                 </View>
             </KeyboardArea>
         </SafeAreaView>

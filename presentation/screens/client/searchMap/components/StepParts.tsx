@@ -3,16 +3,19 @@ import { Ionicons } from "@expo/vector-icons";
 import { AppText, Button, ProgressSteps } from "../../../../components/ui";
 import { colors, radius, spacing, touchTarget } from "../../../../theme";
 import { REQUEST_STEPS } from "../RequestDraft";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../../i18n';
 
 // Título del paso con "Paso 2 de 4" y la barra de avance
 export function StepHeader({ title, step }: { title: string; step: number }) {
+    const { t } = useTranslation();
     return (
         <View style={styles.header}>
             <View style={styles.titleRow}>
                 <AppText variant="title" style={styles.title} accessibilityRole="header">{title}</AppText>
-                <AppText variant="caption" color="textMuted">Paso {step + 1} de {REQUEST_STEPS.length}</AppText>
+                <AppText variant="caption" color="textMuted">{t('stepParts.pasoDe', { value: step + 1, length: REQUEST_STEPS.length })}</AppText>
             </View>
-            <ProgressSteps steps={REQUEST_STEPS} current={step} showLabels={false} />
+            <ProgressSteps steps={REQUEST_STEPS.map((label) => t(label))} current={step} showLabels={false} />
         </View>
     );
 }
@@ -25,10 +28,11 @@ interface ActionsProps {
 }
 
 // Atrás y Continuar abajo de la hoja; el primer paso no tiene Atrás
-export function StepActions({ onBack, onNext, nextLabel = 'Continuar', loading = false }: ActionsProps) {
+export function StepActions({ onBack, onNext, nextLabel = t('stepParts.continuar'), loading = false }: ActionsProps) {
+    const { t } = useTranslation();
     return (
         <View style={styles.actions}>
-            {onBack && <Button title="Atrás" variant="secondary" disabled={loading} onPress={onBack} style={styles.back} />}
+            {onBack && <Button title={t('stepParts.atras')} variant="secondary" disabled={loading} onPress={onBack} style={styles.back} />}
             <Button title={nextLabel} loading={loading} onPress={onNext} style={styles.next} />
         </View>
     );
@@ -70,11 +74,12 @@ export function PlaceRow({ label, value, placeholder, tone, error, onPress, acti
 
 // Resumen de una línea de lo ya elegido ("Bosa → Kennedy · 7,5 km") que lleva de vuelta a ese paso
 export function SummaryRow({ icon, text, onPress }: { icon: keyof typeof Ionicons.glyphMap; text: string; onPress: () => void }) {
+    const { t } = useTranslation();
     return (
-        <Pressable onPress={onPress} style={({ pressed }) => [styles.summary, pressed && styles.placePressed]} accessibilityRole="button" accessibilityLabel={`${text}. Cambiar`}>
+        <Pressable onPress={onPress} style={({ pressed }) => [styles.summary, pressed && styles.placePressed]} accessibilityRole="button" accessibilityLabel={t('stepParts.cambiar', { text })}>
             <Ionicons name={icon} size={18} color={colors.textMuted} />
             <AppText variant="small" numberOfLines={1} style={styles.placeTexts}>{text}</AppText>
-            <AppText variant="smallStrong">Cambiar</AppText>
+            <AppText variant="smallStrong">{t('stepParts.cambiar2')}</AppText>
         </Pressable>
     );
 }

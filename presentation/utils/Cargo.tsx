@@ -1,11 +1,12 @@
 import { CargoCategory, VehicleType } from "../../domain/models/ClientRequest";
+import { t, tk } from '../../i18n';
 
 // Misma tabla que el backend (src/utils/vehicles.ts): de menor a mayor capacidad
 export const VEHICLES: { type: VehicleType; label: string; maxWeightKg: number; maxVolumeM3: number; maxLengthCm: number }[] = [
     { type: 'CARRY',   label: 'Carry',                maxWeightKg: 700,   maxVolumeM3: 3,  maxLengthCm: 200 },
-    { type: 'ESTACAS', label: 'Camioneta de estacas', maxWeightKg: 2000,  maxVolumeM3: 12, maxLengthCm: 400 },
-    { type: 'FURGON',  label: 'Furgón',               maxWeightKg: 4500,  maxVolumeM3: 20, maxLengthCm: 500 },
-    { type: 'CAMION',  label: 'Camión',               maxWeightKg: 10000, maxVolumeM3: 45, maxLengthCm: 800 },
+    { type: 'ESTACAS', label: tk('cargo.camionetaDeEstacas'), maxWeightKg: 2000,  maxVolumeM3: 12, maxLengthCm: 400 },
+    { type: 'FURGON',  label: tk('cargo.furgon'),               maxWeightKg: 4500,  maxVolumeM3: 20, maxLengthCm: 500 },
+    { type: 'CAMION',  label: tk('cargo.camion'),               maxWeightKg: 10000, maxVolumeM3: 45, maxLengthCm: 800 },
 ];
 
 // Lo máximo que el conductor puede declarar si su vehículo es más grande que el típico (igual que el backend)
@@ -16,7 +17,7 @@ export const CAPACITY_LIMITS: Record<VehicleType, { maxWeightKg: number; maxVolu
     CAMION:  { maxWeightKg: 20000, maxVolumeM3: 90 },
 };
 
-export const vehicleLabel = (type?: string | null) => VEHICLES.find((v) => v.type === type)?.label ?? 'Vehículo de carga';
+export const vehicleLabel = (type?: string | null) => t(VEHICLES.find((v) => v.type === type)?.label ?? tk('cargo.vehiculoDeCarga'));
 export const vehicleRank = (type: VehicleType) => VEHICLES.findIndex((v) => v.type === type);
 
 // Las medidas son las del artículo más grande; el volumen total se estima multiplicándolo por los artículos.
@@ -28,45 +29,45 @@ export const suggestVehicle = (weightKg: number, lengthCm: number, widthCm: numb
 }
 
 export const CARGO_CATEGORIES: { value: CargoCategory; label: string }[] = [
-    { value: 'MUDANZA', label: 'Mudanza' },
-    { value: 'MERCANCIA', label: 'Mercancía' },
-    { value: 'MATERIALES', label: 'Materiales de construcción' },
-    { value: 'MAQUINARIA', label: 'Maquinaria' },
-    { value: 'ELECTRODOMESTICOS', label: 'Electrodomésticos' },
-    { value: 'OTRO', label: 'Otro' },
+    { value: 'MUDANZA', label: tk('cargo.mudanza') },
+    { value: 'MERCANCIA', label: tk('cargo.mercancia') },
+    { value: 'MATERIALES', label: tk('cargo.materialesDeConstruccion') },
+    { value: 'MAQUINARIA', label: tk('cargo.maquinaria') },
+    { value: 'ELECTRODOMESTICOS', label: tk('cargo.electrodomesticos') },
+    { value: 'OTRO', label: tk('cargo.otro') },
 ];
 
-export const cargoCategoryLabel = (value?: string | null) => CARGO_CATEGORIES.find((c) => c.value === value)?.label ?? 'Carga';
+export const cargoCategoryLabel = (value?: string | null) => t(CARGO_CATEGORIES.find((c) => c.value === value)?.label ?? tk('cargo.carga'));
 
 export const CLIENT_CANCEL_REASONS = [
-    'Ya no necesito el flete',
-    'Cambié la fecha o la hora',
-    'El conductor tarda mucho',
-    'Encontré otro transporte',
+    tk('cargo.yaNoNecesitoElFlete'),
+    tk('cargo.cambieLaFechaOLa'),
+    tk('cargo.elConductorTardaMucho'),
+    tk('cargo.encontreOtroTransporte'),
 ];
 
 export const DRIVER_CANCEL_REASONS = [
-    'La carga no cabe en mi vehículo',
-    'El cliente no responde',
-    'Tuve un problema con el vehículo',
-    'La dirección no es correcta',
+    tk('cargo.laCargaNoCabeEn'),
+    tk('cargo.elClienteNoResponde'),
+    tk('cargo.tuveUnProblemaConEl'),
+    tk('cargo.laDireccionNoEsCorrecta'),
 ];
 
 export const DRIVER_STATUS_LABELS: Record<string, string> = {
-    CREATED: 'Buscando conductor',
-    ACCEPTED: 'Conductor asignado',
-    ON_THE_WAY: 'Conductor en camino',
-    ARRIVED: 'Conductor en el origen',
-    TRAVELING: 'Carga recogida, en camino al destino',
-    FINISHED: 'Entregado',
-    CANCELED: 'Cancelado',
-    EXPIRED: 'Búsqueda vencida',
+    CREATED: tk('cargo.buscandoConductor'),
+    ACCEPTED: tk('cargo.conductorAsignado'),
+    ON_THE_WAY: tk('cargo.conductorEnCamino'),
+    ARRIVED: tk('cargo.conductorEnElOrigen'),
+    TRAVELING: tk('cargo.cargaRecogidaEnCaminoAl'),
+    FINISHED: tk('common.entregado'),
+    CANCELED: tk('cargo.cancelado'),
+    EXPIRED: tk('cargo.busquedaVencida'),
 };
 
 // Texto corto del cargue y descargue, por ejemplo "Piso 3 sin ascensor"
 export const floorText = (floor?: number | null, hasElevator?: boolean | null) => {
     if (floor === null || floor === undefined) return null;
-    if (floor <= 1) return floor === 1 ? 'Primer piso' : `Piso ${floor}`;
-    if (hasElevator === null || hasElevator === undefined) return `Piso ${floor}`;
-    return `Piso ${floor} ${hasElevator ? 'con' : 'sin'} ascensor`;
+    if (floor <= 1) return floor === 1 ? t('cargo.primerPiso') : t('cargo.piso', { floor });
+    if (hasElevator === null || hasElevator === undefined) return t('cargo.piso', { floor });
+    return hasElevator ? t('cargo.pisoConAscensor', { floor }) : t('cargo.pisoSinAscensor', { floor });
 }

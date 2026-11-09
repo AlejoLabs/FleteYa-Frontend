@@ -4,6 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import AuthImage from "./AuthImage";
 import { AppText, Button } from "./ui";
 import { colors, radius, spacing } from "../theme";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../i18n';
 
 // Una foto de la tira: local (todavía no se sube) o ya guardada en el backend
 export interface PhotoItem {
@@ -24,7 +26,8 @@ interface Props {
 const THUMB = 84;
 
 // Miniaturas en fila. Tocar una la abre en grande; la ✕ la quita si la pantalla lo permite
-export default function PhotoStrip({ items, onAdd, onRemove, maxItems = 4, addLabel = 'Agregar foto', emptyText }: Props) {
+export default function PhotoStrip({ items, onAdd, onRemove, maxItems = 4, addLabel = t('photoStrip.agregarFoto'), emptyText }: Props) {
+    const { t } = useTranslation();
     const [opened, setOpened] = useState<PhotoItem | null>(null);
     const canAdd = onAdd !== undefined && items.length < maxItems;
 
@@ -41,11 +44,11 @@ export default function PhotoStrip({ items, onAdd, onRemove, maxItems = 4, addLa
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
                 {items.map((item, index) => (
                     <View key={item.key}>
-                        <Pressable onPress={() => setOpened(item)} accessibilityRole="imagebutton" accessibilityLabel={`Ver la foto ${index + 1}`}>
+                        <Pressable onPress={() => setOpened(item)} accessibilityRole="imagebutton" accessibilityLabel={t('photoStrip.verLaFoto', { value: index + 1 })}>
                             {renderImage(item, styles.thumb)}
                         </Pressable>
                         {onRemove &&
-                            <Pressable style={styles.remove} onPress={() => onRemove(item.key)} accessibilityRole="button" accessibilityLabel={`Quitar la foto ${index + 1}`} hitSlop={12}>
+                            <Pressable style={styles.remove} onPress={() => onRemove(item.key)} accessibilityRole="button" accessibilityLabel={t('photoStrip.quitarLaFoto', { value: index + 1 })} hitSlop={12}>
                                 <Ionicons name="close" size={14} color={colors.textOnDark} />
                             </Pressable>
                         }
@@ -66,9 +69,9 @@ export default function PhotoStrip({ items, onAdd, onRemove, maxItems = 4, addLa
 
             <Modal visible={opened !== null} transparent animationType="fade" onRequestClose={() => setOpened(null)} statusBarTranslucent>
                 <View style={styles.viewer}>
-                    <Pressable style={StyleSheet.absoluteFill} onPress={() => setOpened(null)} accessibilityRole="button" accessibilityLabel="Cerrar la foto" />
+                    <Pressable style={StyleSheet.absoluteFill} onPress={() => setOpened(null)} accessibilityRole="button" accessibilityLabel={t('photoStrip.cerrarLaFoto')} />
                     {opened && renderImage(opened, styles.full)}
-                    <Button title="Cerrar" variant="onDark" icon="close" onPress={() => setOpened(null)} style={styles.close} />
+                    <Button title={t('common.cerrar')} variant="onDark" icon="close" onPress={() => setOpened(null)} style={styles.close} />
                 </View>
             </Modal>
         </View>

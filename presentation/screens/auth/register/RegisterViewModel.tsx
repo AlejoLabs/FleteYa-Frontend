@@ -3,6 +3,7 @@ import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { User } from "../../../../domain/models/User";
 import { AuthUseCases } from "../../../../domain/useCases/auth/AuthUseCases";
 import EmailValidator from "../../../utils/EmailValidator";
+import { t } from '../../../../i18n';
 
 // Cliente envía carga; conductor la transporta y además registra su vehículo en el paso siguiente
 export type AccountType = 'CLIENT' | 'DRIVER';
@@ -28,12 +29,12 @@ export class RegisterViewModel {
     // Devuelve el error de cada campo; vacío si se puede enviar
     validate(form: RegisterForm): RegisterErrors {
         const errors: RegisterErrors = {};
-        if (form.name.trim() === '') errors.name = 'Escribe tu nombre';
-        if (form.lastname.trim() === '') errors.lastname = 'Escribe tu apellido';
-        if (!/^\d{10}$/.test(this.cleanPhone(form.phone))) errors.phone = 'Escribe los 10 dígitos de tu celular';
-        if (form.email.trim() === '') errors.email = 'Escribe tu correo';
-        else if (!EmailValidator(form.email.trim())) errors.email = 'Escribe un correo completo, por ejemplo nombre@gmail.com';
-        if (form.password.length < 6) errors.password = 'La contraseña debe tener al menos 6 caracteres';
+        if (form.name.trim() === '') errors.name = t('register.escribeTuNombre');
+        if (form.lastname.trim() === '') errors.lastname = t('register.escribeTuApellido');
+        if (!/^\d{10}$/.test(this.cleanPhone(form.phone))) errors.phone = t('register.escribeLos10DigitosDe');
+        if (form.email.trim() === '') errors.email = t('common.escribeTuCorreo');
+        else if (!EmailValidator(form.email.trim())) errors.email = t('common.escribeUnCorreoCompletoPor');
+        if (form.password.length < 6) errors.password = t('register.laContrasenaDebeTenerAl');
         return errors;
     }
 

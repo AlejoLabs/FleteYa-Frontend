@@ -13,11 +13,14 @@ import { AppHeader, AppText, KeyboardArea, Notice, StateView, useToast } from ".
 import { formatErrorMessage, formatTime } from "../../../utils/Formatters";
 import { setOpenChat } from "../../../utils/PushNotifications";
 import { colors, fonts, radius, spacing, touchTarget } from "../../../theme";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../i18n';
 
 type Props = NativeStackScreenProps<TripSharedParamList, 'TripChatScreen'>;
 
 // Chat del viaje entre el cliente y el conductor, sin compartir el celular
 export function TripChatScreen({ navigation, route }: Props) {
+    const { t } = useTranslation();
 
     const { idClientRequest, otherName, readOnly } = route.params;
     const viewModel: TripChatViewModel = container.resolve('tripChatViewModel');
@@ -81,7 +84,7 @@ export function TripChatScreen({ navigation, route }: Props) {
             <View style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
                 <AppText variant="body" color={mine ? 'textOnDark' : 'text'}>{item.text}</AppText>
                 <AppText variant="caption" color={mine ? 'textOnDarkMuted' : 'textMuted'} style={styles.time}>
-                    {formatTime(item.created_at)}{mine && item.read_at ? ' · Leído' : ''}
+                    {formatTime(item.created_at)}{mine && item.read_at ? t('tripChat.leido') : ''}
                 </AppText>
             </View>
         );
@@ -91,12 +94,12 @@ export function TripChatScreen({ navigation, route }: Props) {
 
     return (
         <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-            <AppHeader title={otherName ?? 'Chat del viaje'} subtitle="Chat del viaje" onBack={() => navigation.goBack()} />
+            <AppHeader title={otherName ?? t('tripChat.chatDelViaje')} subtitle={t('tripChat.chatDelViaje')} onBack={() => navigation.goBack()} />
             <KeyboardArea style={styles.body} aboveBottomInset>
                 {isLoading
                     ? <StateView kind="loading" />
                     : messages.length === 0
-                        ? <StateView kind="empty" icon="chatbubbles-outline" title="Todavía no hay mensajes" message="Escribe para coordinar la recogida o la entrega. Tu número de celular no se comparte." />
+                        ? <StateView kind="empty" icon="chatbubbles-outline" title={t('tripChat.todaviaNoHayMensajes')} message={t('tripChat.escribeParaCoordinarLaRecogida')} />
                         // Invertida: el último mensaje queda abajo y la lista arranca ahí
                         : <FlatList
                             style={styles.flex}
@@ -109,24 +112,24 @@ export function TripChatScreen({ navigation, route }: Props) {
                 }
 
                 {isClosed
-                    ? <View style={styles.closed}><Notice tone="info" message="El viaje terminó: el chat queda solo para leer." /></View>
+                    ? <View style={styles.closed}><Notice tone="info" message={t('tripChat.elViajeTerminoElChat')} /></View>
                     : <View style={styles.inputRow}>
                         <TextInput
                             style={styles.input}
-                            placeholder="Mensaje"
+                            placeholder={t('tripChat.mensaje')}
                             placeholderTextColor={colors.textMuted}
                             value={text}
                             onChangeText={setText}
                             maxLength={MAX_MESSAGE_LENGTH}
                             multiline
-                            accessibilityLabel="Mensaje"
+                            accessibilityLabel={t('tripChat.mensaje')}
                         />
                         <Pressable
                             style={({ pressed }) => [styles.send, !canSend && styles.sendDisabled, pressed && styles.sendPressed]}
                             onPress={handleSend}
                             disabled={!canSend}
                             accessibilityRole="button"
-                            accessibilityLabel="Enviar mensaje"
+                            accessibilityLabel={t('tripChat.enviarMensaje')}
                             accessibilityState={{ disabled: !canSend, busy: isSending }}
                         >
                             <Ionicons name="send" size={20} color={colors.asphalt} />

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 import { colors, radius, spacing } from "../../theme";
 import AppText from "./AppText";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     value: string;
@@ -16,6 +17,7 @@ interface Props {
 // Código de verificación en casillas. Un solo campo invisible encima recibe el teclado y el pegado,
 // así el código que llega por correo se puede pegar entero
 export default function CodeInput({ value, onChangeText, length, label, error, autoFocus }: Props) {
+    const { t } = useTranslation();
     const [focused, setFocused] = useState(false);
     const digits = value.split('');
 
@@ -47,7 +49,7 @@ export default function CodeInput({ value, onChangeText, length, label, error, a
                     caretHidden
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
-                    accessibilityLabel={`${label ?? 'Código'} de ${length} dígitos`}
+                    accessibilityLabel={t('codeInput.deDigitos', { value: label ?? t('codeInput.codigo'), length })}
                     style={styles.hiddenInput}
                 />
             </View>

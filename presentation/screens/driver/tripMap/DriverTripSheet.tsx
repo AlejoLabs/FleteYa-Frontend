@@ -8,6 +8,7 @@ import { getTripFare } from "../../../utils/Formatters";
 import { spacing } from "../../../theme";
 import TripPlaces from "../../trip/components/TripPlaces";
 import { isCargoOnBoard } from "../../trip/TripStatus";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     request: ClientRequestResponse;
@@ -22,6 +23,7 @@ interface Props {
 
 // Contenido de la hoja del conductor: en qué paso va, el cliente, el pago acordado, las direcciones y la carga
 export default function DriverTripSheet({ request, status, title, hint, unread, locationUnavailable, onChat, onReport }: Props) {
+    const { t } = useTranslation();
     const { client } = request;
     return (
         <>
@@ -31,16 +33,16 @@ export default function DriverTripSheet({ request, status, title, hint, unread, 
                 {hint ? <AppText variant="small" color="textMuted">{hint}</AppText> : null}
             </View>
             {locationUnavailable &&
-                <Notice tone="warning" message="No tenemos tu ubicación: el cliente no te ve en el mapa. Actívala en los ajustes del teléfono." />}
+                <Notice tone="warning" message={t('driverTripSheet.noTenemosTuUbicacionEl')} />}
 
             <PersonRow
                 name={`${client.name} ${client.lastname}`}
-                subtitle="Cliente"
+                subtitle={t('common.cliente')}
                 imageUri={client.image}
                 rating={client.rating}
                 right={
                     <View style={styles.fare}>
-                        <AppText variant="caption" color="textMuted">Acordado</AppText>
+                        <AppText variant="caption" color="textMuted">{t('driverTripSheet.acordado')}</AppText>
                         <Amount value={getTripFare(request)} />
                     </View>
                 }

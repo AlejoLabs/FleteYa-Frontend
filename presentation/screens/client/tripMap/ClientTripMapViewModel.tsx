@@ -9,6 +9,7 @@ import { TripMessageUseCases } from "../../../../domain/useCases/tripMessage/Tri
 import { DriverCarInfo } from "../../../../domain/models/DriverCarInfo";
 import { Status } from "../../../../domain/repository/ClientRequestRepository";
 import { arrivalTime } from "../../trip/TripStatus";
+import { t } from '../../../../i18n';
 
 export class ClientTripMapViewModel {
     
@@ -47,20 +48,20 @@ export class ClientTripMapViewModel {
 
     // Qué está pasando con el flete y, si hay ruta, a qué hora llega el vehículo al punto que toca
     statusText(status: string, etaMinutes: number | null) {
-        const eta = etaMinutes !== null ? `cerca de las ${arrivalTime(etaMinutes)} (unos ${etaMinutes} min)` : null;
+        const eta = etaMinutes !== null ? t('clientTripMap.cercaDeLasUnosMin', { arrivalTime: arrivalTime(etaMinutes), etaMinutes }) : null;
         switch (status) {
             case Status.ARRIVED:
-                return { title: 'Tu conductor llegó', hint: 'Te espera en el punto de recogida para subir la carga.' };
+                return { title: t('clientTripMap.tuConductorLlego'), hint: t('clientTripMap.teEsperaEnElPunto') };
             case Status.TRAVELING:
-                return { title: 'Tu carga va en camino', hint: eta ? `Llega al destino ${eta}` : 'El conductor va hacia el destino.' };
+                return { title: t('clientTripMap.tuCargaVaEnCamino'), hint: eta ? t('clientTripMap.llegaAlDestino', { eta }) : t('clientTripMap.elConductorVaHaciaEl') };
             default:
-                return { title: 'Tu conductor va en camino', hint: eta ? `Llega a la recogida ${eta}` : 'Esperando la ubicación del conductor…' };
+                return { title: t('clientTripMap.tuConductorVaEnCamino'), hint: eta ? t('clientTripMap.llegaALaRecogida', { eta }) : t('clientTripMap.esperandoLaUbicacionDelConductor') };
         }
     }
 
     // "Furgón JAC blanco · VES129"
     vehicleText(carInfo: DriverCarInfo | null) {
-        if (!carInfo) return 'Vehículo sin registrar';
+        if (!carInfo) return t('clientTripMap.vehiculoSinRegistrar');
         return [[carInfo.brand, carInfo.color].filter(Boolean).join(' '), carInfo.plate].filter(Boolean).join(' · ');
     }
 

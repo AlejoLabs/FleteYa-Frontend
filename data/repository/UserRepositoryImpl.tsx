@@ -18,6 +18,10 @@ export class UserRepositoryImpl implements UserRepository {
         return await this.userService.saveNotificationToken(token);
     }
 
+    async updateLanguage(language: string): Promise<{ language: string } | ErrorResponse> {
+        return await this.userService.updateLanguage(language);
+    }
+
     async updateWithImage(user: User, image: string): Promise<User | ErrorResponse> {
         return await this.userService.updateWithImage(user, image);
     }

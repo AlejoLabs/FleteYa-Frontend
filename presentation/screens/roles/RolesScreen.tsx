@@ -6,11 +6,13 @@ import { useAuth } from "../../hooks/useAuth";
 import { AppText } from "../../components/ui";
 import RolesItem from "./RolesItem";
 import styles from "./Styles";
+import { useTranslation } from 'react-i18next';
 
 interface Props extends StackScreenProps<RootStackParamList, 'RolesScreen'> { };
 
 // Solo llega aquí quien tiene cuenta de cliente y de conductor
 export default function RolesScreen({ navigation }: Props) {
+    const { t } = useTranslation();
 
     const { authResponse } = useAuth();
 
@@ -18,8 +20,8 @@ export default function RolesScreen({ navigation }: Props) {
         <SafeAreaView style={styles.screen}>
             <ScrollView contentContainerStyle={styles.content}>
                 <View style={styles.intro}>
-                    <AppText variant="title">Hola, {authResponse?.user.name}</AppText>
-                    <AppText variant="body" color="textMuted">¿Qué vas a hacer hoy?</AppText>
+                    <AppText variant="title">{t('roles.hola', { name: authResponse?.user.name })}</AppText>
+                    <AppText variant="body" color="textMuted">{t('roles.queVasAHacerHoy')}</AppText>
                 </View>
                 {authResponse?.user.roles?.map((role) => (
                     <RolesItem

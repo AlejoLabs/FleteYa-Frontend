@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import { AppText } from "../../../../components/ui";
 import { colors, radius, spacing, touchTarget } from "../../../../theme";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     value: boolean;
@@ -9,16 +10,17 @@ interface Props {
 
 // Interruptor grande del encabezado oscuro: verde con el círculo a la derecha cuando el conductor recibe fletes
 export default function AvailabilitySwitch({ value, onChange }: Props) {
+    const { t } = useTranslation();
     return (
         <Pressable
             onPress={() => onChange(!value)}
             accessibilityRole="switch"
             accessibilityState={{ checked: value }}
-            accessibilityLabel="Disponible para recibir fletes"
+            accessibilityLabel={t('availabilitySwitch.disponibleParaRecibirFletes')}
             style={({ pressed }) => [styles.pill, value ? styles.on : styles.off, pressed && styles.pressed]}
         >
             {!value && <View style={styles.knob} />}
-            <AppText variant="bodyStrong" color="textOnDark">{value ? 'Disponible' : 'No disponible'}</AppText>
+            <AppText variant="bodyStrong" color="textOnDark">{value ? t('availabilitySwitch.disponible') : t('availabilitySwitch.noDisponible')}</AppText>
             {value && <View style={styles.knob} />}
         </Pressable>
     );

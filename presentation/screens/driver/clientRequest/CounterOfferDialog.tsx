@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ConfirmDialog, PriceStepper } from "../../../components/ui";
 import { formatCOP } from "../../../utils/Formatters";
+import { useTranslation } from 'react-i18next';
 
 const FARE_STEP = 1000;
 const MIN_FARE = 5000;
@@ -17,6 +18,7 @@ interface Props {
 
 // El conductor propone su precio con − y +; el cliente lo ve como una oferta más
 export default function CounterOfferDialog({ visible, clientFare, myOffer, sending, onSend, onClose }: Props) {
+    const { t } = useTranslation();
     const [fare, setFare] = useState(myOffer ?? clientFare + FARE_STEP);
 
     useEffect(() => {
@@ -26,9 +28,9 @@ export default function CounterOfferDialog({ visible, clientFare, myOffer, sendi
     return (
         <ConfirmDialog
             visible={visible}
-            title="Tu precio para este flete"
-            message={`El cliente ofrece ${formatCOP(clientFare)}.`}
-            confirmLabel={`Ofertar ${formatCOP(fare)}`}
+            title={t('counterOfferDialog.tuPrecioParaEsteFlete')}
+            message={t('counterOfferDialog.elClienteOfrece', { amount: formatCOP(clientFare) })}
+            confirmLabel={t('counterOfferDialog.ofertar', { amount: formatCOP(fare) })}
             loading={sending}
             onConfirm={() => onSend(fare)}
             onCancel={onClose}

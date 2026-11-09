@@ -1,5 +1,6 @@
 import { CargoCategory, ClientRequest, PaymentMethod, VehicleType } from "../../../../domain/models/ClientRequest";
 import { suggestVehicle, vehicleRank } from "../../../utils/Cargo";
+import { t, tk } from '../../../../i18n';
 
 // Solicitud que el cliente arma en cuatro pasos sobre el mapa, antes de publicarla
 export interface PlacePoint {
@@ -83,7 +84,7 @@ export const EMPTY_DRAFT: RequestDraft = {
     paymentMethod: 'CASH',
 };
 
-export const REQUEST_STEPS = ['Ruta', 'Carga', 'Medidas', 'Precio'];
+export const REQUEST_STEPS = [tk('requestDraft.ruta'), tk('requestDraft.carga'), tk('requestDraft.medidas'), tk('requestDraft.precio')];
 export const MAX_CARGO_PHOTOS = 4;
 // Los precios se redondean a cientos y se suben o bajan de a mil
 export const FARE_STEP = 1000;
@@ -114,33 +115,33 @@ export const weightKg = (draft: RequestDraft) => toNumber(draft.weightKg);
 export const validateStep = (step: number, draft: RequestDraft): DraftErrors => {
     const errors: DraftErrors = {};
     if (step === 0) {
-        if (!draft.origin) errors.origin = 'Mueve el mapa hasta el punto donde recogen la carga';
-        if (!draft.destination) errors.destination = 'Elige a dónde va la carga';
+        if (!draft.origin) errors.origin = t('requestDraft.mueveElMapaHastaEl');
+        if (!draft.destination) errors.destination = t('requestDraft.eligeADondeVaLa');
     }
     if (step === 1) {
-        if (draft.description.trim().length < 3) errors.description = 'Cuenta qué vas a mover, por ejemplo "nevera y 6 cajas"';
-        if (!isPositive(draft.weightKg)) errors.weightKg = 'Escribe el peso aproximado';
-        if (draft.declaredValue.trim() !== '' && isNaN(toNumber(draft.declaredValue))) errors.declaredValue = 'Escribe solo el número, sin puntos';
+        if (draft.description.trim().length < 3) errors.description = t('requestDraft.cuentaQueVasAMover');
+        if (!isPositive(draft.weightKg)) errors.weightKg = t('requestDraft.escribeElPesoAproximado');
+        if (draft.declaredValue.trim() !== '' && isNaN(toNumber(draft.declaredValue))) errors.declaredValue = t('requestDraft.escribeSoloElNumeroSin');
     }
     if (step === 2) {
-        if (!isPositive(draft.lengthCm)) errors.lengthCm = 'Falta el largo';
-        if (!isPositive(draft.widthCm)) errors.widthCm = 'Falta el ancho';
-        if (!isPositive(draft.heightCm)) errors.heightCm = 'Falta el alto';
+        if (!isPositive(draft.lengthCm)) errors.lengthCm = t('requestDraft.faltaElLargo');
+        if (!isPositive(draft.widthCm)) errors.widthCm = t('requestDraft.faltaElAncho');
+        if (!isPositive(draft.heightCm)) errors.heightCm = t('requestDraft.faltaElAlto');
         const suggested = suggestedVehicleFor(draft);
         if (hasSize(draft) && suggested === null) {
-            errors.vehicleType = 'La carga no cabe ni en un camión; divídela en varios fletes';
+            errors.vehicleType = t('requestDraft.laCargaNoCabeNi');
         } else if (suggested && draft.vehicleType && vehicleRank(draft.vehicleType) < vehicleRank(suggested)) {
             // Pasa si el cliente eligió vehículo y después agrandó las medidas
-            errors.vehicleType = 'El vehículo que elegiste es pequeño para estas medidas; elige otro';
+            errors.vehicleType = t('requestDraft.elVehiculoQueElegisteEs');
         }
     }
     if (step === 3) {
-        if (draft.fare <= 0) errors.fare = 'Ponle un precio a tu flete';
-        if (draft.otherSender && !draft.senderName.trim()) errors.senderName = 'Falta el nombre';
-        if (draft.otherSender && !PHONE_REGEX.test(draft.senderPhone)) errors.senderPhone = 'Celular de 10 dígitos que empiece por 3';
-        if (draft.otherReceiver && !draft.receiverName.trim()) errors.receiverName = 'Falta el nombre';
-        if (draft.otherReceiver && !PHONE_REGEX.test(draft.receiverPhone)) errors.receiverPhone = 'Celular de 10 dígitos que empiece por 3';
-        if (!draft.noProhibitedItems) errors.noProhibitedItems = 'Confírmalo para poder publicar el flete';
+        if (draft.fare <= 0) errors.fare = t('requestDraft.ponleUnPrecioATu');
+        if (draft.otherSender && !draft.senderName.trim()) errors.senderName = t('requestDraft.faltaElNombre');
+        if (draft.otherSender && !PHONE_REGEX.test(draft.senderPhone)) errors.senderPhone = t('requestDraft.celularDe10DigitosQue');
+        if (draft.otherReceiver && !draft.receiverName.trim()) errors.receiverName = t('requestDraft.faltaElNombre');
+        if (draft.otherReceiver && !PHONE_REGEX.test(draft.receiverPhone)) errors.receiverPhone = t('requestDraft.celularDe10DigitosQue');
+        if (!draft.noProhibitedItems) errors.noProhibitedItems = t('requestDraft.confirmaloParaPoderPublicarEl');
     }
     return errors;
 }

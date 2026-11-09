@@ -1,5 +1,6 @@
 import { ConfirmDialog, TextField, Button } from "../../../components/ui";
 import { GoogleLinkState } from "./useGoogleSignIn";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     link: GoogleLinkState;
@@ -9,19 +10,20 @@ interface Props {
 
 // Se abre cuando el correo de Google ya tiene cuenta con contraseña
 export default function GoogleLinkDialog({ link, loading, onForgotPassword }: Props) {
+    const { t } = useTranslation();
     return (
         <ConfirmDialog
             visible={link.visible}
-            title="Vincula tu cuenta de Google"
-            message="Ya tienes una cuenta con este correo. Escribe tu contraseña una sola vez y después podrás entrar de las dos formas."
-            confirmLabel="Vincular y entrar"
-            cancelLabel="Cancelar"
+            title={t('googleLinkDialog.vinculaTuCuentaDeGoogle')}
+            message={t('googleLinkDialog.yaTienesUnaCuentaCon')}
+            confirmLabel={t('googleLinkDialog.vincularYEntrar')}
+            cancelLabel={t('common.cancelar')}
             loading={loading}
             onConfirm={link.onConfirm}
             onCancel={link.onCancel}
         >
             <TextField
-                label="Contraseña de tu cuenta"
+                label={t('googleLinkDialog.contrasenaDeTuCuenta')}
                 value={link.password}
                 onChangeText={link.onChangePassword}
                 error={link.error}
@@ -31,7 +33,7 @@ export default function GoogleLinkDialog({ link, loading, onForgotPassword }: Pr
                 onSubmitEditing={link.onConfirm}
             />
             <Button
-                title="No recuerdo mi contraseña"
+                title={t('googleLinkDialog.noRecuerdoMiContrasena')}
                 variant="text"
                 size="sm"
                 disabled={loading}

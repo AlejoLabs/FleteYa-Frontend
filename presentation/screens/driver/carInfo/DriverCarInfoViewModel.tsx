@@ -3,8 +3,9 @@ import { VehicleType } from "../../../../domain/models/ClientRequest";
 import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo/DriverCarInfoUseCases";
 import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 import { CAPACITY_LIMITS, VEHICLES, vehicleLabel } from "../../../utils/Cargo";
-import { formatDayMonthYear, parseDayMonthYear } from "../../../utils/Formatters";
+import { formatDayMonthYear, parseDayMonthYear, formatNumber } from '../../../utils/Formatters';
 import { HEAVY_CATEGORIES } from "../../auth/driverVehicle/DriverVehicleRegisterViewModel";
+import { t, lowerInSentence } from '../../../../i18n';
 
 // Cambiar de vehículo o corregir sus datos. Con biggerThanUsual el conductor declara su capacidad real
 export interface VehicleForm {
@@ -38,8 +39,8 @@ const toNumber = (value: string) => Number(value.replace(',', '.'));
 // Una fecha válida y que no haya pasado
 const futureDateError = (value: string) => {
     const iso = parseDayMonthYear(value);
-    if (!iso) return 'Escríbela como DD/MM/AAAA';
-    if (new Date(iso).getTime() < Date.now()) return 'Esa fecha ya pasó: escribe la del documento renovado';
+    if (!iso) return t('driverCarInfo.escribelaComoDdMmAaaa');
+    if (new Date(iso).getTime() < Date.now()) return t('driverCarInfo.esaFechaYaPasoEscribe');
     return null;
 }
 
@@ -109,27 +110,27 @@ export class DriverCarInfoViewModel {
     // Lo típico de cada tipo, para la ayuda del formulario
     typicalCapacityText(vehicleType: VehicleType) {
         const vehicle = VEHICLES.find((item) => item.type === vehicleType)!;
-        return `Lo normal en ${vehicle.label.toLowerCase()} es hasta ${vehicle.maxWeightKg.toLocaleString('es-CO')} kg y ${vehicle.maxVolumeM3} m³.`;
+        return t('driverCarInfo.loNormalEnEsHasta', { label: lowerInSentence(t(vehicle.label)), maxWeightKg: formatNumber(vehicle.maxWeightKg), maxVolumeM3: vehicle.maxVolumeM3 });
     }
 
     validateVehicle(form: VehicleForm, licenseCategory?: string | null): VehicleFormErrors {
         const errors: VehicleFormErrors = {};
         const limits = CAPACITY_LIMITS[form.vehicleType];
         if (form.vehicleType === 'CAMION' && !HEAVY_CATEGORIES.includes(licenseCategory ?? '')) {
-            errors.vehicleType = 'Para camión necesitas licencia B2 o C2: actualiza primero tus documentos';
+            errors.vehicleType = t('driverCarInfo.paraCamionNecesitasLicenciaB2');
         }
-        if (form.brand.trim().length < 2) errors.brand = 'Escribe la marca y la referencia';
-        if (form.color.trim().length < 2) errors.color = 'Escribe el color';
-        if (!PLATE_REGEX.test(normalizePlate(form.plate))) errors.plate = '3 letras y 3 números, por ejemplo ABC123';
+        if (form.brand.trim().length < 2) errors.brand = t('driverCarInfo.escribeLaMarcaYLa');
+        if (form.color.trim().length < 2) errors.color = t('driverCarInfo.escribeElColor');
+        if (!PLATE_REGEX.test(normalizePlate(form.plate))) errors.plate = t('driverCarInfo.t3LetrasY3Numeros');
         const year = Number(form.modelYear);
-        if (!/^\d{4}$/.test(form.modelYear.trim()) || year < 1980 || year > new Date().getFullYear() + 1) errors.modelYear = 'Por ejemplo 2019';
+        if (!/^\d{4}$/.test(form.modelYear.trim()) || year < 1980 || year > new Date().getFullYear() + 1) errors.modelYear = t('driverCarInfo.porEjemplo2019');
         if (form.biggerThanUsual) {
             const kg = toNumber(form.capacityKg);
             const m3 = toNumber(form.capacityM3);
-            if (!(kg > 0)) errors.capacityKg = 'Escribe cuántos kilos carga';
-            else if (kg > limits.maxWeightKg) errors.capacityKg = `Máximo ${limits.maxWeightKg.toLocaleString('es-CO')} kg para este tipo`;
-            if (!(m3 > 0)) errors.capacityM3 = 'Escribe cuántos metros cúbicos le caben';
-            else if (m3 > limits.maxVolumeM3) errors.capacityM3 = `Máximo ${limits.maxVolumeM3} m³ para este tipo`;
+            if (!(kg > 0)) errors.capacityKg = t('driverCarInfo.escribeCuantosKilosCarga');
+            else if (kg > limits.maxWeightKg) errors.capacityKg = t('driverCarInfo.maximoKgParaEsteTipo', { maxWeightKg: formatNumber(limits.maxWeightKg) });
+            if (!(m3 > 0)) errors.capacityM3 = t('driverCarInfo.escribeCuantosMetrosCubicosLe');
+            else if (m3 > limits.maxVolumeM3) errors.capacityM3 = t('driverCarInfo.maximoMParaEsteTipo', { maxVolumeM3: limits.maxVolumeM3 });
         }
         return errors;
     }
@@ -150,8 +151,8 @@ export class DriverCarInfoViewModel {
 
     validateDocuments(form: DocumentsForm, vehicleType?: VehicleType): DocumentsFormErrors {
         const errors: DocumentsFormErrors = {};
-        if (!form.licenseCategory) errors.licenseCategory = 'Elige la categoría de tu licencia';
-        else if (vehicleType === 'CAMION' && !HEAVY_CATEGORIES.includes(form.licenseCategory)) errors.licenseCategory = 'Para camión necesitas licencia B2 o C2 en adelante';
+        if (!form.licenseCategory) errors.licenseCategory = t('driverCarInfo.eligeLaCategoriaDeTu');
+        else if (vehicleType === 'CAMION' && !HEAVY_CATEGORIES.includes(form.licenseCategory)) errors.licenseCategory = t('driverCarInfo.paraCamionNecesitasLicenciaB22');
         const license = futureDateError(form.licenseExpires);
         if (license) errors.licenseExpires = license;
         const soat = futureDateError(form.soatExpires);
@@ -185,7 +186,7 @@ export class DriverCarInfoViewModel {
         if (!vehicle) return null;
         const kg = car.capacity_kg ?? vehicle.maxWeightKg;
         const m3 = car.capacity_m3 ?? vehicle.maxVolumeM3;
-        return `Hasta ${kg.toLocaleString('es-CO')} kg y ${String(m3).replace('.', ',')} m³`;
+        return t('driverCarInfo.hastaKgYM', { kg: formatNumber(kg), m3: formatNumber(m3) });
     }
 
     // "VES 129", como se lee en la placa

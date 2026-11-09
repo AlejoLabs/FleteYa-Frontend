@@ -14,6 +14,8 @@ import { colors, radius, spacing } from "../../../theme";
 import { CLIENT_CANCEL_REASONS, cargoCategoryLabel, vehicleLabel } from "../../../utils/Cargo";
 import { formatCOP, formatCountdown, formatErrorMessage, formatScheduledDate } from "../../../utils/Formatters";
 import { FARE_STEP, shortAddress } from "./RequestDraft";
+import { useTranslation } from 'react-i18next';
+import { t, lowerInSentence } from '../../../../i18n';
 
 interface Props {
     viewModel: ClientSearchMapViewModel;
@@ -27,6 +29,7 @@ const SEARCH_DURATION_MS = 10 * 60 * 1000;
 
 // Ofertas para el flete publicado: se comparan, se aceptan o rechazan, y se puede subir el precio mientras tanto
 export default function SearchingPanel({ viewModel, idClientRequest, navigation, onClose }: Props) {
+    const { t } = useTranslation();
     const { showToast } = useToast();
     const [request, setRequest] = useState<ClientRequestResponse | null>(null);
     const [offers, setOffers] = useState<DriverTripOffer[]>([]);
@@ -93,7 +96,7 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
         const response = await viewModel.raiseFare(idClientRequest, newFare);
         setIsRaising(false);
         if (response === true) {
-            showToast(`Ahora ofreces ${formatCOP(newFare)}`, 'success');
+            showToast(t('searchingPanel.ahoraOfreces', { amount: formatCOP(newFare) }), 'success');
             loadRequest();
         } else {
             showToast(formatErrorMessage((response as ErrorResponse).message), 'error');
@@ -104,14 +107,14 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
         setIsCancelVisible(false);
         const response = await viewModel.cancelClientRequest(idClientRequest, reason);
         if (response === true) {
-            showToast('Búsqueda cancelada', 'info');
+            showToast(t('searchingPanel.busquedaCancelada'), 'info');
             onClose();
         } else {
             showToast(formatErrorMessage((response as ErrorResponse).message), 'error');
         }
     }
 
-    const title = isExpired ? 'La búsqueda venció' : isScheduled ? 'Flete programado' : 'Ofertas para tu flete';
+    const title = isExpired ? t('searchingPanel.laBusquedaVencio') : isScheduled ? t('searchingPanel.fleteProgramado') : t('searchingPanel.ofertasParaTuFlete');
     const summary = request
         ? [
             cargoCategoryLabel(request.cargo_category),
@@ -127,7 +130,7 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
                     <View style={styles.titleRow}>
                         <AppText variant="title" style={styles.flex} accessibilityRole="header">{title}</AppText>
                         {!isExpired && !isScheduled && request &&
-                            <AppText variant="price" accessibilityLabel={`Quedan ${formatCountdown(remainingMs)} minutos`}>{formatCountdown(remainingMs)}</AppText>}
+                            <AppText variant="price" accessibilityLabel={t('searchingPanel.quedanMinutos', { countdown: formatCountdown(remainingMs) })}>{formatCountdown(remainingMs)}</AppText>}
                     </View>
                     {!isExpired && !isScheduled &&
                         <View style={styles.timeTrack}>
@@ -137,7 +140,7 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
                     {request &&
                         <AppText variant="small" color="textMuted" numberOfLines={2}>
                             {isScheduled && !isExpired
-                                ? `${summary}. Para el ${formatScheduledDate(request.scheduled_at)}; recibe ofertas hasta el ${formatScheduledDate(request.expires_at)}.`
+                                ? t('searchingPanel.paraElRecibeOfertasHasta', { summary, scheduledDate: formatScheduledDate(request.scheduled_at), scheduledDate2: formatScheduledDate(request.expires_at) })
                                 : summary}
                         </AppText>
                     }
@@ -147,13 +150,13 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
                     ? <StateView
                         kind="empty"
                         icon="time-outline"
-                        title="Ningún conductor aceptó a tiempo"
-                        message="Puedes volver a pedir el flete, quizás con un precio más alto."
-                        actionLabel="Volver a pedir"
+                        title={t('searchingPanel.ningunConductorAceptoATiempo')}
+                        message={t('searchingPanel.puedesVolverAPedirEl')}
+                        actionLabel={t('searchingPanel.volverAPedir')}
                         onAction={onClose}
                     />
                     // Hasta que llega la solicitud no se muestra el precio: saldría "$ 0" y "Subir a $ 0"
-                    : !request ? <StateView kind="loading" message="Cargando tu flete…" />
+                    : !request ? <StateView kind="loading" message={t('searchingPanel.cargandoTuFlete')} />
                     : <>
                         <FlatList
                             data={offers}
@@ -170,34 +173,34 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
                             ListEmptyComponent={
                                 <StateView
                                     kind="loading"
-                                    message={`Esperando ofertas de conductores con ${vehicleLabel(request?.required_vehicle).toLowerCase()} o uno más grande…`}
+                                    message={t('searchingPanel.esperandoOfertasDeConductoresCon', { vehicleLabel: lowerInSentence(vehicleLabel(request?.required_vehicle)) })}
                                 />
                             }
                         />
 
                         <View style={styles.footer}>
                             <View style={styles.fareRow}>
-                                <AppText variant="label" color="textMuted">Tu precio</AppText>
-                                <AppText variant="small" color="textMuted">Ahora ofreces {formatCOP(currentFare)}</AppText>
+                                <AppText variant="label" color="textMuted">{t('searchingPanel.tuPrecio')}</AppText>
+                                <AppText variant="small" color="textMuted">{t('searchingPanel.ahoraOfreces', { amount: formatCOP(currentFare) })}</AppText>
                             </View>
                             <PriceStepper value={newFare} step={FARE_STEP} min={currentFare + FARE_STEP} onChange={setNewFare} />
                             <Button
-                                title={`Subir a ${formatCOP(newFare)}`}
+                                title={t('searchingPanel.subirA', { amount: formatCOP(newFare) })}
                                 variant="dark"
                                 icon="trending-up"
                                 loading={isRaising}
                                 disabled={!request || newFare <= currentFare}
                                 onPress={handleRaise}
                             />
-                            {isScheduled && <Button title="Ver luego en Próximos fletes" variant="secondary" onPress={onClose} />}
-                            <Button title="Cancelar búsqueda" variant="dangerText" onPress={() => setIsCancelVisible(true)} />
+                            {isScheduled && <Button title={t('searchingPanel.verLuegoEnProximosFletes')} variant="secondary" onPress={onClose} />}
+                            <Button title={t('searchingPanel.cancelarBusqueda')} variant="dangerText" onPress={() => setIsCancelVisible(true)} />
                         </View>
                     </>
                 }
             </SafeAreaView>
             <CancelReasonModal
                 visible={isCancelVisible}
-                title="Cancelar la búsqueda"
+                title={t('searchingPanel.cancelarLaBusqueda')}
                 reasons={CLIENT_CANCEL_REASONS}
                 onClose={() => setIsCancelVisible(false)}
                 onConfirm={handleCancel}

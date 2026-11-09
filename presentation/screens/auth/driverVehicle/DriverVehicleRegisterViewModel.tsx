@@ -5,6 +5,7 @@ import { VehicleType } from "../../../../domain/models/ClientRequest";
 import { AuthUseCases } from "../../../../domain/useCases/auth/AuthUseCases";
 import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 import { parseDayMonthYear } from "../../../utils/Formatters";
+import { t } from '../../../../i18n';
 
 export const LICENSE_CATEGORIES = ['B1', 'B2', 'B3', 'C1', 'C2', 'C3'];
 // Igual que el backend: B1/C1 sirven hasta furgón liviano (tipo NHR); el camión pide B2/C2 o superior
@@ -66,19 +67,19 @@ export class DriverVehicleRegisterViewModel {
     validate(form: DriverVehicleForm): DriverVehicleErrors {
         const isHeavy = isHeavyVehicle(form.vehicleType);
         const errors: DriverVehicleErrors = {};
-        if (!form.vehicleType) errors.vehicleType = 'Elige el tipo de vehículo';
-        if (form.brand.trim().length < 2) errors.brand = 'Escribe la marca y la referencia';
-        if (form.color.trim().length < 2) errors.color = 'Escribe el color';
-        if (!PLATE_REGEX.test(normalizePlate(form.plate))) errors.plate = '3 letras y 3 números, por ejemplo ABC123';
-        if (!/^\d{4}$/.test(form.modelYear.trim())) errors.modelYear = 'Por ejemplo 2019';
-        if (form.licenseNumber.trim().length < 5) errors.licenseNumber = 'Escribe el número de tu licencia';
-        if (!form.licenseCategory) errors.licenseCategory = 'Elige la categoría de tu licencia';
-        else if (isHeavy && !HEAVY_CATEGORIES.includes(form.licenseCategory)) errors.licenseCategory = 'Para camión necesitas licencia B2 o C2 en adelante';
-        if (!parseDayMonthYear(form.licenseExpires)) errors.licenseExpires = 'Escríbela como DD/MM/AAAA';
-        if (!parseDayMonthYear(form.soatExpires)) errors.soatExpires = 'Escríbela como DD/MM/AAAA';
-        if (form.technoExpires.trim() !== '' && !parseDayMonthYear(form.technoExpires)) errors.technoExpires = 'Escríbela como DD/MM/AAAA';
-        if (form.propertyCard.trim().length < 5) errors.propertyCard = 'Escribe el número de la tarjeta de propiedad';
-        if (form.photos.length === 0) errors.photos = 'Agrega al menos una foto donde se vea la placa';
+        if (!form.vehicleType) errors.vehicleType = t('driverVehicleRegister.eligeElTipoDeVehiculo');
+        if (form.brand.trim().length < 2) errors.brand = t('driverVehicleRegister.escribeLaMarcaYLa');
+        if (form.color.trim().length < 2) errors.color = t('driverVehicleRegister.escribeElColor');
+        if (!PLATE_REGEX.test(normalizePlate(form.plate))) errors.plate = t('driverVehicleRegister.t3LetrasY3Numeros');
+        if (!/^\d{4}$/.test(form.modelYear.trim())) errors.modelYear = t('driverVehicleRegister.porEjemplo2019');
+        if (form.licenseNumber.trim().length < 5) errors.licenseNumber = t('driverVehicleRegister.escribeElNumeroDeTu');
+        if (!form.licenseCategory) errors.licenseCategory = t('driverVehicleRegister.eligeLaCategoriaDeTu');
+        else if (isHeavy && !HEAVY_CATEGORIES.includes(form.licenseCategory)) errors.licenseCategory = t('driverVehicleRegister.paraCamionNecesitasLicenciaB2');
+        if (!parseDayMonthYear(form.licenseExpires)) errors.licenseExpires = t('driverVehicleRegister.escribelaComoDdMmAaaa');
+        if (!parseDayMonthYear(form.soatExpires)) errors.soatExpires = t('driverVehicleRegister.escribelaComoDdMmAaaa');
+        if (form.technoExpires.trim() !== '' && !parseDayMonthYear(form.technoExpires)) errors.technoExpires = t('driverVehicleRegister.escribelaComoDdMmAaaa');
+        if (form.propertyCard.trim().length < 5) errors.propertyCard = t('driverVehicleRegister.escribeElNumeroDeLa');
+        if (form.photos.length === 0) errors.photos = t('driverVehicleRegister.agregaAlMenosUnaFoto');
         return errors;
     }
 

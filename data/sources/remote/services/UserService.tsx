@@ -40,6 +40,17 @@ export class UserService {
         }
     }
 
+    async updateLanguage(language: string): Promise<{ language: string } | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.put<{ language: string }>('/users/me/language', { language });
+            return response.data;
+        } catch (error: any) {
+            if (error.response) return error.response.data;
+            console.log('Error en la peticion', error.message);
+            return defaultErrorResponse;
+        }
+    }
+
     async updateWithImage(user: User, image: string) {
         try {
             const formData = new FormData();

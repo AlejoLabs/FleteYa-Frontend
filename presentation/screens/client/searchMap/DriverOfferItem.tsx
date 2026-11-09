@@ -8,6 +8,7 @@ import { spacing } from "../../../theme";
 import { formatCOP, formatErrorMessage } from "../../../utils/Formatters";
 import { vehicleLabel } from "../../../utils/Cargo";
 import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     viewModel: ClientSearchMapViewModel;
@@ -19,6 +20,7 @@ interface Props {
 
 // Oferta de un conductor, para comparar: calificación real, vehículo, cuánto tarda en llegar y su precio
 export function DriverOfferItem({ viewModel, driverTripOffer, navigation, onResolved }: Props) {
+    const { t } = useTranslation();
 
     const { showToast } = useToast();
     const [busy, setBusy] = useState<'accept' | 'reject' | null>(null);
@@ -59,12 +61,12 @@ export function DriverOfferItem({ viewModel, driverTripOffer, navigation, onReso
                 name={name}
                 imageUri={driver?.image}
                 rating={driver?.rating ?? null}
-                subtitle={`${vehicle} · llega en ${Math.max(1, Math.round(driverTripOffer.time))} min`}
+                subtitle={t('driverOfferItem.llegaEnMin', { vehicle, max: Math.max(1, Math.round(driverTripOffer.time)) })}
                 right={<Amount value={fare_offered} />}
             />
             <View style={styles.actions}>
-                <Button title="Rechazar" variant="danger" size="sm" loading={busy === 'reject'} disabled={busy === 'accept'} onPress={handleReject} style={styles.reject} />
-                <Button title={`Aceptar ${formatCOP(fare_offered)}`} variant="success" size="sm" loading={busy === 'accept'} disabled={busy === 'reject'} onPress={handleAccept} style={styles.accept} />
+                <Button title={t('driverOfferItem.rechazar')} variant="danger" size="sm" loading={busy === 'reject'} disabled={busy === 'accept'} onPress={handleReject} style={styles.reject} />
+                <Button title={t('driverOfferItem.aceptar', { amount: formatCOP(fare_offered) })} variant="success" size="sm" loading={busy === 'accept'} disabled={busy === 'reject'} onPress={handleAccept} style={styles.accept} />
             </View>
         </Card>
     );

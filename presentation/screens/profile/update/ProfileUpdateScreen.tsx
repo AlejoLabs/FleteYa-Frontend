@@ -12,11 +12,14 @@ import { choosePhoto } from "../../../utils/PhotoPicker";
 import { formatErrorMessage } from "../../../utils/Formatters";
 import { colors, spacing } from "../../../theme";
 import { ProfileErrors, ProfileForm, ProfileUpdateViewModel } from "./ProfileUpdateViewModel";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../i18n';
 
 interface Props extends StackScreenProps<ProfileStackParamList, 'ProfileUpdateScreen'> { }
 
 // Editar el nombre, el celular y la foto de perfil. El correo no se cambia aquí: con él se entra a la cuenta
 export default function ProfileUpdateScreen({ navigation }: Props) {
+    const { t } = useTranslation();
 
     const viewModel: ProfileUpdateViewModel = container.resolve('profileUpdateViewModel');
     const { authResponse, saveAuthSession } = useAuth();
@@ -33,7 +36,7 @@ export default function ProfileUpdateScreen({ navigation }: Props) {
     }
 
     const pickImage = async () => {
-        const result = await choosePhoto('Foto de perfil');
+        const result = await choosePhoto(t('profileUpdate.fotoDePerfil'));
         if (result.ok) setImage(result.uri);
         else if (!result.cancelled) showToast(result.message, 'error');
     }
@@ -47,7 +50,7 @@ export default function ProfileUpdateScreen({ navigation }: Props) {
         const response = await viewModel.save(user, form, image);
         setSaving(false);
         if ('id' in response) {
-            showToast('Guardamos tus datos', 'success');
+            showToast(t('profileUpdate.guardamosTusDatos'), 'success');
             saveAuthSession({ user: { ...response, roles: user.roles }, token: authResponse.token });
             navigation.goBack();
         } else {
@@ -60,32 +63,32 @@ export default function ProfileUpdateScreen({ navigation }: Props) {
 
     return (
         <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-            <AppHeader title="Editar perfil" onBack={() => navigation.goBack()} />
+            <AppHeader title={t('profileUpdate.editarPerfil')} onBack={() => navigation.goBack()} />
             <KeyboardArea style={styles.flex} aboveBottomInset>
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-                    <Pressable onPress={pickImage} style={styles.photo} accessibilityRole="button" accessibilityLabel="Cambiar la foto de perfil">
+                    <Pressable onPress={pickImage} style={styles.photo} accessibilityRole="button" accessibilityLabel={t('profileUpdate.cambiarLaFotoDePerfil')}>
                         <View>
                             <Avatar name={`${form.name} ${form.lastname}`} imageUri={currentImage} size={96} />
                             <View style={styles.camera}>
                                 <Ionicons name="camera" size={18} color={colors.asphalt} />
                             </View>
                         </View>
-                        <AppText variant="smallStrong">Cambiar foto</AppText>
+                        <AppText variant="smallStrong">{t('profileUpdate.cambiarFoto')}</AppText>
                     </Pressable>
 
                     <View style={styles.row}>
                         <View style={styles.flex}>
-                            <TextField label="Nombre" value={form.name} onChangeText={update('name')} error={errors.name} autoCapitalize="words" />
+                            <TextField label={t('common.nombre')} value={form.name} onChangeText={update('name')} error={errors.name} autoCapitalize="words" />
                         </View>
                         <View style={styles.flex}>
-                            <TextField label="Apellido" value={form.lastname} onChangeText={update('lastname')} error={errors.lastname} autoCapitalize="words" />
+                            <TextField label={t('profileUpdate.apellido')} value={form.lastname} onChangeText={update('lastname')} error={errors.lastname} autoCapitalize="words" />
                         </View>
                     </View>
-                    <TextField label="Celular" prefix="+57" value={form.phone} onChangeText={update('phone')} error={errors.phone} keyboardType="phone-pad" maxLength={13} />
-                    <TextField label="Correo" value={user.email} editable={false} hint="Con tu correo entras a FleteYa: no se puede cambiar." />
+                    <TextField label={t('common.celular')} prefix="+57" value={form.phone} onChangeText={update('phone')} error={errors.phone} keyboardType="phone-pad" maxLength={13} />
+                    <TextField label={t('common.correo')} value={user.email} editable={false} hint={t('profileUpdate.conTuCorreoEntrasA')} />
                 </ScrollView>
                 <View style={styles.footer}>
-                    <Button title="Guardar cambios" loading={saving} onPress={handleSave} />
+                    <Button title={t('profileUpdate.guardarCambios')} loading={saving} onPress={handleSave} />
                 </View>
             </KeyboardArea>
         </SafeAreaView>

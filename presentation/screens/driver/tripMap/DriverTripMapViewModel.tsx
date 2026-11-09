@@ -7,6 +7,7 @@ import { Status } from "../../../../domain/repository/ClientRequestRepository";
 import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 import { TripPhotoKind } from "../../../../domain/models/Photo";
 import { TripMessageUseCases } from "../../../../domain/useCases/tripMessage/TripMessageUseCases";
+import { t, tk } from '../../../../i18n';
 
 export interface DriverStep {
     status: Status;
@@ -16,17 +17,17 @@ export interface DriverStep {
 // Siguiente paso del viaje para el conductor: llegar al origen, recoger la carga y entregarla.
 // Recoger pide una foto de la carga; entregar abre la prueba de entrega (foto y código)
 const NEXT_STEP: Partial<Record<string, DriverStep>> = {
-    [Status.ACCEPTED]: { status: Status.ARRIVED, label: 'Avisar que llegué' },
-    [Status.ON_THE_WAY]: { status: Status.ARRIVED, label: 'Avisar que llegué' },
-    [Status.ARRIVED]: { status: Status.TRAVELING, label: 'Tomar foto y salir' },
-    [Status.TRAVELING]: { status: Status.FINISHED, label: 'Entregar carga' },
+    [Status.ACCEPTED]: { status: Status.ARRIVED, label: tk('driverTripMap.avisarQueLlegue') },
+    [Status.ON_THE_WAY]: { status: Status.ARRIVED, label: tk('driverTripMap.avisarQueLlegue') },
+    [Status.ARRIVED]: { status: Status.TRAVELING, label: tk('driverTripMap.tomarFotoYSalir') },
+    [Status.TRAVELING]: { status: Status.FINISHED, label: tk('driverTripMap.entregarCarga') },
 };
 
 const STATUS_TEXT: Partial<Record<string, { title: string; hint: string }>> = {
-    [Status.ACCEPTED]: { title: 'Ve a recoger la carga', hint: 'Cuando llegues, avísale al cliente desde aquí.' },
-    [Status.ON_THE_WAY]: { title: 'Ve a recoger la carga', hint: 'Cuando llegues, avísale al cliente desde aquí.' },
-    [Status.ARRIVED]: { title: 'Estás en la recogida', hint: 'Sube la carga y tómale una foto ya en el vehículo.' },
-    [Status.TRAVELING]: { title: 'Lleva la carga al destino', hint: 'Al entregar, pide el código a quien recibe.' },
+    [Status.ACCEPTED]: { title: tk('driverTripMap.veARecogerLaCarga'), hint: tk('driverTripMap.cuandoLleguesAvisaleAlCliente') },
+    [Status.ON_THE_WAY]: { title: tk('driverTripMap.veARecogerLaCarga'), hint: tk('driverTripMap.cuandoLleguesAvisaleAlCliente') },
+    [Status.ARRIVED]: { title: tk('driverTripMap.estasEnLaRecogida'), hint: tk('driverTripMap.subeLaCargaYTomale') },
+    [Status.TRAVELING]: { title: tk('driverTripMap.llevaLaCargaAlDestino'), hint: tk('driverTripMap.alEntregarPideElCodigo') },
 };
 
 export class DriverTripMapViewModel {
@@ -61,11 +62,13 @@ export class DriverTripMapViewModel {
     }
 
     nextStep(status: string): DriverStep | null {
-        return NEXT_STEP[status] ?? null;
+        const step = NEXT_STEP[status];
+        return step ? { ...step, label: t(step.label) } : null;
     }
 
     statusText(status: string) {
-        return STATUS_TEXT[status] ?? { title: 'Viaje en curso', hint: '' };
+        const text = STATUS_TEXT[status];
+        return text ? { title: t(text.title), hint: t(text.hint) } : { title: t('driverTripMap.viajeEnCurso'), hint: '' };
     }
 
     // Mensajes del chat que le llegaron a esta persona y todavía no abre

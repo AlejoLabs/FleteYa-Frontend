@@ -8,6 +8,8 @@ import { useToast } from "../../../../components/ui";
 import { formatErrorMessage } from "../../../../utils/Formatters";
 import { pickPhoto } from "../../../../utils/PhotoPicker";
 import { DriverTripMapViewModel } from "../DriverTripMapViewModel";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../../i18n';
 
 interface Callbacks {
     // Entrega confirmada (con el código o por el cliente): se pasa a cobrar
@@ -18,6 +20,7 @@ interface Callbacks {
 
 // Estado del viaje del lado del conductor: el paso en que va, avanzar, la prueba de entrega y cancelar
 export function useDriverTrip(viewModel: DriverTripMapViewModel, idClientRequest: number, callbacks: Callbacks) {
+    const { t } = useTranslation();
     const { showToast } = useToast();
     const [request, setRequest] = useState<ClientRequestResponse | null>(null);
     const [loadFailed, setLoadFailed] = useState(false);
@@ -55,12 +58,12 @@ export function useDriverTrip(viewModel: DriverTripMapViewModel, idClientRequest
     useEffect(() => {
         load();
         const offCanceled = viewModel.listenerTripCanceled(idClientRequest, (reason) => {
-            showToast(`El cliente canceló el viaje${reason ? `: ${reason}` : ''}`, 'error');
+            showToast(reason ? t('driverTrip.clienteCanceloConMotivo', { reason }) : t('driverTrip.clienteCancelo'), 'error');
             callbacksRef.current.onLeft();
         });
         const offFinished = viewModel.listenerTripFinished(idClientRequest, () => {
             if (finished.current) return;
-            showToast('El cliente confirmó que recibió la carga', 'success');
+            showToast(t('driverTrip.elClienteConfirmoQueRecibio'), 'success');
             finish();
         });
         return () => {
@@ -91,7 +94,7 @@ export function useDriverTrip(viewModel: DriverTripMapViewModel, idClientRequest
         if (next.status === Status.FINISHED) return true;
         setUpdating(true);
         if (next.status === Status.TRAVELING) {
-            showToast('Toma una foto de la carga ya subida al vehículo', 'info');
+            showToast(t('driverTrip.tomaUnaFotoDeLa'), 'info');
             const photo = await takeTripPhoto('PICKUP');
             if (!photo) {
                 setUpdating(false);
@@ -106,7 +109,7 @@ export function useDriverTrip(viewModel: DriverTripMapViewModel, idClientRequest
         }
         setStatus(next.status);
         viewModel.emitUpdateStatus(idClientRequest, next.status);
-        showToast(next.status === Status.TRAVELING ? 'Carga recogida: sigue la ruta al destino' : 'Le avisamos al cliente que llegaste', 'success');
+        showToast(next.status === Status.TRAVELING ? t('driverTrip.cargaRecogidaSigueLaRuta') : t('driverTrip.leAvisamosAlClienteQue'), 'success');
         return false;
     }
 
@@ -121,7 +124,7 @@ export function useDriverTrip(viewModel: DriverTripMapViewModel, idClientRequest
         const response = await viewModel.deliver(idClientRequest, code);
         setUpdating(false);
         if (response === true) {
-            showToast('Entrega confirmada', 'success');
+            showToast(t('driverTrip.entregaConfirmada'), 'success');
             finish();
         } else {
             setDeliveryError(formatErrorMessage((response as ErrorResponse).message));
@@ -131,7 +134,7 @@ export function useDriverTrip(viewModel: DriverTripMapViewModel, idClientRequest
     const cancel = async (reason: string) => {
         const response = await viewModel.cancelTrip(idClientRequest, reason);
         if (response === true) {
-            showToast('Cancelaste el viaje', 'info');
+            showToast(t('driverTrip.cancelasteElViaje'), 'info');
             callbacksRef.current.onLeft();
         } else {
             showToast(formatErrorMessage((response as ErrorResponse).message), 'error');

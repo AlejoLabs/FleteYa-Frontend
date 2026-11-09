@@ -4,6 +4,8 @@ import { cargoCategoryLabel, floorText, vehicleLabel } from "../utils/Cargo";
 import { formatScheduledDate } from "../utils/Formatters";
 import { AppText, StatusPill } from "./ui";
 import { colors, radius, spacing } from "../theme";
+import { useTranslation } from 'react-i18next';
+import { t, lowerInSentence } from '../../i18n';
 
 interface Props {
     request: ClientRequestResponse;
@@ -19,33 +21,34 @@ interface Props {
 const helpText = (request: ClientRequestResponse, audience: 'driver' | 'client', offerHint: boolean) => {
     const helpers = request.helpers ?? 0;
     if (helpers === 0) {
-        return { needsHelp: false, text: audience === 'client' ? 'Solo transporte: tú subes y recibes la carga.' : 'Solo transporte: el cliente sube y recibe la carga.' };
+        return { needsHelp: false, text: audience === 'client' ? t('cargoInfo.soloTransporteTuSubesY') : t('cargoInfo.soloTransporteElClienteSube') };
     }
     const pickupFloor = request.pickup_floor && request.pickup_floor > 1 ? floorText(request.pickup_floor, request.pickup_has_elevator) : null;
     const destinationFloor = request.destination_floor && request.destination_floor > 1 ? floorText(request.destination_floor, request.destination_has_elevator) : null;
     const details = [
-        `${helpers} ${helpers === 1 ? 'ayudante' : 'ayudantes'}`,
-        pickupFloor ? `cargue en ${pickupFloor.toLowerCase()}` : null,
-        destinationFloor ? `descargue en ${destinationFloor.toLowerCase()}` : null,
+        t('cargoInfo.ayudantes', { count: helpers }),
+        pickupFloor ? t('cargoInfo.cargueEn', { pickupFloor: lowerInSentence(pickupFloor) }) : null,
+        destinationFloor ? t('cargoInfo.descargueEn', { destinationFloor: lowerInSentence(destinationFloor) }) : null,
     ].filter(Boolean).join(' · ');
-    return { needsHelp: true, text: `Necesita ayuda: ${details}.${offerHint ? ' Inclúyelo en tu oferta.' : ''}` };
+    return { needsHelp: true, text: t('cargoInfo.necesitaAyuda', { details }) + (offerHint ? ' ' + t('cargoInfo.incluyeloEnTuOferta') : '') };
 }
 
 // Resumen de la carga, el cargue y descargue y la programación de un flete
 export default function CargoInfo({ request, showContacts = false, audience = 'driver', offerHint = false }: Props) {
+    const { t } = useTranslation();
     const packages = request.packages ?? 1;
     const tags = [
-        request.is_fragile ? 'Frágil' : null,
-        request.needs_cover ? 'Debe ir cubierta' : null,
+        request.is_fragile ? t('cargoInfo.fragil') : null,
+        request.needs_cover ? t('cargoInfo.debeIrCubierta') : null,
     ].filter(Boolean) as string[];
     const help = helpText(request, audience, offerHint);
-    const measures = request.length_cm ? `${request.length_cm} × ${request.width_cm} × ${request.height_cm} cm` : null;
+    const measures = request.length_cm ? t('cargoInfo.cm', { length_cm: request.length_cm, width_cm: request.width_cm, height_cm: request.height_cm }) : null;
 
     return (
         <View style={styles.box}>
-            {request.scheduled_at && <StatusPill tone="cargo" label={`Programado: ${formatScheduledDate(request.scheduled_at)}`} />}
+            {request.scheduled_at && <StatusPill tone="cargo" label={t('cargoInfo.programado', { scheduledDate: formatScheduledDate(request.scheduled_at) })} />}
             <AppText variant="smallStrong">
-                {[cargoCategoryLabel(request.cargo_category), `${packages} ${packages === 1 ? 'artículo' : 'artículos'}`, request.weight_kg ? `${request.weight_kg} kg` : null]
+                {[cargoCategoryLabel(request.cargo_category), t('common.articulos', { count: packages }), request.weight_kg ? t('common.kg', { value: request.weight_kg }) : null]
                     .filter(Boolean).join(' · ')}
             </AppText>
             {request.cargo_description ? <AppText variant="small" color="textMuted">{request.cargo_description}</AppText> : null}
@@ -58,9 +61,9 @@ export default function CargoInfo({ request, showContacts = false, audience = 'd
                     {tags.map((tag) => <StatusPill key={tag} label={tag} tone="warning" />)}
                 </View>}
             {showContacts && request.sender_name &&
-                <AppText variant="small">Entrega: {request.sender_name} · {request.sender_phone}</AppText>}
+                <AppText variant="small">{t('cargoInfo.entrega', { sender_name: request.sender_name, sender_phone: request.sender_phone })}</AppText>}
             {showContacts && request.receiver_name &&
-                <AppText variant="small">Recibe: {request.receiver_name} · {request.receiver_phone}</AppText>}
+                <AppText variant="small">{t('cargoInfo.recibe', { receiver_name: request.receiver_name, receiver_phone: request.receiver_phone })}</AppText>}
         </View>
     );
 }

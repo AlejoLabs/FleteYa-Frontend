@@ -18,6 +18,8 @@ export interface DriverCarInfo{
     // Solo los ve el dueño: qué debe corregir si lo rechazaron, y por qué todavía no puede recibir fletes (null = puede)
     approval_note?: string | null;
     block_reason?: string | null;
+    // El mismo motivo como código y datos: la app lo escribe en su idioma (block_reason viene en español)
+    block_reason_detail?: { key: string; params?: Record<string, unknown> } | null;
     license_expires_at?: string | null;
     soat_expires_at?: string | null;
     techno_expires_at?: string | null;

@@ -1,6 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { Button, CountBadge } from "./ui";
 import { spacing } from "../theme";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     unread: number;
@@ -10,15 +11,16 @@ interface Props {
 
 // Chat con la otra persona (con los mensajes sin leer) y reporte de un problema, en las pantallas del viaje
 export default function TripActions({ unread, onChat, onReport }: Props) {
+    const { t } = useTranslation();
     return (
         <View style={styles.row}>
             <View style={styles.item}>
                 <Button
-                    title="Chat"
+                    title={t('tripActions.chat')}
                     icon="chatbubble-outline"
                     variant="dark"
                     onPress={onChat}
-                    accessibilityLabel={unread > 0 ? `Abrir el chat, ${unread} ${unread === 1 ? 'mensaje' : 'mensajes'} sin leer` : 'Abrir el chat del viaje'}
+                    accessibilityLabel={unread > 0 ? t('tripActions.abrirElChatSinLeer', { count: unread }) : t('tripActions.abrirElChatDelViaje')}
                 />
                 {/* Encima del botón y no dentro: el botón solo lleva texto e icono */}
                 <View style={styles.badge} pointerEvents="none">
@@ -26,7 +28,7 @@ export default function TripActions({ unread, onChat, onReport }: Props) {
                 </View>
             </View>
             <View style={styles.item}>
-                <Button title="Reportar" icon="warning-outline" variant="secondary" onPress={onReport} accessibilityLabel="Reportar un problema" />
+                <Button title={t('tripActions.reportar')} icon="warning-outline" variant="secondary" onPress={onReport} accessibilityLabel={t('common.reportarUnProblema')} />
             </View>
         </View>
     );

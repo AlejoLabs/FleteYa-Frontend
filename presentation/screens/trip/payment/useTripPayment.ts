@@ -7,6 +7,7 @@ import { TripPayment } from "../../../../domain/models/TripPayment";
 import { useToast } from "../../../components/ui";
 import { formatErrorMessage } from "../../../utils/Formatters";
 import { TripPaymentViewModel } from "./TripPaymentViewModel";
+import { t } from '../../../../i18n';
 
 // Mientras espera un pago por la app, el conductor pregunta cada tanto (el cliente pregunta al volver del checkout)
 const VERIFY_EVERY_MS = 6000;
@@ -34,7 +35,7 @@ export function useTripPayment(viewModel: TripPaymentViewModel, idClientRequest:
         const wasPaid = Boolean(paymentRef.current?.paid_at);
         setPayment(next);
         if (!wasPaid && next.paid_at && paymentRef.current) {
-            showToast('Pago confirmado', 'success');
+            showToast(t('tripPayment.pagoConfirmado'), 'success');
             setPaidNow(true);
         }
     }
@@ -61,7 +62,7 @@ export function useTripPayment(viewModel: TripPaymentViewModel, idClientRequest:
         if (!quiet) setBusy(null);
         if ('id_client_request' in response) {
             applyPayment(response);
-            if (!quiet && !response.paid_at && !viewModel.wasDeclined(response)) showToast('Todavía no vemos el pago. Si ya pagaste, espera un momento', 'info');
+            if (!quiet && !response.paid_at && !viewModel.wasDeclined(response)) showToast(t('tripPayment.todaviaNoVemosElPago'), 'info');
         } else if (!quiet) {
             showError(response);
         }
@@ -114,7 +115,7 @@ export function useTripPayment(viewModel: TripPaymentViewModel, idClientRequest:
             await Linking.openURL(response.checkout_url);
         } catch {
             inCheckout.current = false;
-            showToast('No pudimos abrir la página de pago', 'error');
+            showToast(t('tripPayment.noPudimosAbrirLaPagina'), 'error');
         }
     }
 

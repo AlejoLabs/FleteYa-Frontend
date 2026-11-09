@@ -19,6 +19,7 @@ import { canCancelTrip, isCargoOnBoard, routeTarget, toLatLng } from "../../trip
 import { ClientTripMapViewModel } from "./ClientTripMapViewModel";
 import { useClientTrip } from "./hooks/useClientTrip";
 import ClientTripSheet from "./ClientTripSheet";
+import { useTranslation } from 'react-i18next';
 
 // Alto máximo de la hoja: deja arriba casi la mitad del mapa para ver al conductor; el resto se desplaza
 const SHEET_MAX = 0.58;
@@ -27,6 +28,7 @@ interface Props extends StackScreenProps<ClientMapStackParamList, 'ClientTripMap
 
 // Viaje en curso del cliente: el conductor moviéndose en el mapa y una hoja con lo que está pasando
 export function ClientTripMapScreen({ navigation, route }: Props) {
+    const { t } = useTranslation();
     const { idClientRequest, idDriver } = route.params;
     const viewModel: ClientTripMapViewModel = container.resolve("clientTripMapViewModel");
     const { authResponse } = useAuth();
@@ -73,8 +75,8 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
         return (
             <View style={[styles.screen, styles.center]}>
                 {trip.loadFailed
-                    ? <StateView kind="error" message="No pudimos cargar el viaje." onAction={trip.reload} />
-                    : <StateView kind="loading" message="Cargando el viaje…" />}
+                    ? <StateView kind="error" message={t('clientTripMap.noPudimosCargarElViaje')} onAction={trip.reload} />
+                    : <StateView kind="loading" message={t('clientTripMap.cargandoElViaje')} />}
             </View>
         );
     }
@@ -88,15 +90,15 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                 bottomInset={sheetHeight}
                 initialCenter={toLatLng(request.pickup_position)}
                 vehicle={driverPosition}
-                vehicleTitle="Tu conductor"
+                vehicleTitle={t('clientTripMap.tuConductor')}
                 pickup={isCargoOnBoard(status) ? null : toLatLng(request.pickup_position)}
                 destination={toLatLng(request.destination_position)}
                 route={tripRoute}
             />
 
             <View style={[styles.topBar, { top: insets.top + spacing.sm }]} pointerEvents="box-none">
-                <MapButton icon="menu" label="Abrir menú" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
-                <MapButton icon="scan-outline" label="Ver la ruta completa" onPress={fitTrip} />
+                <MapButton icon="menu" label={t('common.abrirMenu')} onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
+                <MapButton icon="scan-outline" label={t('clientTripMap.verLaRutaCompleta')} onPress={fitTrip} />
             </View>
 
             <View style={styles.sheetArea} onLayout={(event) => setSheetHeight(event.nativeEvent.layout.height)}>
@@ -105,8 +107,8 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
                     maxHeight={windowHeight * SHEET_MAX}
                     footer={((status === Status.TRAVELING && trip.deliveryLocked) || canCancelTrip(status)) &&
                         <View style={styles.footer}>
-                            {status === Status.TRAVELING && trip.deliveryLocked && <Button title="Ya recibí la carga" variant="success" onPress={() => setIsConfirmVisible(true)} />}
-                            {canCancelTrip(status) && <Button title="Cancelar flete" variant="dangerText" onPress={() => setIsCancelVisible(true)} />}
+                            {status === Status.TRAVELING && trip.deliveryLocked && <Button title={t('clientTripMap.yaRecibiLaCarga')} variant="success" onPress={() => setIsConfirmVisible(true)} />}
+                            {canCancelTrip(status) && <Button title={t('common.cancelarFlete')} variant="dangerText" onPress={() => setIsCancelVisible(true)} />}
                         </View>
                     }
                 >
@@ -127,17 +129,17 @@ export function ClientTripMapScreen({ navigation, route }: Props) {
 
             <ConfirmDialog
                 visible={isConfirmVisible}
-                title="¿Ya recibiste la carga?"
-                message="El conductor no pudo cerrar la entrega con el código. Confírmalo solo si ya tienes la carga: el viaje se cierra como entregado."
-                confirmLabel="Sí, la recibí"
-                cancelLabel="Todavía no"
+                title={t('clientTripMap.yaRecibisteLaCarga')}
+                message={t('clientTripMap.elConductorNoPudoCerrar')}
+                confirmLabel={t('clientTripMap.siLaRecibi')}
+                cancelLabel={t('clientTripMap.todaviaNo')}
                 loading={trip.confirming}
                 onConfirm={handleConfirmDelivery}
                 onCancel={() => setIsConfirmVisible(false)}
             />
             <CancelReasonModal
                 visible={isCancelVisible}
-                title="Cancelar el flete"
+                title={t('clientTripMap.cancelarElFlete')}
                 reasons={CLIENT_CANCEL_REASONS}
                 onClose={() => setIsCancelVisible(false)}
                 onConfirm={(reason) => {

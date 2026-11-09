@@ -1,4 +1,5 @@
 import { AuthUseCases } from "../../../../domain/useCases/auth/AuthUseCases";
+import { t } from '../../../../i18n';
 
 export interface PasswordForm {
     current: string;
@@ -19,9 +20,9 @@ export class ChangePasswordViewModel {
     // Una cuenta creada con Google no tiene contraseña actual que pedir
     validate(hasPassword: boolean, form: PasswordForm): PasswordErrors {
         const errors: PasswordErrors = {};
-        if (hasPassword && form.current === '') errors.current = 'Escribe tu contraseña actual';
-        if (form.next.length < 6) errors.next = 'Debe tener al menos 6 caracteres';
-        else if (form.next !== form.confirm) errors.confirm = 'No coincide con la contraseña nueva';
+        if (hasPassword && form.current === '') errors.current = t('changePassword.escribeTuContrasenaActual');
+        if (form.next.length < 6) errors.next = t('changePassword.debeTenerAlMenos6');
+        else if (form.next !== form.confirm) errors.confirm = t('changePassword.noCoincideConLaContrasena');
         return errors;
     }
 

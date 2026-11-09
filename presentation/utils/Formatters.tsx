@@ -1,3 +1,8 @@
+import { t, currentLocale } from '../../i18n';
+// Un número con el separador de miles y de decimales del idioma que se está usando
+export const formatNumber = (value: number, maxDecimals = 2, minDecimals = 0): string =>
+  value.toLocaleString(currentLocale(), { minimumFractionDigits: minDecimals, maximumFractionDigits: maxDecimals });
+
 export const formatCOP = (value?: number | null): string => {
   const amount = typeof value === 'number' && !isNaN(value) ? value : 0;
   return amount.toLocaleString('es-CO', {
@@ -14,13 +19,13 @@ export const formatThousands = (digits: string): string =>
 
 // Kilómetros a "8,8 km", con coma decimal como en Colombia (Google la manda con punto)
 export const formatKm = (km: number): string =>
-  `${km.toFixed(1).replace('.', ',')} km`;
+  `${formatNumber(km, 1, 1)} km`;
 
 export const formatTripDate =(value?: string | Date | null): string => {
   if (!value) return '';
   const date = new Date(value);
   if (isNaN(date.getTime())) return '';
-  return date.toLocaleString('es-CO', {
+  return date.toLocaleString(currentLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -34,12 +39,12 @@ export const formatTime = (value?: string | Date | null): string => {
   if (!value) return '';
   const date = new Date(value);
   if (isNaN(date.getTime())) return '';
-  return date.toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' });
+  return date.toLocaleTimeString(currentLocale(), { hour: 'numeric', minute: '2-digit' });
 }
 
 // Calificación de un usuario, por ejemplo "★ 4.6 (12)"; sin votos todavía sale "Nuevo"
 export const formatRating = (rating?: { average: number | null; count: number } | null): string =>
-  rating && rating.average !== null ? `★ ${rating.average.toFixed(1)} (${rating.count})` : 'Nuevo';
+  rating && rating.average !== null ? `★ ${rating.average.toFixed(1)} (${rating.count})` : t('formatters.nuevo');
 
 // Tiempo restante de una búsqueda, por ejemplo "9:05"
 export const formatCountdown = (ms: number): string => {
@@ -54,7 +59,7 @@ export const formatScheduledDate = (value?: string | Date | null): string => {
   if (!value) return '';
   const date = new Date(value);
   if (isNaN(date.getTime())) return '';
-  return date.toLocaleString('es-CO', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  return date.toLocaleString(currentLocale(), { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 }
 
 // El backend puede devolver un mensaje o una lista (varios campos inválidos a la vez)

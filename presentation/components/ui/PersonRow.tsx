@@ -2,6 +2,8 @@ import { Image, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../theme";
 import AppText from "./AppText";
+import { useTranslation } from 'react-i18next';
+import { formatNumber } from '../../utils/Formatters';
 
 interface RatingProps {
     rating?: { average: number | null; count: number } | null;
@@ -10,15 +12,16 @@ interface RatingProps {
 
 // "★ 4,6 (12)" o "Nuevo" cuando todavía no tiene votos
 export function RatingBadge({ rating, tone = 'light' }: RatingProps) {
+    const { t } = useTranslation();
     const muted = tone === 'dark' ? colors.textOnDarkMuted : colors.textMuted;
     if (!rating || rating.average === null) {
-        return <AppText variant="caption" style={{ color: muted }}>Nuevo</AppText>;
+        return <AppText variant="caption" style={{ color: muted }}>{t('personRow.nuevo')}</AppText>;
     }
     return (
-        <View style={styles.rating} accessibilityLabel={`Calificación ${rating.average} de 5, ${rating.count} votos`}>
+        <View style={styles.rating} accessibilityLabel={t('personRow.calificacionDe5Votos', { average: rating.average, count: rating.count })}>
             <Ionicons name="star" size={12} color={colors.star} />
             <AppText variant="caption" style={{ color: tone === 'dark' ? colors.textOnDark : colors.text }}>
-                {rating.average.toFixed(1).replace('.', ',')}
+                {formatNumber(rating.average, 1, 1)}
             </AppText>
             <AppText variant="caption" style={{ color: muted }}>({rating.count})</AppText>
         </View>

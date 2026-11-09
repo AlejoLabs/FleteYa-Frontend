@@ -80,6 +80,8 @@ import { GetMyDocumentsUseCase } from "../domain/useCases/driverCarInfo/GetMyDoc
 import { UpdateMyVehicleUseCase } from "../domain/useCases/driverCarInfo/UpdateMyVehicleUseCase";
 import { UpdateMyDocumentsUseCase } from "../domain/useCases/driverCarInfo/UpdateMyDocumentsUseCase";
 import { SaveNotificationTokenUseCase } from "../domain/useCases/user/SaveNotificationTokenUseCase";
+import { UpdateLanguageUseCase } from "../domain/useCases/user/UpdateLanguageUseCase";
+import { ProfileLanguageViewModel } from "../presentation/screens/profile/language/ProfileLanguageViewModel";
 import { PhotoService } from "../data/sources/remote/services/PhotoService";
 import { PhotoRepositoryImpl } from "../data/repository/PhotoRepositoryImpl";
 import { UploadTripPhotoUseCase } from "../domain/useCases/photo/UploadTripPhotoUseCase";
@@ -224,8 +226,10 @@ const userRepository = new UserRepositoryImpl(userService);
 const updateUserUseCase = new UpdateUserUseCase(userRepository);
 const updateImageUserUseCase = new UpdateImageUserUseCase(userRepository);
 const saveNotificationTokenUseCase = new SaveNotificationTokenUseCase(userRepository);
-const userUseCases = new UserUseCases({ updateUserUseCase, updateImageUserUseCase, saveNotificationTokenUseCase });
+const updateLanguageUseCase = new UpdateLanguageUseCase(userRepository);
+const userUseCases = new UserUseCases({ updateUserUseCase, updateImageUserUseCase, saveNotificationTokenUseCase, updateLanguageUseCase });
 const profileUpdateViewModel = new ProfileUpdateViewModel(userUseCases);
+const profileLanguageViewModel = new ProfileLanguageViewModel(userUseCases);
 const driverTripOfferService = new DriverTripOfferService();
 const driverTripOfferRepository = new DriverTripOfferRepositoryImpl({ driverTripOfferService });
 const createDriverTripOfferUseCase = new CreateDriverTripOfferUseCase({ driverTripOfferRepository });
@@ -285,6 +289,7 @@ type ContainerDeps = {
     driverMyLocationMapViewModel: DriverMyLocationMapViewModel;
     driverClientRequestViewModel: DriverClientRequestViewModel;
     profileUpdateViewModel: ProfileUpdateViewModel;
+    profileLanguageViewModel: ProfileLanguageViewModel;
     userService: UserService;
     driverPositionService: DriverPositionService;
     driverPositionRepository: DriverPositionRepositoryImpl;
@@ -373,6 +378,7 @@ const container = {
             updateImageUserUseCase,
             userUseCases,
             profileUpdateViewModel,
+            profileLanguageViewModel,
             driverTripOfferService,
             driverTripOfferRepository,
             createDriverTripOfferUseCase,

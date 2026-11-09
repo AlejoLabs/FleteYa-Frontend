@@ -11,6 +11,7 @@ import { spacing } from "../../../theme";
 import TripPlaces from "../../trip/components/TripPlaces";
 import { isCargoOnBoard } from "../../trip/TripStatus";
 import DeliveryProofSection from "./DeliveryProofSection";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     request: ClientRequestResponse;
@@ -27,6 +28,7 @@ interface Props {
 
 // Contenido de la hoja del cliente: en qué va el flete, quién lo lleva, el código de entrega, las fotos y la carga
 export default function ClientTripSheet({ request, status, title, hint, vehicleText, photos, deliveryLocked, unread, onChat, onReport }: Props) {
+    const { t } = useTranslation();
     const { driver } = request;
     return (
         <>
@@ -43,7 +45,7 @@ export default function ClientTripSheet({ request, status, title, hint, vehicleT
                 rating={driver.rating}
                 right={
                     <View style={styles.fare}>
-                        <AppText variant="caption" color="textMuted">Acordado</AppText>
+                        <AppText variant="caption" color="textMuted">{t('clientTripSheet.acordado')}</AppText>
                         <Amount value={getTripFare(request)} />
                     </View>
                 }

@@ -4,6 +4,7 @@ import { AuthResponse } from "../../../../domain/models/AuthResponse";
 import { useToast } from "../../../components/ui";
 import { formatErrorMessage } from "../../../utils/Formatters";
 import { getGoogleIdToken } from "../../../utils/GoogleAuth";
+import { t } from '../../../../i18n';
 
 // Estado del botón de Google y del paso de vincular una cuenta que ya tenía contraseña.
 // onSignedIn recibe la sesión; la pantalla decide si guarda y a dónde vuelve
@@ -54,7 +55,7 @@ export function useGoogleSignIn(onSignedIn: (response: AuthResponse) => void) {
         setIsBusy(false);
         if ('token' in response) {
             closeLink();
-            showToast('Cuenta vinculada: ya puedes entrar con Google o con tu contraseña', 'success');
+            showToast(t('googleSignIn.cuentaVinculadaYaPuedesEntrar'), 'success');
             onSignedIn(response);
         } else {
             setLinkError(formatErrorMessage(response.message));

@@ -2,6 +2,8 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, spacing, touchTarget } from "../../theme";
 import AppText from "./AppText";
+import { useTranslation } from 'react-i18next';
+import { lowerInSentence } from '../../../i18n';
 
 interface Props {
     label: string;
@@ -14,6 +16,7 @@ interface Props {
 
 // Fila con un número que se sube o baja: artículos, ayudantes, piso
 export default function Counter({ label, value, onChange, min = 0, max = 99, hint }: Props) {
+    const { t } = useTranslation();
     return (
         <View style={styles.row}>
             <View style={styles.texts}>
@@ -21,9 +24,9 @@ export default function Counter({ label, value, onChange, min = 0, max = 99, hin
                 {hint && <AppText variant="caption" color="textMuted">{hint}</AppText>}
             </View>
             <View style={styles.controls} accessibilityRole="adjustable" accessibilityLabel={label} accessibilityValue={{ min, max, now: value }}>
-                <CounterButton icon="remove" label={`Menos ${label.toLowerCase()}`} disabled={value <= min} onPress={() => onChange(value - 1)} />
+                <CounterButton icon="remove" label={t('counter.menos', { label: lowerInSentence(label) })} disabled={value <= min} onPress={() => onChange(value - 1)} />
                 <AppText variant="heading" align="center" style={styles.value}>{value}</AppText>
-                <CounterButton icon="add" label={`Más ${label.toLowerCase()}`} disabled={value >= max} onPress={() => onChange(value + 1)} />
+                <CounterButton icon="add" label={t('counter.mas', { label: lowerInSentence(label) })} disabled={value >= max} onPress={() => onChange(value + 1)} />
             </View>
         </View>
     );

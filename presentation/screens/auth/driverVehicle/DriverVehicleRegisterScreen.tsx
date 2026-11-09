@@ -9,14 +9,17 @@ import { AppHeader, AppText, Button, ChipGroup, KeyboardArea, OptionCard, Switch
 import PhotoStrip from "../../../components/PhotoStrip";
 import { choosePhoto } from "../../../utils/PhotoPicker";
 import { VEHICLES } from "../../../utils/Cargo";
-import { formatErrorMessage } from "../../../utils/Formatters";
+import { formatErrorMessage, formatNumber } from '../../../utils/Formatters';
 import { colors, spacing } from "../../../theme";
 import { DriverVehicleErrors, DriverVehicleForm, DriverVehicleRegisterViewModel, EMPTY_DRIVER_VEHICLE_FORM, HEAVY_CATEGORIES, LICENSE_CATEGORIES, MAX_VEHICLE_PHOTOS, isHeavyVehicle } from "./DriverVehicleRegisterViewModel";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../../i18n';
 
 interface Props extends StackScreenProps<RootStackParamList, 'DriverVehicleRegisterScreen'> { };
 
 // Segundo paso del registro "Quiero transportar": el vehículo de carga y sus documentos
 export default function DriverVehicleRegisterScreen({ navigation, route }: Props) {
+    const { t } = useTranslation();
 
     const { account } = route.params;
     const viewModel: DriverVehicleRegisterViewModel = container.resolve('driverVehicleRegisterViewModel');
@@ -38,7 +41,7 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
     }
 
     const addPhoto = async () => {
-        const result = await choosePhoto('Foto del vehículo');
+        const result = await choosePhoto(t('driverVehicleRegister.fotoDelVehiculo'));
         if (result.ok) update({ photos: [...form.photos, result.uri] });
         else if (!result.cancelled) showToast(result.message, 'error');
     }
@@ -47,7 +50,7 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
         const problems = viewModel.validate(form);
         setErrors(problems);
         if (Object.keys(problems).length > 0) {
-            showToast('Revisa los datos marcados en rojo', 'error');
+            showToast(t('driverVehicleRegister.revisaLosDatosMarcadosEn'), 'error');
             return;
         }
         setIsSending(true);
@@ -55,7 +58,7 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
         setIsSending(false);
         if ('token' in response) {
             // El login ya decide a dónde ir según el rol: un conductor nuevo entra directo a su inicio
-            showToast(`Cuenta creada. ¡Hola, ${account.name}!`, 'success');
+            showToast(t('driverVehicleRegister.cuentaCreadaHola', { name: account.name }), 'success');
             navigation.popToTop();
             saveAuthSession(response);
             return;
@@ -66,24 +69,22 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
     return (
         <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
             <AppHeader
-                title="Tu vehículo de carga"
+                title={t('driverVehicleRegister.tuVehiculoDeCarga')}
                 onBack={() => navigation.goBack()}
-                right={<AppText variant="caption" color="textMuted">Paso 2 de 2</AppText>}
+                right={<AppText variant="caption" color="textMuted">{t('driverVehicleRegister.paso2De2')}</AppText>}
             />
             <KeyboardArea aboveBottomInset style={styles.flex}>
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-                    <AppText variant="body" color="textMuted">
-                        Hola {account.name}. Con estos datos te mostramos solo las cargas que caben en tu vehículo.
-                    </AppText>
+                    <AppText variant="body" color="textMuted">{t('driverVehicleRegister.holaConEstosDatosTe', { name: account.name })}</AppText>
 
                     <View style={styles.block}>
-                        <AppText variant="label" color="textMuted">Tipo de vehículo</AppText>
+                        <AppText variant="label" color="textMuted">{t('driverVehicleRegister.tipoDeVehiculo')}</AppText>
                         <View style={styles.options} accessibilityRole="radiogroup">
                             {VEHICLES.map((vehicle) => (
                                 <OptionCard
                                     key={vehicle.type}
-                                    title={vehicle.label}
-                                    description={`Hasta ${vehicle.maxWeightKg.toLocaleString('es-CO')} kg`}
+                                    title={t(vehicle.label)}
+                                    description={t('driverVehicleRegister.hastaKg', { maxWeightKg: formatNumber(vehicle.maxWeightKg) })}
                                     selected={form.vehicleType === vehicle.type}
                                     onPress={() => update({ vehicleType: vehicle.type })}
                                 />
@@ -92,22 +93,22 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
                         {errors.vehicleType && <AppText variant="caption" color="danger">{errors.vehicleType}</AppText>}
                     </View>
 
-                    <TextField label="Marca y referencia" placeholder="Chevrolet NHR" value={form.brand} onChangeText={(brand) => update({ brand })} error={errors.brand} />
-                    <TextField label="Color" placeholder="Blanco" value={form.color} onChangeText={(color) => update({ color })} error={errors.color} />
+                    <TextField label={t('driverVehicleRegister.marcaYReferencia')} placeholder={t('driverVehicleRegister.chevroletNhr')} value={form.brand} onChangeText={(brand) => update({ brand })} error={errors.brand} />
+                    <TextField label={t('driverVehicleRegister.color')} placeholder={t('driverVehicleRegister.blanco')} value={form.color} onChangeText={(color) => update({ color })} error={errors.color} />
                     <View style={styles.row}>
                         <View style={styles.flex}>
-                            <TextField label="Placa" placeholder="ABC123" value={form.plate} onChangeText={(plate) => update({ plate })} error={errors.plate} autoCapitalize="characters" maxLength={7} />
+                            <TextField label={t('driverVehicleRegister.placa')} placeholder="ABC123" value={form.plate} onChangeText={(plate) => update({ plate })} error={errors.plate} autoCapitalize="characters" maxLength={7} />
                         </View>
                         <View style={styles.flex}>
-                            <TextField label="Año del modelo" placeholder="2019" value={form.modelYear} onChangeText={(modelYear) => update({ modelYear })} error={errors.modelYear} keyboardType="number-pad" maxLength={4} />
+                            <TextField label={t('driverVehicleRegister.anoDelModelo')} placeholder="2019" value={form.modelYear} onChangeText={(modelYear) => update({ modelYear })} error={errors.modelYear} keyboardType="number-pad" maxLength={4} />
                         </View>
                     </View>
-                    <SwitchRow label="Carrocería cerrada" hint="Furgón o carpa: la carga va protegida de la lluvia" value={form.isCovered} onChange={(isCovered) => update({ isCovered })} />
+                    <SwitchRow label={t('driverVehicleRegister.carroceriaCerrada')} hint={t('driverVehicleRegister.furgonOCarpaLaCarga')} value={form.isCovered} onChange={(isCovered) => update({ isCovered })} />
 
-                    <AppText variant="label" color="textMuted">Licencia de conducción</AppText>
-                    <TextField label="Número de la licencia" value={form.licenseNumber} onChangeText={(licenseNumber) => update({ licenseNumber })} error={errors.licenseNumber} keyboardType="number-pad" />
+                    <AppText variant="label" color="textMuted">{t('driverVehicleRegister.licenciaDeConduccion')}</AppText>
+                    <TextField label={t('driverVehicleRegister.numeroDeLaLicencia')} value={form.licenseNumber} onChangeText={(licenseNumber) => update({ licenseNumber })} error={errors.licenseNumber} keyboardType="number-pad" />
                     <View style={styles.block}>
-                        <AppText variant="smallStrong">Categoría</AppText>
+                        <AppText variant="smallStrong">{t('driverVehicleRegister.categoria')}</AppText>
                         <ChipGroup
                             options={LICENSE_CATEGORIES.map((category) => ({ value: category, label: category, disabled: isHeavy && !HEAVY_CATEGORIES.includes(category) }))}
                             selected={form.licenseCategory}
@@ -115,26 +116,26 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
                         />
                         {errors.licenseCategory
                             ? <AppText variant="caption" color="danger">{errors.licenseCategory}</AppText>
-                            : isHeavy && <AppText variant="caption" color="textMuted">Para camión necesitas B2 o C2 en adelante.</AppText>}
+                            : isHeavy && <AppText variant="caption" color="textMuted">{t('driverVehicleRegister.paraCamionNecesitasB2O')}</AppText>}
                     </View>
-                    <TextField label="La licencia vence el" placeholder="DD/MM/AAAA" value={form.licenseExpires} onChangeText={(licenseExpires) => update({ licenseExpires })} error={errors.licenseExpires} keyboardType="numbers-and-punctuation" />
+                    <TextField label={t('driverVehicleRegister.laLicenciaVenceEl')} placeholder="DD/MM/AAAA" value={form.licenseExpires} onChangeText={(licenseExpires) => update({ licenseExpires })} error={errors.licenseExpires} keyboardType="numbers-and-punctuation" />
 
-                    <AppText variant="label" color="textMuted">Documentos del vehículo</AppText>
-                    <TextField label="El SOAT vence el" placeholder="DD/MM/AAAA" value={form.soatExpires} onChangeText={(soatExpires) => update({ soatExpires })} error={errors.soatExpires} keyboardType="numbers-and-punctuation" />
+                    <AppText variant="label" color="textMuted">{t('driverVehicleRegister.documentosDelVehiculo')}</AppText>
+                    <TextField label={t('driverVehicleRegister.elSoatVenceEl')} placeholder="DD/MM/AAAA" value={form.soatExpires} onChangeText={(soatExpires) => update({ soatExpires })} error={errors.soatExpires} keyboardType="numbers-and-punctuation" />
                     <TextField
-                        label="La revisión técnico-mecánica vence el"
+                        label={t('driverVehicleRegister.laRevisionTecnicoMecanicaVence')}
                         placeholder="DD/MM/AAAA"
-                        hint="Déjalo vacío si el vehículo es nuevo y todavía no la necesita."
+                        hint={t('driverVehicleRegister.dejaloVacioSiElVehiculo')}
                         value={form.technoExpires}
                         onChangeText={(technoExpires) => update({ technoExpires })}
                         error={errors.technoExpires}
                         keyboardType="numbers-and-punctuation"
                     />
-                    <TextField label="Número de la tarjeta de propiedad" value={form.propertyCard} onChangeText={(propertyCard) => update({ propertyCard })} error={errors.propertyCard} />
+                    <TextField label={t('driverVehicleRegister.numeroDeLaTarjetaDe')} value={form.propertyCard} onChangeText={(propertyCard) => update({ propertyCard })} error={errors.propertyCard} />
 
                     <View style={styles.block}>
-                        <AppText variant="label" color="textMuted">Fotos del vehículo</AppText>
-                        <AppText variant="small" color="textMuted">Al menos una donde se vea la placa. Los clientes las ven al comparar ofertas.</AppText>
+                        <AppText variant="label" color="textMuted">{t('driverVehicleRegister.fotosDelVehiculo')}</AppText>
+                        <AppText variant="small" color="textMuted">{t('driverVehicleRegister.alMenosUnaDondeSe')}</AppText>
                         <PhotoStrip
                             items={form.photos.map((uri) => ({ key: uri, localUri: uri }))}
                             maxItems={MAX_VEHICLE_PHOTOS}
@@ -146,7 +147,7 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
                 </ScrollView>
 
                 <View style={styles.footer}>
-                    <Button title="Crear mi cuenta de conductor" loading={isSending} onPress={handleRegister} />
+                    <Button title={t('driverVehicleRegister.crearMiCuentaDeConductor')} loading={isSending} onPress={handleRegister} />
                 </View>
             </KeyboardArea>
         </SafeAreaView>

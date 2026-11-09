@@ -4,6 +4,7 @@ import { DriverVehicle } from "../../../../domain/models/DriverVehicle";
 import { MessageResponse } from "../../../../domain/models/MessageResponse";
 import { User } from "../../../../domain/models/User";
 import { ApiRequestHandler } from "../api/ApiRequestHandler";
+import { currentLanguage } from "../../../../i18n";
 
 export class AuthService {
 
@@ -19,7 +20,7 @@ export class AuthService {
 
   async registerDriver(user: User, vehicle: DriverVehicle): Promise<AuthResponse | ErrorResponse> {
     try {
-      const response = await ApiRequestHandler.post<AuthResponse>('/auth/register-driver', { ...user, vehicle });
+      const response = await ApiRequestHandler.post<AuthResponse>('/auth/register-driver', { ...user, vehicle, language: currentLanguage() });
       return response.data;
     } catch (error: any) {
       return this.toErrorResponse(error);
@@ -38,7 +39,7 @@ export class AuthService {
   // El backend valida el token de Google; si el correo ya tiene cuenta con contraseña responde 409 con code LINK_REQUIRED
   async loginWithGoogle(idToken: string): Promise<AuthResponse | ErrorResponse> {
     try {
-      const response = await ApiRequestHandler.post<AuthResponse>('/auth/google', { id_token: idToken });
+      const response = await ApiRequestHandler.post<AuthResponse>('/auth/google', { id_token: idToken, language: currentLanguage() });
       return response.data;
     } catch (error: any) {
       return this.toErrorResponse(error);
@@ -101,7 +102,7 @@ export class AuthService {
 
   async register(user: User): Promise<AuthResponse | ErrorResponse>{
     try {
-      const response = await ApiRequestHandler.post<AuthResponse>('/auth/register', user);
+      const response = await ApiRequestHandler.post<AuthResponse>('/auth/register', { ...user, language: currentLanguage() });
 
       return response.data;
     } catch (error: any) {

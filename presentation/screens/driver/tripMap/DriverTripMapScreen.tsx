@@ -20,6 +20,7 @@ import { useDriverTrip } from "./hooks/useDriverTrip";
 import { useDriverTracking } from "./hooks/useDriverTracking";
 import DriverTripSheet from "./DriverTripSheet";
 import DeliveryPanel from "./DeliveryPanel";
+import { useTranslation } from 'react-i18next';
 
 // Alto máximo de la hoja: deja arriba casi la mitad del mapa para ver la ruta; el resto se desplaza
 const SHEET_MAX = 0.58;
@@ -28,6 +29,7 @@ interface Props extends StackScreenProps<DriverMapStackParamList, 'DriverTripMap
 
 // Viaje en curso del conductor: mapa con la ruta que le falta y una hoja con el paso en que va
 export function DriverTripMapScreen({ navigation, route }: Props) {
+    const { t } = useTranslation();
     const { idClientRequest } = route.params;
     const viewModel: DriverTripMapViewModel = container.resolve("driverTripMapViewModel");
     const { authResponse } = useAuth();
@@ -83,8 +85,8 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
         return (
             <View style={[styles.screen, styles.center]}>
                 {trip.loadFailed
-                    ? <StateView kind="error" message="No pudimos cargar el viaje." onAction={trip.reload} />
-                    : <StateView kind="loading" message="Cargando el viaje…" />}
+                    ? <StateView kind="error" message={t('driverTripMap.noPudimosCargarElViaje')} onAction={trip.reload} />
+                    : <StateView kind="loading" message={t('driverTripMap.cargandoElViaje')} />}
             </View>
         );
     }
@@ -92,7 +94,7 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
     const step = viewModel.nextStep(status);
     const text = viewModel.statusText(status);
     const destinationFloor = floorText(request.destination_floor, request.destination_has_elevator);
-    const receiverText = [request.receiver_name ? `Recibe ${request.receiver_name}` : null, destinationFloor].filter(Boolean).join(' · ') || null;
+    const receiverText = [request.receiver_name ? t('driverTripMap.recibe', { receiver_name: request.receiver_name }) : null, destinationFloor].filter(Boolean).join(' · ') || null;
 
     return (
         <View style={styles.screen}>
@@ -101,15 +103,15 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                 bottomInset={sheetHeight}
                 initialCenter={toLatLng(request.pickup_position)}
                 vehicle={tracking.location}
-                vehicleTitle="Tú"
+                vehicleTitle={t('driverTripMap.tu')}
                 pickup={isCargoOnBoard(status) ? null : toLatLng(request.pickup_position)}
                 destination={toLatLng(request.destination_position)}
                 route={tripRoute}
             />
 
             <View style={[styles.topBar, { top: insets.top + spacing.sm }]} pointerEvents="box-none">
-                <MapButton icon="menu" label="Abrir menú" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
-                <MapButton icon="scan-outline" label="Ver la ruta completa" onPress={fitTrip} />
+                <MapButton icon="menu" label={t('common.abrirMenu')} onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
+                <MapButton icon="scan-outline" label={t('driverTripMap.verLaRutaCompleta')} onPress={fitTrip} />
             </View>
 
             <View style={styles.sheetArea} onLayout={(event) => setSheetHeight(event.nativeEvent.layout.height)}>
@@ -119,7 +121,7 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
                     footer={
                         <View style={styles.footer}>
                             {step && <Button title={step.label} loading={trip.updating} onPress={handleNext} />}
-                            {canCancelTrip(status) && <Button title="Cancelar flete" variant="dangerText" onPress={() => setIsCancelVisible(true)} />}
+                            {canCancelTrip(status) && <Button title={t('common.cancelarFlete')} variant="dangerText" onPress={() => setIsCancelVisible(true)} />}
                         </View>
                     }
                 >
@@ -152,7 +154,7 @@ export function DriverTripMapScreen({ navigation, route }: Props) {
 
             <CancelReasonModal
                 visible={isCancelVisible}
-                title="Cancelar el flete"
+                title={t('driverTripMap.cancelarElFlete')}
                 reasons={DRIVER_CANCEL_REASONS}
                 onClose={() => setIsCancelVisible(false)}
                 onConfirm={(reason) => {

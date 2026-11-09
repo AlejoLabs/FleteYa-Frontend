@@ -2,6 +2,7 @@ import { AuthResponse } from "../../../../domain/models/AuthResponse";
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { AuthUseCases } from "../../../../domain/useCases/auth/AuthUseCases";
 import EmailValidator from "../../../utils/EmailValidator";
+import { t } from '../../../../i18n';
 
 export interface LoginErrors {
     email?: string;
@@ -21,9 +22,9 @@ export class LoginViewModel {
     // Devuelve el error de cada campo; vacío si se puede enviar
     validate(email: string, password: string): LoginErrors {
         const errors: LoginErrors = {};
-        if (email.trim() === '') errors.email = 'Escribe tu correo';
-        else if (!EmailValidator(email.trim())) errors.email = 'Escribe un correo completo, por ejemplo nombre@gmail.com';
-        if (password === '') errors.password = 'Escribe tu contraseña';
+        if (email.trim() === '') errors.email = t('common.escribeTuCorreo');
+        else if (!EmailValidator(email.trim())) errors.email = t('common.escribeUnCorreoCompletoPor');
+        if (password === '') errors.password = t('login.escribeTuContrasena');
         return errors;
     }
 

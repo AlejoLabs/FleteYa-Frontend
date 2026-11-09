@@ -14,4 +14,6 @@ export interface User {
     // Cómo puede entrar: con contraseña, con Google o con las dos
     has_password?:       boolean;
     has_google?:         boolean;
+    // Idioma de la app de esta persona (es, en, fr, it, pt, de)
+    language?:           string;
 }

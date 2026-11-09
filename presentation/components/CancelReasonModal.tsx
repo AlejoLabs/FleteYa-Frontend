@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { AppText, ConfirmDialog, OptionCard, TextField } from "./ui";
 import { spacing } from "../theme";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../i18n';
 
 interface Props {
     visible: boolean;
@@ -15,10 +17,12 @@ const OTHER = 'OTRO';
 
 // Cancelar siempre pide un motivo: uno de la lista o uno escrito
 export default function CancelReasonModal({ visible, title, reasons, onClose, onConfirm }: Props) {
+    const { t } = useTranslation();
     const [selected, setSelected] = useState<string | null>(null);
     const [other, setOther] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const reason = selected === OTHER ? other.trim() : selected;
+    // Los motivos de la lista se guardan en el idioma de quien cancela
+    const reason = selected === OTHER ? other.trim() : selected ? t(selected) : null;
 
     const reset = () => {
         setSelected(null);
@@ -33,7 +37,7 @@ export default function CancelReasonModal({ visible, title, reasons, onClose, on
 
     const confirm = () => {
         if (!reason || reason.length < 3) {
-            setError(selected === OTHER ? 'Escribe el motivo' : 'Elige un motivo');
+            setError(selected === OTHER ? t('cancelReasonModal.escribeElMotivo') : t('cancelReasonModal.eligeUnMotivo'));
             return;
         }
         onConfirm(reason);
@@ -44,8 +48,8 @@ export default function CancelReasonModal({ visible, title, reasons, onClose, on
         <ConfirmDialog
             visible={visible}
             title={title}
-            message="¿Por qué cancelas?"
-            confirmLabel="Cancelar flete"
+            message={t('cancelReasonModal.porQueCancelas')}
+            confirmLabel={t('common.cancelarFlete')}
             tone="danger"
             onConfirm={confirm}
             onCancel={close}
@@ -54,7 +58,7 @@ export default function CancelReasonModal({ visible, title, reasons, onClose, on
                 {[...reasons, OTHER].map((item) => (
                     <OptionCard
                         key={item}
-                        title={item === OTHER ? 'Otro motivo' : item}
+                        title={item === OTHER ? t('cancelReasonModal.otroMotivo') : t(item)}
                         selected={selected === item}
                         onPress={() => { setSelected(item); setError(null); }}
                     />
@@ -63,7 +67,7 @@ export default function CancelReasonModal({ visible, title, reasons, onClose, on
                     <TextField
                         value={other}
                         onChangeText={(value) => { setOther(value); setError(null); }}
-                        placeholder="Escribe el motivo"
+                        placeholder={t('cancelReasonModal.escribeElMotivo')}
                         error={error}
                         maxLength={255}
                         autoFocus

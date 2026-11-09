@@ -1,6 +1,7 @@
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { User } from "../../../../domain/models/User";
 import { UserUseCases } from "../../../../domain/useCases/user/UserUseCases";
+import { t } from '../../../../i18n';
 
 export interface ProfileForm {
     name: string;
@@ -21,9 +22,9 @@ export class ProfileUpdateViewModel {
     // Las mismas reglas del registro: nombre y apellido de 2 letras o más y celular colombiano de 10 dígitos
     validate(form: ProfileForm): ProfileErrors {
         const errors: ProfileErrors = {};
-        if (form.name.trim().length < 2) errors.name = 'Escribe tu nombre';
-        if (form.lastname.trim().length < 2) errors.lastname = 'Escribe tu apellido';
-        if (!/^\d{10}$/.test(form.phone.replace(/\D/g, ''))) errors.phone = 'Debe tener 10 dígitos';
+        if (form.name.trim().length < 2) errors.name = t('profileUpdate.escribeTuNombre');
+        if (form.lastname.trim().length < 2) errors.lastname = t('profileUpdate.escribeTuApellido');
+        if (!/^\d{10}$/.test(form.phone.replace(/\D/g, ''))) errors.phone = t('profileUpdate.debeTener10Digitos');
         return errors;
     }
 

@@ -3,6 +3,7 @@ import { AppText, Button, ChipGroup, TextField } from "../../../../components/ui
 import { spacing } from "../../../../theme";
 import { HEAVY_CATEGORIES, LICENSE_CATEGORIES } from "../../../auth/driverVehicle/DriverVehicleRegisterViewModel";
 import { DocumentsForm, DocumentsFormErrors } from "../DriverCarInfoViewModel";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     form: DocumentsForm;
@@ -17,10 +18,11 @@ interface Props {
 
 // Renovar la licencia, el SOAT o la técnico-mecánica: la categoría y las nuevas fechas de vencimiento
 export default function DocumentsEditForm({ form, errors, isHeavy, saving, onChange, onSave, onCancel }: Props) {
+    const { t } = useTranslation();
     return (
         <View style={styles.form}>
             <View style={styles.field}>
-                <AppText variant="smallStrong">Categoría de la licencia</AppText>
+                <AppText variant="smallStrong">{t('documentsEditForm.categoriaDeLaLicencia')}</AppText>
                 <ChipGroup
                     options={LICENSE_CATEGORIES.map((category) => ({ value: category, label: category, disabled: isHeavy && !HEAVY_CATEGORIES.includes(category) }))}
                     selected={form.licenseCategory || null}
@@ -28,20 +30,20 @@ export default function DocumentsEditForm({ form, errors, isHeavy, saving, onCha
                 />
                 {errors.licenseCategory && <AppText variant="caption" color="danger">{errors.licenseCategory}</AppText>}
             </View>
-            <TextField label="La licencia vence el" placeholder="DD/MM/AAAA" value={form.licenseExpires} onChangeText={(licenseExpires) => onChange({ licenseExpires })} error={errors.licenseExpires} keyboardType="numbers-and-punctuation" maxLength={10} />
-            <TextField label="El SOAT vence el" placeholder="DD/MM/AAAA" value={form.soatExpires} onChangeText={(soatExpires) => onChange({ soatExpires })} error={errors.soatExpires} keyboardType="numbers-and-punctuation" maxLength={10} />
+            <TextField label={t('documentsEditForm.laLicenciaVenceEl')} placeholder="DD/MM/AAAA" value={form.licenseExpires} onChangeText={(licenseExpires) => onChange({ licenseExpires })} error={errors.licenseExpires} keyboardType="numbers-and-punctuation" maxLength={10} />
+            <TextField label={t('documentsEditForm.elSoatVenceEl')} placeholder="DD/MM/AAAA" value={form.soatExpires} onChangeText={(soatExpires) => onChange({ soatExpires })} error={errors.soatExpires} keyboardType="numbers-and-punctuation" maxLength={10} />
             <TextField
-                label="La revisión técnico-mecánica vence el"
+                label={t('documentsEditForm.laRevisionTecnicoMecanicaVence')}
                 placeholder="DD/MM/AAAA"
-                hint="Déjala vacía si tu vehículo es nuevo y todavía no la necesita"
+                hint={t('documentsEditForm.dejalaVaciaSiTuVehiculo')}
                 value={form.technoExpires}
                 onChangeText={(technoExpires) => onChange({ technoExpires })}
                 error={errors.technoExpires}
                 keyboardType="numbers-and-punctuation"
                 maxLength={10}
             />
-            <Button title="Guardar documentos" variant="dark" loading={saving} onPress={onSave} />
-            <Button title="Cancelar" variant="text" disabled={saving} onPress={onCancel} />
+            <Button title={t('documentsEditForm.guardarDocumentos')} variant="dark" loading={saving} onPress={onSave} />
+            <Button title={t('common.cancelar')} variant="text" disabled={saving} onPress={onCancel} />
         </View>
     );
 }

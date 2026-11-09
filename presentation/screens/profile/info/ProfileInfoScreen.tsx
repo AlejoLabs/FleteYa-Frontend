@@ -6,11 +6,14 @@ import { RootStackParamList } from "../../../navigator/MainStackNavigator";
 import { ProfileStackParamList } from "../../../navigator/ProfileStackNavigator";
 import { AppText, Avatar, Card, ListItem } from "../../../components/ui";
 import { colors, spacing } from "../../../theme";
+import { useTranslation } from 'react-i18next';
+import { LANGUAGES } from "../../../../i18n/languages";
 
 interface Props extends StackScreenProps<ProfileStackParamList, 'ProfileInfoScreen'> {}
 
 // Perfil: quién es, sus datos de contacto y las acciones de la cuenta
 export default function ProfileInfoScreen({ navigation }: Props) {
+    const { t, i18n } = useTranslation();
 
     const rootNavigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     const { authResponse, removeAuthSession } = useAuth();
@@ -32,37 +35,43 @@ export default function ProfileInfoScreen({ navigation }: Props) {
                 {/* El parámetro t obliga a descargar la foto nueva después de cambiarla */}
                 <Avatar name={`${user.name} ${user.lastname}`} imageUri={user.image ? `${user.image}?t=${user.update_at}` : null} size={88} />
                 <AppText variant="title" align="center">{user.name} {user.lastname}</AppText>
-                <AppText variant="small" color="textMuted">{isDriver ? 'Conductor' : 'Cliente'}</AppText>
+                <AppText variant="small" color="textMuted">{isDriver ? t('common.conductor') : t('common.cliente')}</AppText>
             </View>
 
             <View style={styles.section}>
-                <AppText variant="label" color="textMuted">Tus datos</AppText>
+                <AppText variant="label" color="textMuted">{t('profileInfo.tusDatos')}</AppText>
                 <Card style={styles.card}>
-                    <ListItem icon="mail-outline" title={user.email} subtitle="Correo" />
-                    <ListItem icon="call-outline" title={user.phone ? `+57 ${user.phone}` : 'Sin celular'} subtitle="Celular" />
+                    <ListItem icon="mail-outline" title={user.email} subtitle={t('common.correo')} />
+                    <ListItem icon="call-outline" title={user.phone ? `+57 ${user.phone}` : t('profileInfo.sinCelular')} subtitle={t('common.celular')} />
                 </Card>
             </View>
 
             <Card style={styles.card}>
-                <ListItem icon="create-outline" title="Editar perfil" subtitle="Nombre, celular y foto" onPress={() => navigation.navigate('ProfileUpdateScreen')} />
+                <ListItem icon="create-outline" title={t('profileInfo.editarPerfil')} subtitle={t('profileInfo.nombreCelularYFoto')} onPress={() => navigation.navigate('ProfileUpdateScreen')} />
                 <ListItem
                     icon="key-outline"
                     // Una cuenta creada con Google no tiene contraseña: aquí la crea
-                    title={user.has_password === false ? 'Crear contraseña' : 'Cambiar contraseña'}
+                    title={user.has_password === false ? t('profileInfo.crearContrasena') : t('common.cambiarContrasena')}
                     onPress={() => navigation.navigate('ChangePasswordScreen')}
+                />
+                <ListItem
+                    icon="language-outline"
+                    title={t('profileInfo.idioma')}
+                    subtitle={LANGUAGES.find((language) => language.code === i18n.language)?.nativeName}
+                    onPress={() => navigation.navigate('ProfileLanguageScreen')}
                 />
                 {hasBothRoles &&
                     <ListItem
                         icon="swap-horizontal-outline"
-                        title={isDriver ? 'Cambiar a cliente' : 'Cambiar a conductor'}
-                        subtitle="Tienes los dos roles"
+                        title={isDriver ? t('profileInfo.cambiarACliente') : t('profileInfo.cambiarAConductor')}
+                        subtitle={t('profileInfo.tienesLosDosRoles')}
                         onPress={() => rootNavigation.replace(isDriver ? 'ClientHomeScreen' : 'DriverHomeScreen')}
                     />
                 }
             </Card>
 
             <Card style={styles.card}>
-                <ListItem icon="exit-outline" title="Cerrar sesión" tone="danger" onPress={handleLogout} showChevron={false} />
+                <ListItem icon="exit-outline" title={t('profileInfo.cerrarSesion')} tone="danger" onPress={handleLogout} showChevron={false} />
             </Card>
         </ScrollView>
     )

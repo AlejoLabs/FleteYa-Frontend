@@ -6,6 +6,10 @@ import { getPushToken } from "../utils/PushNotifications";
 import { setSessionExpiredHandler } from "../../data/sources/remote/api/ApiRequestHandler";
 import { navigationRef } from "../navigator/navigationRef";
 import { useToast } from "../components/ui";
+import { currentLanguage, setLanguage } from "../../i18n";
+import { toSupportedLanguage } from "../../i18n/languages";
+import { useTranslation } from 'react-i18next';
+import { t } from '../../i18n';
 
 export interface AuthContextProps {
 
@@ -18,6 +22,7 @@ export interface AuthContextProps {
 export const AuthContext = createContext ( {} as AuthContextProps );
 
 export const AuthProvider = ({children, authUseCases, socketService, userUseCases}: any) => {
+    const { t } = useTranslation();
     const  [authResponse, setAuthResponse] = useState<AuthResponse | null>(null);
     const { showToast } = useToast();
     // Varias peticiones pueden fallar a la vez con el token vencido: la sesión se cierra una sola vez
@@ -40,7 +45,7 @@ export const AuthProvider = ({children, authUseCases, socketService, userUseCase
             navigationRef.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'LoginScreen' }] }));
         }
         if (suspendedMessage) showToast(suspendedMessage, 'error');
-        else showToast('Tu sesión venció. Entra de nuevo para seguir.', 'info');
+        else showToast(t('authContext.tuSesionVencioEntraDe'), 'info');
     }
 
     useEffect(() => {
@@ -53,9 +58,15 @@ export const AuthProvider = ({children, authUseCases, socketService, userUseCase
         if (!authResponse?.token || !socketService) return;
         return socketService.onMessage('account_suspended', (data: any) => {
             const reason = typeof data?.reason === 'string' && data.reason ? `: ${data.reason}` : '';
-            endSession(`Tu cuenta está suspendida${reason}. Si crees que es un error, escríbenos a soporte`);
+            endSession(t('authContext.tuCuentaEstaSuspendidaSi', { reason }));
         });
     }, [authResponse?.token]);
+
+    // El idioma guardado en la cuenta manda al entrar: así el mismo usuario ve la app igual en cualquier teléfono
+    useEffect(() => {
+        const language = toSupportedLanguage(authResponse?.user?.language);
+        if (language && language !== currentLanguage()) setLanguage(language);
+    }, [authResponse?.user?.language]);
 
     // Con sesión abierta, el backend guarda el token de este teléfono para mandarle notificaciones
     useEffect(() => {

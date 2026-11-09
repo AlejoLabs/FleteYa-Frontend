@@ -2,6 +2,7 @@ import { Keyboard, Pressable, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing, touchTarget } from "../../theme";
 import AppText from "./AppText";
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     title: string;
@@ -15,6 +16,7 @@ interface Props {
 // Encabezado de pantalla dentro del contenido (no como header del stack), para que el teclado no lo tape.
 // Va debajo de la barra del menú lateral, que ya cubre la barra de estado
 export default function AppHeader({ title, subtitle, onBack, right, tone = 'light' }: Props) {
+    const { t } = useTranslation();
     const dark = tone === 'dark';
     const color = dark ? colors.textOnDark : colors.text;
     return (
@@ -22,7 +24,7 @@ export default function AppHeader({ title, subtitle, onBack, right, tone = 'ligh
             {onBack &&
                 // Cierra el teclado antes de salir: si la pantalla se va con él abierto, Android no avisa que se cerró
                 // y la pantalla de abajo queda con espacio de más
-                <Pressable onPress={() => { Keyboard.dismiss(); onBack(); }} hitSlop={8} style={styles.back} accessibilityRole="button" accessibilityLabel="Volver">
+                <Pressable onPress={() => { Keyboard.dismiss(); onBack(); }} hitSlop={8} style={styles.back} accessibilityRole="button" accessibilityLabel={t('appHeader.volver')}>
                     <Ionicons name="arrow-back" size={24} color={color} />
                 </Pressable>
             }
