@@ -6,6 +6,7 @@ import { RootStackParamList } from "../../../navigator/MainStackNavigator";
 import { ProfileStackParamList } from "../../../navigator/ProfileStackNavigator";
 import { AppText, Avatar, Card, ListItem } from "../../../components/ui";
 import { colors, spacing } from "../../../theme";
+import { profileImageUri } from "../../../utils/Formatters";
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES } from "../../../../i18n/languages";
 
@@ -33,7 +34,7 @@ export default function ProfileInfoScreen({ navigation }: Props) {
         <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
             <View style={styles.person}>
                 {/* El parámetro t obliga a descargar la foto nueva después de cambiarla */}
-                <Avatar name={`${user.name} ${user.lastname}`} imageUri={user.image ? `${user.image}?t=${user.update_at}` : null} size={88} />
+                <Avatar name={`${user.name} ${user.lastname}`} imageUri={profileImageUri(user)} size={88} />
                 <AppText variant="title" align="center">{user.name} {user.lastname}</AppText>
                 <AppText variant="small" color="textMuted">{isDriver ? t('common.conductor') : t('common.cliente')}</AppText>
             </View>

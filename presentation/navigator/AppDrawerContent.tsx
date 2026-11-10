@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../hooks/useAuth";
 import { AppText, Avatar, BrandMark } from "../components/ui";
 import { colors, radius, spacing } from "../theme";
+import { profileImageUri } from "../utils/Formatters";
 import { useTranslation } from 'react-i18next';
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
@@ -62,7 +63,7 @@ export const AppDrawerContent = (props: DrawerContentComponentProps) => {
                 {user &&
                     <View style={styles.person}>
                         <View style={styles.avatarRing}>
-                            <Avatar name={`${user.name} ${user.lastname}`} imageUri={user.image} size={44} />
+                            <Avatar name={`${user.name} ${user.lastname}`} imageUri={profileImageUri(user)} size={44} />
                         </View>
                         <View style={styles.flex}>
                             <AppText variant="bodyStrong" color="textOnDark" numberOfLines={1}>{user.name} {user.lastname}</AppText>

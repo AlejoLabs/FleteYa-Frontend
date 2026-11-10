@@ -9,7 +9,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { ProfileStackParamList } from "../../../navigator/ProfileStackNavigator";
 import { AppHeader, AppText, Avatar, Button, KeyboardArea, TextField, useToast } from "../../../components/ui";
 import { choosePhoto } from "../../../utils/PhotoPicker";
-import { formatErrorMessage } from "../../../utils/Formatters";
+import { formatErrorMessage, profileImageUri } from "../../../utils/Formatters";
 import { colors, spacing } from "../../../theme";
 import { ProfileErrors, ProfileForm, ProfileUpdateViewModel } from "./ProfileUpdateViewModel";
 import { useTranslation } from 'react-i18next';
@@ -59,7 +59,7 @@ export default function ProfileUpdateScreen({ navigation }: Props) {
     }
 
     if (!user) return null;
-    const currentImage = image ?? (user.image ? `${user.image}?t=${user.update_at}` : null);
+    const currentImage = image ?? profileImageUri(user);
 
     return (
         <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>

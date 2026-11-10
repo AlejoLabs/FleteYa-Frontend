@@ -66,6 +66,11 @@ export const formatScheduledDate = (value?: string | Date | null): string => {
 export const formatErrorMessage = (message: string | string[]): string =>
   Array.isArray(message) ? message.join('\n') : message;
 
+// Foto de perfil con la fecha de la última actualización: al cambiarla la dirección también cambia y el teléfono
+// no sigue mostrando la que tenía guardada (el archivo nuevo se guarda con el mismo nombre)
+export const profileImageUri = (user: { image?: string | null; update_at?: string | Date | null }): string | null =>
+  user.image ? `${user.image}?t=${user.update_at ?? ''}` : null;
+
 // El valor del viaje es el acordado al aceptar una oferta; mientras no haya, se muestra la oferta del cliente
 export const getTripFare = (clientRequest: { fare_offered: number; fare_assigned?: number | null }): number =>
   clientRequest.fare_assigned ?? clientRequest.fare_offered;
