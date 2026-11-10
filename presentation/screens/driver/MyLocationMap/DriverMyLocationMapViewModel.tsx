@@ -9,9 +9,14 @@ import { DriverPositionUseCases } from "../../../../domain/useCases/driverPositi
 import { cargoCategoryLabel, vehicleLabel } from "../../../utils/Cargo";
 import { getTripFare, formatNumber } from '../../../utils/Formatters';
 import { t } from '../../../../i18n';
+import { docNameKey } from "../../../utils/VehicleRules";
 
 export interface DaySummary {
+    // Lo ganado en la moneda con más fletes del día (en pesos si no hubo ninguno)
     earned: number;
+    currency: string;
+    // Lo ganado en otras monedas el mismo día, si viajó por varios países
+    others: { currency: string; earned: number }[];
     trips: number;
 }
 
@@ -135,9 +140,22 @@ export class DriverMyLocationMapViewModel {
 
     // Lo que le queda al conductor de los fletes entregados hoy (valor acordado menos la comisión de FleteYa),
     // con la fecha del teléfono
-    daySummary(trips: ClientRequestResponse[], now = new Date()): DaySummary {
+    // homeCurrency: la del país del conductor, para mostrar "0" en su moneda cuando todavía no tiene fletes hoy
+    daySummary(trips: ClientRequestResponse[], homeCurrency = 'COP', now = new Date()): DaySummary {
         const today = trips.filter((trip) => new Date(trip.update_at).toDateString() === now.toDateString());
-        return { earned: today.reduce((sum, trip) => sum + getTripFare(trip) - (trip.commission ?? 0), 0), trips: today.length };
+        const totals = new Map<string, { earned: number; trips: number }>();
+        for (const trip of today) {
+            const currency = trip.currency ?? 'COP';
+            const total = totals.get(currency) ?? { earned: 0, trips: 0 };
+            totals.set(currency, { earned: total.earned + getTripFare(trip) - (trip.commission ?? 0), trips: total.trips + 1 });
+        }
+        const [main, ...others] = [...totals.entries()].sort((a, b) => b[1].trips - a[1].trips);
+        return {
+            earned: main?.[1].earned ?? 0,
+            currency: main?.[0] ?? homeCurrency,
+            others: others.map(([currency, total]) => ({ currency, earned: total.earned })),
+            trips: today.length,
+        };
     }
 
     // Promedio de las estrellas que le dieron los clientes, igual que lo calcula el servidor para las ofertas
@@ -154,12 +172,13 @@ export class DriverMyLocationMapViewModel {
     }
 
     // El documento que más urge: primero uno vencido, si no el que vence antes
-    documentAlert(documents: DriverDocument[]): DocumentAlert | null {
+    documentAlert(documents: DriverDocument[], countryCode?: string | null): DocumentAlert | null {
         const pending = documents.filter((doc) => doc.status !== 'OK').sort((a, b) => a.days_left - b.days_left);
         const doc = pending[0];
         if (!doc) return null;
         // "Se venció" y no "vencido/vencida": sirve igual para la licencia, el SOAT y la revisión
-        if (doc.status === 'EXPIRED') return { tone: 'danger', title: t('driverMyLocationMap.seVencio', { label: t(`docs.${doc.key}`) }) };
-        return { tone: 'warning', title: t('driverMyLocationMap.venceEn', { label: t(`docs.${doc.key}`), count: doc.days_left }) };
+        const label = t(`docs.${docNameKey(doc.key, countryCode)}`);
+        if (doc.status === 'EXPIRED') return { tone: 'danger', title: t('driverMyLocationMap.seVencio', { label }) };
+        return { tone: 'warning', title: t('driverMyLocationMap.venceEn', { label, count: doc.days_left }) };
     }
 }

@@ -9,5 +9,6 @@ export interface GooglePlaceRepository {
     getPlaceDetails(placeId: string): Promise<PlaceDetail | null>;
     getPlaceDetailsByCoords(lat: number, lng: number): Promise<PlaceGeocodeDetail | null>;
     getDirections(origin: LatLng, destination: LatLng): Promise<GoogleDirections | null>;
-    searchPlaces(input: string): Promise<PlaceAutocomplete | null>;
+    // country: código ISO del país donde buscar (CO, FR...); sin él, en todo el mundo
+    searchPlaces(input: string, country?: string | null): Promise<PlaceAutocomplete | null>;
 }

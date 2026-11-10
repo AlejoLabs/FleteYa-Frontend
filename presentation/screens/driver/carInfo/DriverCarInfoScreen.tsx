@@ -28,6 +28,8 @@ export function DriverCarInfoScreen() {
     const { authResponse } = useAuth();
     const { showToast } = useToast();
     const idDriver = authResponse?.user.id!;
+    // País del conductor: formato de la placa, categorías de licencia y nombres de los documentos
+    const countryCode = authResponse?.user.country_code;
     const [car, setCar] = useState<DriverCarInfo | null>(null);
     const [loadFailed, setLoadFailed] = useState(false);
     const [documents, setDocuments] = useState<DriverDocument[]>([]);
@@ -118,7 +120,7 @@ export function DriverCarInfoScreen() {
 
     const handleSaveVehicle = async () => {
         if (!vehicleForm || !car) return;
-        const problems = viewModel.validateVehicle(vehicleForm, car.license_category);
+        const problems = viewModel.validateVehicle(vehicleForm, car.license_category, countryCode);
         setVehicleErrors(problems);
         if (Object.keys(problems).length > 0) return;
         setSaving(true);
@@ -135,7 +137,7 @@ export function DriverCarInfoScreen() {
 
     const handleSaveDocuments = async () => {
         if (!documentsForm || !car) return;
-        const problems = viewModel.validateDocuments(documentsForm, car.vehicle_type);
+        const problems = viewModel.validateDocuments(documentsForm, car.vehicle_type, countryCode);
         setDocumentsErrors(problems);
         if (Object.keys(problems).length > 0) return;
         setSaving(true);
@@ -189,6 +191,7 @@ export function DriverCarInfoScreen() {
                             form={vehicleForm}
                             errors={vehicleErrors}
                             typicalCapacity={viewModel.typicalCapacityText(vehicleForm.vehicleType)}
+                            countryCode={countryCode}
                             saving={saving}
                             onChange={updateVehicleForm}
                             onSave={handleSaveVehicle}
@@ -218,6 +221,7 @@ export function DriverCarInfoScreen() {
                                     form={documentsForm}
                                     errors={documentsErrors}
                                     isHeavy={car.vehicle_type === 'CAMION'}
+                                    countryCode={countryCode}
                                     saving={saving}
                                     onChange={updateDocumentsForm}
                                     onSave={handleSaveDocuments}
@@ -226,7 +230,7 @@ export function DriverCarInfoScreen() {
                             </View>
                             : <>
                                 {documents.length > 0
-                                    ? <DocumentsStatus documents={documents} />
+                                    ? <DocumentsStatus documents={documents} countryCode={countryCode} />
                                     // Conductores registrados antes de que la app pidiera los documentos
                                     : <AppText variant="small" color="textMuted" style={styles.noDocuments}>{t('driverCarInfo.noTienesFechasDeVencimiento')}</AppText>}
                                 <Button title={t('driverCarInfo.actualizarDocumentos')} icon="refresh-outline" variant="secondary" onPress={() => editDocuments(car)} style={styles.documentsButton} />

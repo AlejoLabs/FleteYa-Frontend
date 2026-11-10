@@ -14,6 +14,9 @@ import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo
 import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 import { PlacePrediction } from "../../../../domain/models/PlacePrediction";
 import { DraftErrors, RequestDraft, toClientRequest, validateStep } from "./RequestDraft";
+import { CountryUseCases } from "../../../../domain/useCases/country/CountryUseCases";
+import { CountryAtPoint } from "../../../../domain/models/Country";
+import { currencyRules, roundToStep } from "../../../utils/Countries";
 
 export class ClientSearchMapViewModel {
     
@@ -23,6 +26,7 @@ export class ClientSearchMapViewModel {
     private driverTripOfferUseCases: DriverTripOfferUseCases;
     private driverCarInfoUseCases: DriverCarInfoUseCases;
     private photoUseCases: PhotoUseCases;
+    private countryUseCases: CountryUseCases;
 
     constructor(
         {
@@ -31,14 +35,16 @@ export class ClientSearchMapViewModel {
             socketService,
             driverTripOfferUseCases,
             driverCarInfoUseCases,
-            photoUseCases
+            photoUseCases,
+            countryUseCases
         }: {
             googlePlaceUseCases: GooglePlaceUseCases,
             clientRequestUseCases: ClientRequestUseCases,
             socketService: SocketService,
             driverTripOfferUseCases: DriverTripOfferUseCases,
             driverCarInfoUseCases: DriverCarInfoUseCases,
-            photoUseCases: PhotoUseCases
+            photoUseCases: PhotoUseCases,
+            countryUseCases: CountryUseCases
         }
     ) {
         this.googlePlaceUseCases = googlePlaceUseCases;
@@ -47,19 +53,28 @@ export class ClientSearchMapViewModel {
         this.driverTripOfferUseCases = driverTripOfferUseCases;
         this.driverCarInfoUseCases = driverCarInfoUseCases;
         this.photoUseCases = photoUseCases;
+        this.countryUseCases = countryUseCases;
     }
 
     initSocket(){
         this.socketService.connect();
     }
     
-    validateStep(step: number, draft: RequestDraft): DraftErrors {
-        return validateStep(step, draft);
+    validateStep(step: number, draft: RequestDraft, pickupCountry?: CountryAtPoint | null): DraftErrors {
+        return validateStep(step, draft, pickupCountry);
     }
 
-    // El precio sugerido del backend redondeado a cientos, como se muestra y se ofrece
+    // El precio sugerido del backend redondeado como se muestra y se ofrece: en pesos a cientos, en las demás
+    // monedas a unidades enteras (27 €, no 27,34 €)
     recommendedFare(values?: TimeAndDistanceValues): number {
-        return Math.round((values?.recommended_value ?? 0) / 100) * 100;
+        const value = values?.recommended_value ?? 0;
+        const rules = currencyRules(values?.country?.currency);
+        return roundToStep(value, rules.decimals === 0 ? rules.fare_step / 10 : 1);
+    }
+
+    // País de un punto, según el backend (supported false: FleteYa no opera ahí)
+    async getCountryAt(lat: number, lng: number): Promise<CountryAtPoint | ErrorResponse> {
+        return await this.countryUseCases.getCountryAt.execute(lat, lng);
     }
 
     // Crea la solicitud, sube las fotos y solo entonces avisa a los conductores, para que les llegue con ellas
@@ -90,8 +105,9 @@ export class ClientSearchMapViewModel {
     }
 
     // Sugerencias para lo que se escribe; null si Google no respondió (sin conexión, llave rechazada)
-    async searchPlaces(input: string): Promise<PlacePrediction[] | null> {
-        const response = await this.googlePlaceUseCases.searchPlaces.execute(input.trim());
+    // country: el país de la recogida; las direcciones se buscan ahí
+    async searchPlaces(input: string, country?: string | null): Promise<PlacePrediction[] | null> {
+        const response = await this.googlePlaceUseCases.searchPlaces.execute(input.trim(), country);
         if (!response || (response.status !== 'OK' && response.status !== 'ZERO_RESULTS')) return null;
         return response.predictions;
     }

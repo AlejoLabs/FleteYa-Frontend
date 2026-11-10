@@ -62,6 +62,7 @@ export class UserService {
             formData.append('name', user.name);
             formData.append('lastname', user.lastname);
             formData.append('phone', user.phone);
+            if (user.country_code) formData.append('country_code', user.country_code);
             const response = await ApiRequestHandler.put<User>(`/users/upload/${user.id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',

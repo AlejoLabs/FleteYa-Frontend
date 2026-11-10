@@ -2,11 +2,14 @@ import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { User } from "../../../../domain/models/User";
 import { UserUseCases } from "../../../../domain/useCases/user/UserUseCases";
 import { t } from '../../../../i18n';
+import { accountPhoneError } from "../../../utils/Countries";
 
 export interface ProfileForm {
     name: string;
     lastname: string;
     phone: string;
+    // País del indicativo: cambiarlo cambia el país de la cuenta (y las reglas de placa y documentos)
+    countryCode: string;
 }
 
 export type ProfileErrors = Partial<Record<keyof ProfileForm, string>>;
@@ -19,12 +22,14 @@ export class ProfileUpdateViewModel {
         this.userUseCases = userUseCases;
     }
 
-    // Las mismas reglas del registro: nombre y apellido de 2 letras o más y celular colombiano de 10 dígitos
+    // Las mismas reglas del registro: nombre y apellido de 2 letras o más y el celular con el formato de su país
+    // (en Colombia, 10 dígitos)
     validate(form: ProfileForm): ProfileErrors {
         const errors: ProfileErrors = {};
         if (form.name.trim().length < 2) errors.name = t('profileUpdate.escribeTuNombre');
         if (form.lastname.trim().length < 2) errors.lastname = t('profileUpdate.escribeTuApellido');
-        if (!/^\d{10}$/.test(form.phone.replace(/\D/g, ''))) errors.phone = t('profileUpdate.debeTener10Digitos');
+        const phoneError = accountPhoneError(form.phone, form.countryCode, t('profileUpdate.debeTener10Digitos'));
+        if (phoneError) errors.phone = phoneError;
         return errors;
     }
 
@@ -38,6 +43,7 @@ export class ProfileUpdateViewModel {
             name: form.name.trim(),
             lastname: form.lastname.trim(),
             phone: form.phone.replace(/\D/g, ''),
+            country_code: form.countryCode,
         };
         return imageUri ? await this.updateWithImage(updated, imageUri) : await this.update(updated);
     }

@@ -21,8 +21,8 @@ export class GooglePlaceRepositoryImpl implements GooglePlaceRepository{
         return this.googlePlaceService.getPlaceDetailByCoords(lat, lng);
     }
 
-    searchPlaces(input: string): Promise<PlaceAutocomplete | null> {
-        return this.googlePlaceService.searchPlaces(input);
+    searchPlaces(input: string, country?: string | null): Promise<PlaceAutocomplete | null> {
+        return this.googlePlaceService.searchPlaces(input, country);
     }
 
     async getPlaceDetails(placeId: string) {

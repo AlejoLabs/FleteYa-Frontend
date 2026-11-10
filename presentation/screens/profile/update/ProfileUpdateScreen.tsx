@@ -14,6 +14,7 @@ import { colors, spacing } from "../../../theme";
 import { ProfileErrors, ProfileForm, ProfileUpdateViewModel } from "./ProfileUpdateViewModel";
 import { useTranslation } from 'react-i18next';
 import { t } from '../../../../i18n';
+import PhoneField from "../../../components/PhoneField";
 
 interface Props extends StackScreenProps<ProfileStackParamList, 'ProfileUpdateScreen'> { }
 
@@ -25,7 +26,7 @@ export default function ProfileUpdateScreen({ navigation }: Props) {
     const { authResponse, saveAuthSession } = useAuth();
     const { showToast } = useToast();
     const user = authResponse?.user;
-    const [form, setForm] = useState<ProfileForm>({ name: user?.name ?? '', lastname: user?.lastname ?? '', phone: user?.phone ?? '' });
+    const [form, setForm] = useState<ProfileForm>({ name: user?.name ?? '', lastname: user?.lastname ?? '', phone: user?.phone ?? '', countryCode: user?.country_code ?? 'CO' });
     const [errors, setErrors] = useState<ProfileErrors>({});
     const [image, setImage] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
@@ -84,7 +85,7 @@ export default function ProfileUpdateScreen({ navigation }: Props) {
                             <TextField label={t('profileUpdate.apellido')} value={form.lastname} onChangeText={update('lastname')} error={errors.lastname} autoCapitalize="words" />
                         </View>
                     </View>
-                    <TextField label={t('common.celular')} prefix="+57" value={form.phone} onChangeText={update('phone')} error={errors.phone} keyboardType="phone-pad" maxLength={13} />
+                    <PhoneField label={t('common.celular')} countryCode={form.countryCode} onChangeCountry={update('countryCode')} value={form.phone} onChangeText={update('phone')} error={errors.phone} />
                     <TextField label={t('common.correo')} value={user.email} editable={false} hint={t('profileUpdate.conTuCorreoEntrasA')} />
                 </ScrollView>
                 <View style={styles.footer}>

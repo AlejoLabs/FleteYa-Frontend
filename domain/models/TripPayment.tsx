@@ -8,6 +8,8 @@ export interface TripPayment {
     payment_method: PaymentMethod;
     // null = sin pagar
     paid_at: string | null;
+    // Moneda del viaje: amount y commission van en ella
+    currency?: string;
     amount: number;
     // Comisión de FleteYa, incluida en amount
     commission: number;
@@ -28,5 +30,6 @@ export interface TripPayment {
 export interface OnlinePaymentStart {
     reference: string;
     amount: number;
+    currency?: string;
     checkout_url: string;
 }

@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { Amount, AppText, Card, PersonRow, StateView, StatusPill } from "../../../components/ui";
-import { formatCOP, formatTripDate, getTripFare, formatNumber } from '../../../utils/Formatters';
+import { formatMoney, formatTripDate, getTripFare, formatNumber } from '../../../utils/Formatters';
 import { colors, spacing } from "../../../theme";
 import TripPlaces from "../components/TripPlaces";
 import { useTranslation } from 'react-i18next';
@@ -81,7 +81,7 @@ const tripAmounts = (trip: ClientRequestResponse, role: Role) => {
     const fare = getTripFare(trip);
     const method = trip.payment_method === 'WOMPI' ? t('tripHistoryList.pagadoPorLaApp') : t('tripHistoryList.enEfectivo');
     if (role === 'DRIVER' && trip.commission) {
-        return { amount: fare - trip.commission, breakdown: t('tripHistoryList.teQuedoFleteComision', { amount: formatCOP(fare), amount2: formatCOP(trip.commission) }), method };
+        return { amount: fare - trip.commission, breakdown: t('tripHistoryList.teQuedoFleteComision', { amount: formatMoney(fare, trip.currency), amount2: formatMoney(trip.commission, trip.currency) }), method };
     }
     return { amount: fare, breakdown: null, method };
 }
@@ -98,7 +98,7 @@ function TripHistoryCard({ trip, role }: { trip: ClientRequestResponse; role: Ro
             <View style={styles.top}>
                 <View style={styles.flex}>
                     <AppText variant="small" color="textMuted">{formatTripDate(trip.update_at)}</AppText>
-                    <Amount value={amount} />
+                    <Amount value={amount} currency={trip.currency} />
                     {breakdown && <AppText variant="caption" color="textMuted">{breakdown}</AppText>}
                     <AppText variant="caption" color="textMuted">{method}</AppText>
                 </View>

@@ -5,7 +5,7 @@ import { PaymentMethod } from "../../../../domain/models/ClientRequest";
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { TripPayment } from "../../../../domain/models/TripPayment";
 import { ReceiptLine } from "../../../components/ui";
-import { formatCOP } from "../../../utils/Formatters";
+import { formatMoney } from "../../../utils/Formatters";
 import { t } from '../../../../i18n';
 
 export type PaymentRole = 'CLIENT' | 'DRIVER';
@@ -23,6 +23,8 @@ export interface Receipt {
     lines: ReceiptLine[];
     totalLabel: string;
     total: number;
+    // Moneda del viaje: todas las líneas van en ella
+    currency?: string;
     footnote?: string;
 }
 
@@ -114,6 +116,7 @@ export class TripPaymentViewModel {
                 ],
                 totalLabel: payment.paid_at ? t('tripPayment.totalPagado') : t('tripPayment.totalAPagar'),
                 total: payment.amount,
+                currency: payment.currency,
                 footnote,
             };
         }
@@ -125,17 +128,20 @@ export class TripPaymentViewModel {
             ],
             totalLabel: t('tripPayment.teQueda'),
             total: payment.amount - payment.commission,
+            currency: payment.currency,
             footnote,
         };
     }
 
     // Texto de espera mientras el flete no está pagado
     pendingText(payment: TripPayment, role: PaymentRole) {
-        const amount = formatCOP(payment.amount);
+        const amount = formatMoney(payment.amount, payment.currency);
         if (role === 'CLIENT') {
-            return payment.payment_method === 'CASH'
-                ? t('tripPayment.entregaleEnEfectivoAlConductor', { amount })
-                : t('tripPayment.pagaConNequiTarjetaO', { amount });
+            if (payment.payment_method === 'CASH') return t('tripPayment.entregaleEnEfectivoAlConductor', { amount });
+            // Nequi y PSE son de Colombia: en otra moneda solo se nombra el pago por la app
+            return !payment.currency || payment.currency === 'COP'
+                ? t('tripPayment.pagaConNequiTarjetaO', { amount })
+                : t('tripPayment.pagaPorLaApp', { amount });
         }
         return payment.payment_method === 'CASH'
             ? t('tripPayment.cobraEnEfectivoYConfirma', { amount })

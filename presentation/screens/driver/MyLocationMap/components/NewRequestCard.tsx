@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 interface Props {
     fare: number;
+    currency?: string;
     // "Mudanza · a 0,3 km · Paga por la app"
     detail: string;
     onOpen: () => void;
@@ -14,7 +15,7 @@ interface Props {
 }
 
 // Tarjeta que sube desde abajo cuando llega una solicitud nueva que le sirve al conductor
-export default function NewRequestCard({ fare, detail, onOpen, onDismiss }: Props) {
+export default function NewRequestCard({ fare, currency, detail, onOpen, onDismiss }: Props) {
     const { t } = useTranslation();
     const enter = useRef(new Animated.Value(0)).current;
 
@@ -36,7 +37,7 @@ export default function NewRequestCard({ fare, detail, onOpen, onDismiss }: Prop
                     <Ionicons name="close" size={22} color={colors.textOnDarkMuted} />
                 </Pressable>
             </View>
-            <Amount value={fare} size="lg" color="textOnDark" />
+            <Amount value={fare} currency={currency} size="lg" color="textOnDark" />
             <AppText variant="small" color="textOnDarkMuted">{detail}</AppText>
             <Button title={t('newRequestCard.verSolicitud')} onPress={onOpen} />
         </Animated.View>

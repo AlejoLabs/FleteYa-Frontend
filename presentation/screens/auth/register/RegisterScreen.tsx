@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollView, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackScreenProps } from "@react-navigation/stack";
@@ -14,10 +14,13 @@ import { AccountType, RegisterErrors, RegisterForm, RegisterViewModel } from "./
 import styles from "./Styles";
 import { useTranslation } from 'react-i18next';
 import { t } from '../../../../i18n';
+import PhoneField from "../../../components/PhoneField";
+import { useKnownCountries } from "../../../hooks/useCountries";
+import { deviceCountryCode } from "../../../utils/Countries";
 
 interface Props extends StackScreenProps<RootStackParamList, 'RegisterScreen'> { };
 
-const EMPTY_FORM: RegisterForm = { name: '', lastname: '', phone: '', email: '', password: '' };
+const EMPTY_FORM: RegisterForm = { name: '', lastname: '', phone: '', countryCode: 'CO', email: '', password: '' };
 
 export default function RegisterScreen({ navigation }: Props) {
     const { t } = useTranslation();
@@ -27,7 +30,13 @@ export default function RegisterScreen({ navigation }: Props) {
     const { showToast } = useToast();
 
     const [accountType, setAccountType] = useState<AccountType>('CLIENT');
-    const [form, setForm] = useState<RegisterForm>(EMPTY_FORM);
+    const [form, setForm] = useState<RegisterForm>(() => ({ ...EMPTY_FORM, countryCode: deviceCountryCode() }));
+    // El indicativo arranca en el país del celular; si la lista de países llega después, se ajusta (si nadie lo cambió)
+    const countries = useKnownCountries();
+    const [countryTouched, setCountryTouched] = useState(false);
+    useEffect(() => {
+        if (!countryTouched) setForm((current) => ({ ...current, countryCode: deviceCountryCode() }));
+    }, [countries.length]);
     const [errors, setErrors] = useState<RegisterErrors>({});
     const [isSending, setIsSending] = useState(false);
     const lastnameRef = useRef<TextInput>(null);
@@ -124,17 +133,15 @@ export default function RegisterScreen({ navigation }: Props) {
                             />
                         </View>
                     </View>
-                    <TextField
+                    <PhoneField
                         ref={phoneRef}
                         label={t('common.celular')}
-                        prefix="+57"
+                        countryCode={form.countryCode}
+                        onChangeCountry={(countryCode) => { setCountryTouched(true); setForm((current) => ({ ...current, countryCode })); setErrors((current) => ({ ...current, phone: undefined })); }}
                         placeholder="300 123 4567"
                         value={form.phone}
                         onChangeText={update('phone')}
                         error={errors.phone}
-                        keyboardType="phone-pad"
-                        autoComplete="tel"
-                        maxLength={13}
                         returnKeyType="next"
                         onSubmitEditing={() => emailRef.current?.focus()}
                     />

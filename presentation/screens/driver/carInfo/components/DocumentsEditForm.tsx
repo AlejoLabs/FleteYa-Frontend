@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { AppText, Button, ChipGroup, TextField } from "../../../../components/ui";
 import { spacing } from "../../../../theme";
-import { HEAVY_CATEGORIES, LICENSE_CATEGORIES } from "../../../auth/driverVehicle/DriverVehicleRegisterViewModel";
+import { allowsTruck, documentLabels, vehicleRules } from "../../../../utils/VehicleRules";
 import { DocumentsForm, DocumentsFormErrors } from "../DriverCarInfoViewModel";
 import { useTranslation } from 'react-i18next';
 
@@ -10,6 +10,8 @@ interface Props {
     errors: DocumentsFormErrors;
     // Un camión solo admite licencias B2/C2 en adelante
     isHeavy: boolean;
+    // País del conductor: categorías de licencia y nombres de los documentos
+    countryCode?: string | null;
     saving: boolean;
     onChange: (changes: Partial<DocumentsForm>) => void;
     onSave: () => void;
@@ -17,23 +19,29 @@ interface Props {
 }
 
 // Renovar la licencia, el SOAT o la técnico-mecánica: la categoría y las nuevas fechas de vencimiento
-export default function DocumentsEditForm({ form, errors, isHeavy, saving, onChange, onSave, onCancel }: Props) {
+export default function DocumentsEditForm({ form, errors, isHeavy, countryCode, saving, onChange, onSave, onCancel }: Props) {
     const { t } = useTranslation();
+    const rules = vehicleRules(countryCode);
+    const labels = documentLabels(countryCode, {
+        soat: t('documentsEditForm.elSoatVenceEl'),
+        techno: t('documentsEditForm.laRevisionTecnicoMecanicaVence'),
+        propertyCard: '',
+    });
     return (
         <View style={styles.form}>
             <View style={styles.field}>
                 <AppText variant="smallStrong">{t('documentsEditForm.categoriaDeLaLicencia')}</AppText>
                 <ChipGroup
-                    options={LICENSE_CATEGORIES.map((category) => ({ value: category, label: category, disabled: isHeavy && !HEAVY_CATEGORIES.includes(category) }))}
+                    options={rules.licenseCategories.map((category) => ({ value: category, label: category, disabled: isHeavy && !allowsTruck(category, countryCode) }))}
                     selected={form.licenseCategory || null}
                     onSelect={(licenseCategory) => onChange({ licenseCategory })}
                 />
                 {errors.licenseCategory && <AppText variant="caption" color="danger">{errors.licenseCategory}</AppText>}
             </View>
             <TextField label={t('documentsEditForm.laLicenciaVenceEl')} placeholder="DD/MM/AAAA" value={form.licenseExpires} onChangeText={(licenseExpires) => onChange({ licenseExpires })} error={errors.licenseExpires} keyboardType="numbers-and-punctuation" maxLength={10} />
-            <TextField label={t('documentsEditForm.elSoatVenceEl')} placeholder="DD/MM/AAAA" value={form.soatExpires} onChangeText={(soatExpires) => onChange({ soatExpires })} error={errors.soatExpires} keyboardType="numbers-and-punctuation" maxLength={10} />
+            <TextField label={labels.soat} placeholder="DD/MM/AAAA" value={form.soatExpires} onChangeText={(soatExpires) => onChange({ soatExpires })} error={errors.soatExpires} keyboardType="numbers-and-punctuation" maxLength={10} />
             <TextField
-                label={t('documentsEditForm.laRevisionTecnicoMecanicaVence')}
+                label={labels.techno}
                 placeholder="DD/MM/AAAA"
                 hint={t('documentsEditForm.dejalaVaciaSiTuVehiculo')}
                 value={form.technoExpires}

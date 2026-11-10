@@ -101,7 +101,7 @@ export function UpcomingTripsScreen() {
                                     <AppText variant="smallStrong" color={item.scheduled_at && item.status !== 'FINISHED' ? 'text' : 'textMuted'}>
                                         {viewModel.whenText(item)}
                                     </AppText>
-                                    <Amount value={item.fare_assigned ?? item.fare_offered} />
+                                    <Amount value={item.fare_assigned ?? item.fare_offered} currency={item.currency} />
                                 </View>
                                 <StatusPill label={status.label} tone={status.tone} />
                             </View>

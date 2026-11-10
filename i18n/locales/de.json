@@ -26,7 +26,8 @@
     "articulos_one": "{{count}} Artikel",
     "articulos_other": "{{count}} Artikel",
     "kg": "{{value}} kg",
-    "pesos": "{{value}} Pesos"
+    "pesos": "{{value}} Pesos",
+    "celularNoValido": "Diese Handynummer ist ungültig. Beispiel: {{example}}"
   },
   "cargoInfo": {
     "soloTransporteTuSubesY": "Nur Transport: Du lädst die Fracht selbst ein und nimmst sie entgegen.",
@@ -109,7 +110,9 @@
   "priceStepper": {
     "bajarPesos": "{{step}} Pesos weniger",
     "escribirElPrecio": "Preis eingeben",
-    "subirPesos": "{{step}} Pesos mehr"
+    "subirPesos": "{{step}} Pesos mehr",
+    "bajar": "{{amount}} weniger",
+    "subir": "{{amount}} mehr"
   },
   "state": {
     "todaviaNoHayNadaAqui": "Hier ist noch nichts",
@@ -366,7 +369,8 @@
     "sugeridoConAyuda": "Vorschlag {{amount}}{{distance}}, nur für den Transport. Erhöhe ihn, wenn er die Hilfe beim Be- und Entladen enthalten soll.",
     "sugeridoSoloTransporte": "Vorschlag {{amount}}{{distance}}. Deckt nur den Transport der Fracht.",
     "porDistancia": " für {{km}}",
-    "tocaElPrecio": "Tippe auf den Preis, um ihn einzugeben."
+    "tocaElPrecio": "Tippe auf den Preis, um ihn einzugeben.",
+    "enMoneda": "In {{currency}}. Du kannst Cent verwenden, z. B. 25,50."
   },
   "routeStep": {
     "aDondeLlevamosLaCarga": "Wohin bringen wir die Fracht?",
@@ -763,7 +767,8 @@
     "todaviaNoVemosElPago": "Wir sehen die Zahlung noch nicht. Wenn du schon bezahlt hast, warte einen Moment",
     "noPudimosAbrirLaPagina": "Wir konnten die Zahlungsseite nicht öffnen",
     "comisionFleteYa": "FleteYa-Provision",
-    "comisionFleteYaPorcentaje": "FleteYa-Provision ({{percent}} %)"
+    "comisionFleteYaPorcentaje": "FleteYa-Provision ({{percent}} %)",
+    "pagaPorLaApp": "Zahle {{amount}} in der App. Die Zahlungsseite öffnet sich und danach kommst du hierher zurück."
   },
   "tripRating": {
     "mal": "Schlecht",
@@ -1029,7 +1034,15 @@
     "RATING_RANGE": "{{field}} muss zwischen 1 und 5 liegen",
     "DOC_DATE_INVALID": "Das Ablaufdatum von {{document}} ist ungültig",
     "DOC_EXPIRED": "{{document}} ist abgelaufen",
-    "NETWORK_ERROR": "Wir konnten keine Verbindung zu FleteYa herstellen. Prüfe dein Internet und versuche es erneut."
+    "NETWORK_ERROR": "Wir konnten keine Verbindung zu FleteYa herstellen. Prüfe dein Internet und versuche es erneut.",
+    "FARE_INVALID": "{{field}} ist kein gültiger Betrag",
+    "PHONE_DIGITS": "{{field}} darf nur Ziffern enthalten",
+    "PHONE_FORMAT": "{{field}} ist keine gültige Handynummer. Beispiel: {{example}}",
+    "PLATE_INVALID": "Das Kennzeichen muss 2 bis 10 Buchstaben oder Ziffern haben",
+    "COUNTRY_INVALID": "Das Land ist nicht gültig",
+    "COUNTRY_NOT_SUPPORTED": "FleteYa ist in deinem Land noch nicht verfügbar. Derzeit sind wir hier tätig: {{countries}}",
+    "DOC_EXPIRED_INSURANCE": "Deine Pflichtversicherung ist abgelaufen. Aktualisiere sie unter Mein Fahrzeug, um weiter Frachten zu erhalten",
+    "DOC_EXPIRED_INSPECTION": "Deine technische Prüfung ist abgelaufen. Aktualisiere sie unter Mein Fahrzeug, um weiter Frachten zu erhalten"
   },
   "messages": {
     "FORGOT_PASSWORD_SENT": "Wenn die E-Mail registriert ist, haben wir dir einen Code zum Zurücksetzen des Passworts geschickt",
@@ -1054,11 +1067,24 @@
     "driver_rating": "Die Bewertung des Fahrers",
     "license": "Der Führerschein",
     "soat": "Das SOAT",
-    "techno": "Die technische Prüfung"
+    "techno": "Die technische Prüfung",
+    "offer": "Das Angebot"
   },
   "docs": {
     "LICENSE": "Führerschein",
     "SOAT": "SOAT",
-    "TECHNO": "Technische Prüfung"
+    "TECHNO": "Technische Prüfung",
+    "INSURANCE": "Pflichtversicherung",
+    "INSPECTION": "Technische Prüfung"
+  },
+  "phoneField": {
+    "cambiarIndicativo": "Vorwahl von {{country}}. Tippe, um das Land zu ändern",
+    "eligeTuPais": "Wähle dein Land"
+  },
+  "vehicleRules": {
+    "placaNoValida": "Gib das Kennzeichen mit Buchstaben und Ziffern ein, ohne Leerzeichen",
+    "seguroVenceEl": "Die Pflichtversicherung läuft ab am",
+    "revisionTecnicaVenceEl": "Die technische Prüfung läuft ab am",
+    "numeroDelRegistro": "Fahrzeug-Zulassungsnummer"
   }
 }

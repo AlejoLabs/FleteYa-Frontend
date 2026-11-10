@@ -1,6 +1,6 @@
 import { StyleSheet, View } from "react-native";
 import { colors, spacing } from "../../theme";
-import { formatCOP } from "../../utils/Formatters";
+import { formatMoney } from "../../utils/Formatters";
 import AppText from "./AppText";
 import Card from "./Card";
 import { useTranslation } from 'react-i18next';
@@ -8,15 +8,21 @@ import { t } from '../../../i18n';
 
 interface AmountProps {
     value: number;
+    // Moneda del flete (COP, EUR...); sin ella, pesos colombianos
+    currency?: string | null;
     size?: 'md' | 'lg';
     color?: 'text' | 'cargo' | 'textOnDark' | 'success';
 }
 
-// Un precio en pesos con la tipografía de placa: ofertas, valor acordado, ganancias
-export function Amount({ value, size = 'md', color = 'text' }: AmountProps) {
+// Lo que lee el lector de pantalla: en pesos, "25000 pesos" como siempre; en otra moneda, el monto con su moneda
+export const amountLabel = (value: number, currency?: string | null) =>
+    !currency || currency === 'COP' ? t('common.pesos', { value }) : formatMoney(value, currency);
+
+// Un precio en la moneda del flete con la tipografía de placa: ofertas, valor acordado, ganancias
+export function Amount({ value, currency, size = 'md', color = 'text' }: AmountProps) {
     return (
-        <AppText variant={size === 'lg' ? 'priceLarge' : 'price'} color={color}accessibilityLabel={t('common.pesos', { value })}>
-            {formatCOP(value)}
+        <AppText variant={size === 'lg' ? 'priceLarge' : 'price'} color={color}accessibilityLabel={amountLabel(value, currency)}>
+            {formatMoney(value, currency)}
         </AppText>
     );
 }
@@ -24,16 +30,17 @@ export function Amount({ value, size = 'md', color = 'text' }: AmountProps) {
 interface AmountRowProps {
     label: string;
     value: number;
+    currency?: string | null;
     // fee: comisión de FleteYa, ya incluida en el total (se muestra, no se suma); discount: se resta
     kind?: 'charge' | 'fee' | 'discount';
 }
 
-export function AmountRow({ label, value, kind = 'charge' }: AmountRowProps) {
+export function AmountRow({ label, value, currency, kind = 'charge' }: AmountRowProps) {
     const sign = kind === 'discount' ? '−' : '';
     return (
         <View style={styles.row}>
             <AppText variant="small" color={kind === 'charge' ? 'text' : 'textMuted'} style={styles.label}>{label}</AppText>
-            <AppText variant="smallStrong" color={kind === 'discount' ? 'success' : 'text'}>{sign}{formatCOP(value)}</AppText>
+            <AppText variant="smallStrong" color={kind === 'discount' ? 'success' : 'text'}>{sign}{formatMoney(value, currency)}</AppText>
         </View>
     );
 }
@@ -49,22 +56,24 @@ interface ReceiptProps {
     lines: ReceiptLine[];
     totalLabel?: string;
     total: number;
+    // Moneda de todas las líneas (la del flete)
+    currency?: string | null;
     footnote?: string;
 }
 
 // Recibo del viaje (Fase 7): detalle, total y una nota como "Pagado en efectivo"
-export function ReceiptCard({ title = t('money.resumenDelPago'), lines, totalLabel = t('money.total'), total, footnote }: ReceiptProps) {
+export function ReceiptCard({ title = t('money.resumenDelPago'), lines, totalLabel = t('money.total'), total, currency, footnote }: ReceiptProps) {
     const { t } = useTranslation();
     return (
         <Card variant="outlined">
             <AppText variant="label" color="textMuted">{title}</AppText>
             <View style={styles.lines}>
-                {lines.map((line) => <AmountRow key={line.label} {...line} />)}
+                {lines.map((line) => <AmountRow key={line.label} currency={currency} {...line} />)}
             </View>
             <View style={styles.divider} />
             <View style={styles.row}>
                 <AppText variant="bodyStrong" style={styles.label}>{totalLabel}</AppText>
-                <Amount value={total} />
+                <Amount value={total} currency={currency} />
             </View>
             {footnote && <AppText variant="caption" color="textMuted">{footnote}</AppText>}
         </Card>

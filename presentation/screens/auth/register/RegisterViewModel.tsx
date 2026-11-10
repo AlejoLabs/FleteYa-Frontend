@@ -3,6 +3,7 @@ import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
 import { User } from "../../../../domain/models/User";
 import { AuthUseCases } from "../../../../domain/useCases/auth/AuthUseCases";
 import EmailValidator from "../../../utils/EmailValidator";
+import { accountPhoneError } from "../../../utils/Countries";
 import { t } from '../../../../i18n';
 
 // Cliente envía carga; conductor la transporta y además registra su vehículo en el paso siguiente
@@ -12,6 +13,8 @@ export interface RegisterForm {
     name: string;
     lastname: string;
     phone: string;
+    // País del indicativo (CO, FR...): queda como el país de la cuenta
+    countryCode: string;
     email: string;
     password: string;
 }
@@ -31,7 +34,8 @@ export class RegisterViewModel {
         const errors: RegisterErrors = {};
         if (form.name.trim() === '') errors.name = t('register.escribeTuNombre');
         if (form.lastname.trim() === '') errors.lastname = t('register.escribeTuApellido');
-        if (!/^\d{10}$/.test(this.cleanPhone(form.phone))) errors.phone = t('register.escribeLos10DigitosDe');
+        const phoneError = accountPhoneError(form.phone, form.countryCode, t('register.escribeLos10DigitosDe'));
+        if (phoneError) errors.phone = phoneError;
         if (form.email.trim() === '') errors.email = t('common.escribeTuCorreo');
         else if (!EmailValidator(form.email.trim())) errors.email = t('common.escribeUnCorreoCompletoPor');
         if (form.password.length < 6) errors.password = t('register.laContrasenaDebeTenerAl');
@@ -46,6 +50,7 @@ export class RegisterViewModel {
             email: form.email.trim(),
             phone: this.cleanPhone(form.phone),
             password: form.password,
+            country_code: form.countryCode,
         };
     }
 

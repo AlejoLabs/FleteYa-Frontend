@@ -19,6 +19,8 @@ import { useNewRequestAlert } from "./hooks/useNewRequestAlert";
 import AvailabilitySwitch from "./components/AvailabilitySwitch";
 import NewRequestCard from "./components/NewRequestCard";
 import { useTranslation } from 'react-i18next';
+import { countryByCode } from "../../../utils/Countries";
+import { formatMoney } from "../../../utils/Formatters";
 
 type Props = DrawerScreenProps<ParamListBase>;
 
@@ -37,7 +39,7 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
     const [bottomHeight, setBottomHeight] = useState(0);
     const approval = useDriverApproval(viewModel, idDriver);
     const { available, setAvailable, location, locationUnavailable } = useDriverAvailability(viewModel, idDriver, approval.canWork);
-    const summary = useDriverSummary(viewModel, idDriver, location, approval.canWork);
+    const summary = useDriverSummary(viewModel, idDriver, location, approval.canWork, countryByCode(authResponse?.user.country_code)?.currency, authResponse?.user.country_code);
     const { showToast } = useToast();
 
     // En revisión, rechazado o con un documento vencido no se puede poner disponible: se explica por qué
@@ -77,7 +79,11 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
                 <View style={styles.earningsRow}>
                     <View style={styles.flex}>
                         <AppText variant="label" color="textOnDarkMuted">{t('driverMyLocationMap.ganadoHoy')}</AppText>
-                        <Amount value={summary.today.earned} size="lg" color="cargo" />
+                        <Amount value={summary.today.earned} currency={summary.today.currency} size="lg" color="cargo" />
+                        {summary.today.others.length > 0 &&
+                            <AppText variant="small" color="textOnDarkMuted">
+                                {summary.today.others.map((other) => `+ ${formatMoney(other.earned, other.currency)}`).join(' · ')}
+                            </AppText>}
                         <AppText variant="small" color="textOnDarkMuted">
                             {summary.today.trips === 0 ? t('driverMyLocationMap.todaviaSinFletesHoy') : t('driverMyLocationMap.fletesEntregados', { count: summary.today.trips })}
                         </AppText>
@@ -126,6 +132,7 @@ export default function DriverMyLocationMapScreen({ navigation }: Props) {
                     {newRequest.alert &&
                         <NewRequestCard
                             fare={newRequest.alert.fare_offered}
+                            currency={newRequest.alert.currency}
                             detail={viewModel.newRequestText(newRequest.alert)}
                             onOpen={() => { newRequest.dismiss(); openRequests(); }}
                             onDismiss={newRequest.dismiss}

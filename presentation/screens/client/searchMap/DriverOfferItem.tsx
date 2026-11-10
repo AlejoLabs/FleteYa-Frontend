@@ -5,7 +5,7 @@ import { DriverTripOffer } from "../../../../domain/models/DriverTripOffer";
 import { ClientMapStackParamList } from "../../../navigator/ClientMapStackNavigator";
 import { Amount, Button, Card, PersonRow, useToast } from "../../../components/ui";
 import { spacing } from "../../../theme";
-import { formatCOP, formatErrorMessage } from "../../../utils/Formatters";
+import { formatErrorMessage, formatMoney } from "../../../utils/Formatters";
 import { vehicleLabel } from "../../../utils/Cargo";
 import { ClientSearchMapViewModel } from "./ClientSearchMapViewModel";
 import { useTranslation } from 'react-i18next';
@@ -13,13 +13,15 @@ import { useTranslation } from 'react-i18next';
 interface Props {
     viewModel: ClientSearchMapViewModel;
     driverTripOffer: DriverTripOffer;
+    // Moneda del flete: la oferta va en ella
+    currency?: string;
     navigation: StackNavigationProp<ClientMapStackParamList, 'ClientSearchMapScreen', undefined>;
     // Se llama después de aceptar o rechazar, para que el panel actualice la lista
     onResolved: (accepted: boolean) => void;
 }
 
 // Oferta de un conductor, para comparar: calificación real, vehículo, cuánto tarda en llegar y su precio
-export function DriverOfferItem({ viewModel, driverTripOffer, navigation, onResolved }: Props) {
+export function DriverOfferItem({ viewModel, driverTripOffer, currency, navigation, onResolved }: Props) {
     const { t } = useTranslation();
 
     const { showToast } = useToast();
@@ -62,11 +64,11 @@ export function DriverOfferItem({ viewModel, driverTripOffer, navigation, onReso
                 imageUri={driver?.image}
                 rating={driver?.rating ?? null}
                 subtitle={t('driverOfferItem.llegaEnMin', { vehicle, max: Math.max(1, Math.round(driverTripOffer.time)) })}
-                right={<Amount value={fare_offered} />}
+                right={<Amount value={fare_offered} currency={currency} />}
             />
             <View style={styles.actions}>
                 <Button title={t('driverOfferItem.rechazar')} variant="danger" size="sm" loading={busy === 'reject'} disabled={busy === 'accept'} onPress={handleReject} style={styles.reject} />
-                <Button title={t('driverOfferItem.aceptar', { amount: formatCOP(fare_offered) })} variant="success" size="sm" loading={busy === 'accept'} disabled={busy === 'reject'} onPress={handleAccept} style={styles.accept} />
+                <Button title={t('driverOfferItem.aceptar', { amount: formatMoney(fare_offered, currency) })} variant="success" size="sm" loading={busy === 'accept'} disabled={busy === 'reject'} onPress={handleAccept} style={styles.accept} />
             </View>
         </Card>
     );

@@ -12,8 +12,9 @@ import CancelReasonModal from "../../../components/CancelReasonModal";
 import { AppText, Button, PriceStepper, StateView, useToast } from "../../../components/ui";
 import { colors, radius, spacing } from "../../../theme";
 import { CLIENT_CANCEL_REASONS, cargoCategoryLabel, vehicleLabel } from "../../../utils/Cargo";
-import { formatCOP, formatCountdown, formatErrorMessage, formatScheduledDate } from "../../../utils/Formatters";
-import { FARE_STEP, shortAddress } from "./RequestDraft";
+import { formatCountdown, formatErrorMessage, formatMoney, formatScheduledDate } from "../../../utils/Formatters";
+import { currencyRules } from "../../../utils/Countries";
+import { shortAddress } from "./RequestDraft";
 import { useTranslation } from 'react-i18next';
 import { t, lowerInSentence } from '../../../../i18n';
 
@@ -50,7 +51,7 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
                 const left = Math.min(new Date(response.expires_at).getTime() - Date.now(), SEARCH_DURATION_MS);
                 setDeadline(Date.now() + Math.max(0, left));
             }
-            setNewFare(response.fare_offered + FARE_STEP);
+            setNewFare(response.fare_offered + currencyRules(response.currency).fare_step);
             if (response.status !== 'CREATED') setIsExpired(response.status === 'EXPIRED');
         }
     }, [idClientRequest]);
@@ -89,6 +90,9 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
     const remainingMs = deadline ? Math.max(0, deadline - now) : 0;
     const isScheduled = Boolean(request?.scheduled_at);
     const currentFare = request?.fare_offered ?? 0;
+    // La moneda del flete (la del país donde se recoge) y su paso: en pesos de a $1.000, en euros de a 1 €
+    const currency = request?.currency;
+    const fareStep = currencyRules(currency).fare_step;
 
     const handleRaise = async () => {
         if (!request || isRaising || newFare <= currentFare) return;
@@ -96,7 +100,7 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
         const response = await viewModel.raiseFare(idClientRequest, newFare);
         setIsRaising(false);
         if (response === true) {
-            showToast(t('searchingPanel.ahoraOfreces', { amount: formatCOP(newFare) }), 'success');
+            showToast(t('searchingPanel.ahoraOfreces', { amount: formatMoney(newFare, currency) }), 'success');
             loadRequest();
         } else {
             showToast(formatErrorMessage((response as ErrorResponse).message), 'error');
@@ -166,6 +170,7 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
                                 <DriverOfferItem
                                     viewModel={viewModel}
                                     driverTripOffer={item}
+                                    currency={currency}
                                     navigation={navigation}
                                     onResolved={(accepted) => accepted ? onClose() : loadOffers()}
                                 />
@@ -181,11 +186,11 @@ export default function SearchingPanel({ viewModel, idClientRequest, navigation,
                         <View style={styles.footer}>
                             <View style={styles.fareRow}>
                                 <AppText variant="label" color="textMuted">{t('searchingPanel.tuPrecio')}</AppText>
-                                <AppText variant="small" color="textMuted">{t('searchingPanel.ahoraOfreces', { amount: formatCOP(currentFare) })}</AppText>
+                                <AppText variant="small" color="textMuted">{t('searchingPanel.ahoraOfreces', { amount: formatMoney(currentFare, currency) })}</AppText>
                             </View>
-                            <PriceStepper value={newFare} step={FARE_STEP} min={currentFare + FARE_STEP} onChange={setNewFare} />
+                            <PriceStepper value={newFare} currency={currency} min={currentFare + fareStep} max={currencyRules(currency).max_fare} onChange={setNewFare} />
                             <Button
-                                title={t('searchingPanel.subirA', { amount: formatCOP(newFare) })}
+                                title={t('searchingPanel.subirA', { amount: formatMoney(newFare, currency) })}
                                 variant="dark"
                                 icon="trending-up"
                                 loading={isRaising}

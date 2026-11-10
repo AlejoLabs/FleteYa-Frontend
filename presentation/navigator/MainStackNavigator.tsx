@@ -25,6 +25,7 @@ import DriverVehicleRegisterScreen from "../screens/auth/driverVehicle/DriverVeh
 import { User } from "../../domain/models/User";
 import { useTranslation } from 'react-i18next';
 import { t } from '../../i18n';
+import { useCountriesLoader } from "../hooks/useCountries";
 
 export type RootStackParamList = {
     LoginScreen: undefined,
@@ -54,6 +55,8 @@ export const MainStackNavigator = () => {
     const authUseCases = container.resolve("authUseCases");
     const socketService = container.resolve("socketService");
     const userUseCases = container.resolve("userUseCases");
+    // Países y monedas: el registro (indicativo), el buscador y los precios los necesitan desde el principio
+    useCountriesLoader(container.resolve("countryUseCases"));
 
     return (
         <AuthProvider authUseCases={authUseCases} socketService={socketService} userUseCases={userUseCases}>

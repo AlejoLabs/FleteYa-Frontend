@@ -16,4 +16,6 @@ export interface User {
     has_google?:         boolean;
     // Idioma de la app de esta persona (es, en, fr, it, pt, de)
     language?:           string;
+    // País de la persona (CO, FR...): sale del indicativo de su celular. Decide las reglas de placa y documentos
+    country_code?:       string;
 }

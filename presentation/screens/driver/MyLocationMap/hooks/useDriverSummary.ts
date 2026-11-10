@@ -7,7 +7,8 @@ import { DriverMyLocationMapViewModel } from "../DriverMyLocationMapViewModel";
 
 // Datos del encabezado y de los avisos del inicio. Se recargan cada vez que el conductor vuelve a la pantalla
 // (por ejemplo, después de entregar un flete o de mirar su vehículo). El vehículo lo trae useDriverApproval
-export function useDriverSummary(viewModel: DriverMyLocationMapViewModel, idDriver: number | undefined, location: LatLng | null, canWork: boolean | null) {
+// homeCurrency: la moneda del país del conductor (para el "Ganado hoy" en cero)
+export function useDriverSummary(viewModel: DriverMyLocationMapViewModel, idDriver: number | undefined, location: LatLng | null, canWork: boolean | null, homeCurrency?: string, countryCode?: string) {
     const [trips, setTrips] = useState<ClientRequestResponse[]>([]);
     const [documents, setDocuments] = useState<DriverDocument[]>([]);
     const [nearby, setNearby] = useState<number | null>(null);
@@ -47,8 +48,8 @@ export function useDriverSummary(viewModel: DriverMyLocationMapViewModel, idDriv
 
     return {
         rating: viewModel.rating(trips),
-        today: viewModel.daySummary(trips),
-        documentAlert: viewModel.documentAlert(documents),
+        today: viewModel.daySummary(trips, homeCurrency),
+        documentAlert: viewModel.documentAlert(documents, countryCode),
         nearby,
         // Llega una solicitud nueva: el conteo se actualiza sin esperar a volver a la pantalla
         setNearby,

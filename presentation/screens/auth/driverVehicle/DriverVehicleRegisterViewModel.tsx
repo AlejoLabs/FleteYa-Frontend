@@ -6,11 +6,10 @@ import { AuthUseCases } from "../../../../domain/useCases/auth/AuthUseCases";
 import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 import { parseDayMonthYear } from "../../../utils/Formatters";
 import { t } from '../../../../i18n';
+import { allowsTruck, normalizePlate, plateError } from "../../../utils/VehicleRules";
 
-export const LICENSE_CATEGORIES = ['B1', 'B2', 'B3', 'C1', 'C2', 'C3'];
-// Igual que el backend: B1/C1 sirven hasta furgón liviano (tipo NHR); el camión pide B2/C2 o superior
-export const HEAVY_CATEGORIES = ['B2', 'B3', 'C2', 'C3'];
-const PLATE_REGEX = /^[A-Z]{3}\d{3}$/;
+// Las reglas de placa y licencia dependen del país de la cuenta (utils/VehicleRules). En Colombia, igual que el
+// backend: B1/C1 sirven hasta furgón liviano (tipo NHR); el camión pide B2/C2 o superior
 export const MAX_VEHICLE_PHOTOS = 4;
 
 // Lo que la persona escribe en el formulario, tal cual, antes de validar
@@ -51,7 +50,6 @@ export const EMPTY_DRIVER_VEHICLE_FORM: DriverVehicleForm = {
 
 export const isHeavyVehicle = (vehicleType: VehicleType | null) => vehicleType === 'CAMION';
 
-const normalizePlate = (plate: string) => plate.toUpperCase().replace(/[\s-]/g, '');
 
 export class DriverVehicleRegisterViewModel {
 
@@ -64,17 +62,19 @@ export class DriverVehicleRegisterViewModel {
     }
 
     // Todos los problemas a la vez, cada uno debajo de su campo, para que la persona los corrija de una
-    validate(form: DriverVehicleForm): DriverVehicleErrors {
+    // countryCode: el país de la cuenta (el del indicativo que eligió en el paso 1)
+    validate(form: DriverVehicleForm, countryCode?: string | null): DriverVehicleErrors {
         const isHeavy = isHeavyVehicle(form.vehicleType);
         const errors: DriverVehicleErrors = {};
         if (!form.vehicleType) errors.vehicleType = t('driverVehicleRegister.eligeElTipoDeVehiculo');
         if (form.brand.trim().length < 2) errors.brand = t('driverVehicleRegister.escribeLaMarcaYLa');
         if (form.color.trim().length < 2) errors.color = t('driverVehicleRegister.escribeElColor');
-        if (!PLATE_REGEX.test(normalizePlate(form.plate))) errors.plate = t('driverVehicleRegister.t3LetrasY3Numeros');
+        const plate = plateError(form.plate, countryCode, t('driverVehicleRegister.t3LetrasY3Numeros'));
+        if (plate) errors.plate = plate;
         if (!/^\d{4}$/.test(form.modelYear.trim())) errors.modelYear = t('driverVehicleRegister.porEjemplo2019');
         if (form.licenseNumber.trim().length < 5) errors.licenseNumber = t('driverVehicleRegister.escribeElNumeroDeTu');
         if (!form.licenseCategory) errors.licenseCategory = t('driverVehicleRegister.eligeLaCategoriaDeTu');
-        else if (isHeavy && !HEAVY_CATEGORIES.includes(form.licenseCategory)) errors.licenseCategory = t('driverVehicleRegister.paraCamionNecesitasLicenciaB2');
+        else if (isHeavy && !allowsTruck(form.licenseCategory, countryCode)) errors.licenseCategory = t('driverVehicleRegister.paraCamionNecesitasLicenciaB2');
         if (!parseDayMonthYear(form.licenseExpires)) errors.licenseExpires = t('driverVehicleRegister.escribelaComoDdMmAaaa');
         if (!parseDayMonthYear(form.soatExpires)) errors.soatExpires = t('driverVehicleRegister.escribelaComoDdMmAaaa');
         if (form.technoExpires.trim() !== '' && !parseDayMonthYear(form.technoExpires)) errors.technoExpires = t('driverVehicleRegister.escribelaComoDdMmAaaa');

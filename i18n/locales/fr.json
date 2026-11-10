@@ -26,7 +26,8 @@
     "articulos_one": "{{count}} article",
     "articulos_other": "{{count}} articles",
     "kg": "{{value}} kg",
-    "pesos": "{{value}} pesos"
+    "pesos": "{{value}} pesos",
+    "celularNoValido": "Ce numéro de téléphone n'est pas valide. Exemple : {{example}}"
   },
   "cargoInfo": {
     "soloTransporteTuSubesY": "Transport uniquement : vous chargez et réceptionnez la marchandise.",
@@ -109,7 +110,9 @@
   "priceStepper": {
     "bajarPesos": "Baisser de {{step}} pesos",
     "escribirElPrecio": "Saisir le prix",
-    "subirPesos": "Augmenter de {{step}} pesos"
+    "subirPesos": "Augmenter de {{step}} pesos",
+    "bajar": "Baisser de {{amount}}",
+    "subir": "Augmenter de {{amount}}"
   },
   "state": {
     "todaviaNoHayNadaAqui": "Rien ici pour l'instant",
@@ -366,7 +369,8 @@
     "sugeridoConAyuda": "Suggéré {{amount}}{{distance}}, pour le transport uniquement. Augmentez-le si vous voulez inclure l'aide au chargement et au déchargement.",
     "sugeridoSoloTransporte": "Suggéré {{amount}}{{distance}}. Couvre uniquement le transport de la marchandise.",
     "porDistancia": " pour {{km}}",
-    "tocaElPrecio": "Touchez le prix pour le saisir."
+    "tocaElPrecio": "Touchez le prix pour le saisir.",
+    "enMoneda": "En {{currency}}. Vous pouvez utiliser des centimes, par exemple 25,50."
   },
   "routeStep": {
     "aDondeLlevamosLaCarga": "Où emmenons-nous la marchandise ?",
@@ -763,7 +767,8 @@
     "todaviaNoVemosElPago": "Nous ne voyons pas encore le paiement. Si vous avez déjà payé, patientez un instant",
     "noPudimosAbrirLaPagina": "Impossible d'ouvrir la page de paiement",
     "comisionFleteYa": "commission FleteYa",
-    "comisionFleteYaPorcentaje": "commission FleteYa ({{percent}} %)"
+    "comisionFleteYaPorcentaje": "commission FleteYa ({{percent}} %)",
+    "pagaPorLaApp": "Payez {{amount}} dans l'application. La page de paiement s'ouvre, puis vous revenez ici."
   },
   "tripRating": {
     "mal": "Mauvais",
@@ -1029,7 +1034,15 @@
     "RATING_RANGE": "{{field}} doit être compris entre 1 et 5",
     "DOC_DATE_INVALID": "La date d'expiration de {{document}} n'est pas valide",
     "DOC_EXPIRED": "{{document}} est expiré",
-    "NETWORK_ERROR": "Impossible de nous connecter à FleteYa. Vérifiez votre connexion internet et réessayez."
+    "NETWORK_ERROR": "Impossible de nous connecter à FleteYa. Vérifiez votre connexion internet et réessayez.",
+    "FARE_INVALID": "{{field}} n'est pas un montant valide",
+    "PHONE_DIGITS": "{{field}} ne doit contenir que des chiffres",
+    "PHONE_FORMAT": "{{field}} n'est pas un numéro de portable valide. Exemple : {{example}}",
+    "PLATE_INVALID": "La plaque doit comporter de 2 à 10 lettres ou chiffres",
+    "COUNTRY_INVALID": "Le pays n'est pas valide",
+    "COUNTRY_NOT_SUPPORTED": "FleteYa n'est pas encore disponible dans votre pays. Pour l'instant, nous sommes présents en : {{countries}}",
+    "DOC_EXPIRED_INSURANCE": "Votre assurance obligatoire est expirée. Mettez-la à jour dans Mon véhicule pour continuer à recevoir des frets",
+    "DOC_EXPIRED_INSPECTION": "Votre contrôle technique est expiré. Mettez-le à jour dans Mon véhicule pour continuer à recevoir des frets"
   },
   "messages": {
     "FORGOT_PASSWORD_SENT": "Si l'e-mail est enregistré, nous vous avons envoyé un code pour réinitialiser votre mot de passe",
@@ -1054,11 +1067,24 @@
     "driver_rating": "La note du chauffeur",
     "license": "Le permis",
     "soat": "Le SOAT",
-    "techno": "Le contrôle technique"
+    "techno": "Le contrôle technique",
+    "offer": "L'offre"
   },
   "docs": {
     "LICENSE": "Permis de conduire",
     "SOAT": "SOAT",
-    "TECHNO": "Contrôle technique"
+    "TECHNO": "Contrôle technique",
+    "INSURANCE": "Assurance obligatoire",
+    "INSPECTION": "Contrôle technique"
+  },
+  "phoneField": {
+    "cambiarIndicativo": "Indicatif de {{country}}. Touchez pour changer de pays",
+    "eligeTuPais": "Choisissez votre pays"
+  },
+  "vehicleRules": {
+    "placaNoValida": "Saisissez la plaque avec des lettres et des chiffres, sans espaces",
+    "seguroVenceEl": "L'assurance obligatoire expire le",
+    "revisionTecnicaVenceEl": "Le contrôle technique expire le",
+    "numeroDelRegistro": "Numéro d'immatriculation du véhicule"
   }
 }

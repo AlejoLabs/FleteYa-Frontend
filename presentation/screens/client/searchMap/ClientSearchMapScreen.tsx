@@ -178,6 +178,7 @@ export default function ClientSearchMapScreen({ navigation, route }: Props) {
                 placeholder={searchTarget === 'origin' ? t('clientSearchMap.direccionDeRecogida') : t('clientSearchMap.direccionDeEntrega')}
                 onClose={() => setSearchTarget(null)}
                 onSelect={handleSelectPlace}
+                country={request.searchCountry}
                 />
             }
 

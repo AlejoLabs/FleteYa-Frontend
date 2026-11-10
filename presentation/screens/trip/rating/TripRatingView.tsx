@@ -47,7 +47,7 @@ export default function TripRatingView({ request, person, fareLabel, sending, on
 
                 <Card variant="muted" style={styles.fare}>
                     <AppText variant="small" color="textMuted">{fareLabel}</AppText>
-                    <Amount value={getTripFare(request)} size="lg" />
+                    <Amount value={getTripFare(request)} currency={request.currency} size="lg" />
                 </Card>
 
                 <View style={styles.rate}>

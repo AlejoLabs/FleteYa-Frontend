@@ -6,6 +6,9 @@ export interface ClientRequestResponse {
     id_client:               number;
     fare_offered:            number;
     fare_assigned?:          number | null;
+    // Moneda y país del flete (los fija el backend con el punto de recogida). Todos los montos van en esa moneda
+    currency?:               string;
+    country_code?:           string;
     pickup_description:      string;
     destination_description: string;
     status:                  string;
@@ -67,6 +70,7 @@ export interface ActiveTrip {
     status:                  string;
     fare_offered:            number;
     fare_assigned:           number | null;
+    currency?:               string;
     pickup_description:      string;
     destination_description: string;
     cargo_category:          CargoCategory;

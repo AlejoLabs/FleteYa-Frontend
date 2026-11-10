@@ -7,7 +7,7 @@ import { container } from "../../../../di/container";
 import { TripSharedParamList } from "../../../navigator/TripSharedParamList";
 import { useAuth } from "../../../hooks/useAuth";
 import { AppText, Button, ConfirmDialog, Notice, OptionCard, ReceiptCard, StateView } from "../../../components/ui";
-import { formatCOP } from "../../../utils/Formatters";
+import { formatMoney } from "../../../utils/Formatters";
 import { colors, spacing } from "../../../theme";
 import { shortPlace } from "../TripStatus";
 import { TripPaymentViewModel } from "./TripPaymentViewModel";
@@ -122,13 +122,13 @@ export function TripPaymentScreen({ navigation, route }: Props) {
 
                 {!isPaid && isClient && payment.payment_method === 'WOMPI' &&
                     <>
-                        <Button title={t('tripPayment.pagar', { amount: formatCOP(payment.amount) })} loading={busy === 'online'} disabled={busy !== null && busy !== 'online'} onPress={trip.payOnline} />
+                        <Button title={t('tripPayment.pagar', { amount: formatMoney(payment.amount, payment.currency) })} loading={busy === 'online'} disabled={busy !== null && busy !== 'online'} onPress={trip.payOnline} />
                         <Button title={t('tripPayment.yaPagueRevisar')} variant="text" loading={busy === 'verify'} onPress={() => trip.verify()} />
                     </>
                 }
 
                 {!isPaid && !isClient && payment.payment_method === 'CASH' &&
-                    <Button title={t('tripPayment.recibi', { amount: formatCOP(payment.amount) })} variant="success" onPress={() => setIsCashConfirmVisible(true)} />}
+                    <Button title={t('tripPayment.recibi', { amount: formatMoney(payment.amount, payment.currency) })} variant="success" onPress={() => setIsCashConfirmVisible(true)} />}
 
                 {/* El conductor no se queda atascado si el cliente no paga ya: el flete sigue pendiente en "En curso" */}
                 {!isPaid && !isClient &&
@@ -137,7 +137,7 @@ export function TripPaymentScreen({ navigation, route }: Props) {
 
             <ConfirmDialog
                 visible={isCashConfirmVisible}
-                title={t('tripPayment.recibiste', { amount: formatCOP(payment.amount) })}
+                title={t('tripPayment.recibiste', { amount: formatMoney(payment.amount, payment.currency) })}
                 message={t('tripPayment.confirmaloSoloCuandoTengasEl')}
                 confirmLabel={t('tripPayment.siLoRecibi')}
                 cancelLabel={t('tripPayment.todaviaNo')}

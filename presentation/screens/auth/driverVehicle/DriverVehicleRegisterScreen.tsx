@@ -11,9 +11,10 @@ import { choosePhoto } from "../../../utils/PhotoPicker";
 import { VEHICLES } from "../../../utils/Cargo";
 import { formatErrorMessage, formatNumber } from '../../../utils/Formatters';
 import { colors, spacing } from "../../../theme";
-import { DriverVehicleErrors, DriverVehicleForm, DriverVehicleRegisterViewModel, EMPTY_DRIVER_VEHICLE_FORM, HEAVY_CATEGORIES, LICENSE_CATEGORIES, MAX_VEHICLE_PHOTOS, isHeavyVehicle } from "./DriverVehicleRegisterViewModel";
+import { DriverVehicleErrors, DriverVehicleForm, DriverVehicleRegisterViewModel, EMPTY_DRIVER_VEHICLE_FORM, MAX_VEHICLE_PHOTOS, isHeavyVehicle } from "./DriverVehicleRegisterViewModel";
 import { useTranslation } from 'react-i18next';
 import { t } from '../../../../i18n';
+import { allowsTruck, documentLabels, vehicleRules } from "../../../utils/VehicleRules";
 
 interface Props extends StackScreenProps<RootStackParamList, 'DriverVehicleRegisterScreen'> { };
 
@@ -22,6 +23,13 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
     const { t } = useTranslation();
 
     const { account } = route.params;
+    // Placa, licencia y documentos según el país de la cuenta (Colombia: ABC123, B1 a C3, SOAT y técnico-mecánica)
+    const rules = vehicleRules(account.country_code);
+    const labels = documentLabels(account.country_code, {
+        soat: t('driverVehicleRegister.elSoatVenceEl'),
+        techno: t('driverVehicleRegister.laRevisionTecnicoMecanicaVence'),
+        propertyCard: t('driverVehicleRegister.numeroDeLaTarjetaDe'),
+    });
     const viewModel: DriverVehicleRegisterViewModel = container.resolve('driverVehicleRegisterViewModel');
     const { saveAuthSession } = useAuth();
     const { showToast } = useToast();
@@ -47,7 +55,7 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
     }
 
     const handleRegister = async () => {
-        const problems = viewModel.validate(form);
+        const problems = viewModel.validate(form, account.country_code);
         setErrors(problems);
         if (Object.keys(problems).length > 0) {
             showToast(t('driverVehicleRegister.revisaLosDatosMarcadosEn'), 'error');
@@ -97,7 +105,7 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
                     <TextField label={t('driverVehicleRegister.color')} placeholder={t('driverVehicleRegister.blanco')} value={form.color} onChangeText={(color) => update({ color })} error={errors.color} />
                     <View style={styles.row}>
                         <View style={styles.flex}>
-                            <TextField label={t('driverVehicleRegister.placa')} placeholder="ABC123" value={form.plate} onChangeText={(plate) => update({ plate })} error={errors.plate} autoCapitalize="characters" maxLength={7} />
+                            <TextField label={t('driverVehicleRegister.placa')} placeholder={rules.platePlaceholder} value={form.plate} onChangeText={(plate) => update({ plate })} error={errors.plate} autoCapitalize="characters" maxLength={rules.plateMaxLength} />
                         </View>
                         <View style={styles.flex}>
                             <TextField label={t('driverVehicleRegister.anoDelModelo')} placeholder="2019" value={form.modelYear} onChangeText={(modelYear) => update({ modelYear })} error={errors.modelYear} keyboardType="number-pad" maxLength={4} />
@@ -110,20 +118,20 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
                     <View style={styles.block}>
                         <AppText variant="smallStrong">{t('driverVehicleRegister.categoria')}</AppText>
                         <ChipGroup
-                            options={LICENSE_CATEGORIES.map((category) => ({ value: category, label: category, disabled: isHeavy && !HEAVY_CATEGORIES.includes(category) }))}
+                            options={rules.licenseCategories.map((category) => ({ value: category, label: category, disabled: isHeavy && !allowsTruck(category, account.country_code) }))}
                             selected={form.licenseCategory}
                             onSelect={(licenseCategory) => update({ licenseCategory })}
                         />
                         {errors.licenseCategory
                             ? <AppText variant="caption" color="danger">{errors.licenseCategory}</AppText>
-                            : isHeavy && <AppText variant="caption" color="textMuted">{t('driverVehicleRegister.paraCamionNecesitasB2O')}</AppText>}
+                            : isHeavy && rules.isColombia && <AppText variant="caption" color="textMuted">{t('driverVehicleRegister.paraCamionNecesitasB2O')}</AppText>}
                     </View>
                     <TextField label={t('driverVehicleRegister.laLicenciaVenceEl')} placeholder="DD/MM/AAAA" value={form.licenseExpires} onChangeText={(licenseExpires) => update({ licenseExpires })} error={errors.licenseExpires} keyboardType="numbers-and-punctuation" />
 
                     <AppText variant="label" color="textMuted">{t('driverVehicleRegister.documentosDelVehiculo')}</AppText>
-                    <TextField label={t('driverVehicleRegister.elSoatVenceEl')} placeholder="DD/MM/AAAA" value={form.soatExpires} onChangeText={(soatExpires) => update({ soatExpires })} error={errors.soatExpires} keyboardType="numbers-and-punctuation" />
+                    <TextField label={labels.soat} placeholder="DD/MM/AAAA" value={form.soatExpires} onChangeText={(soatExpires) => update({ soatExpires })} error={errors.soatExpires} keyboardType="numbers-and-punctuation" />
                     <TextField
-                        label={t('driverVehicleRegister.laRevisionTecnicoMecanicaVence')}
+                        label={labels.techno}
                         placeholder="DD/MM/AAAA"
                         hint={t('driverVehicleRegister.dejaloVacioSiElVehiculo')}
                         value={form.technoExpires}
@@ -131,7 +139,7 @@ export default function DriverVehicleRegisterScreen({ navigation, route }: Props
                         error={errors.technoExpires}
                         keyboardType="numbers-and-punctuation"
                     />
-                    <TextField label={t('driverVehicleRegister.numeroDeLaTarjetaDe')} value={form.propertyCard} onChangeText={(propertyCard) => update({ propertyCard })} error={errors.propertyCard} />
+                    <TextField label={labels.propertyCard} value={form.propertyCard} onChangeText={(propertyCard) => update({ propertyCard })} error={errors.propertyCard} />
 
                     <View style={styles.block}>
                         <AppText variant="label" color="textMuted">{t('driverVehicleRegister.fotosDelVehiculo')}</AppText>

@@ -1,6 +1,6 @@
 import { ChipGroup, Counter, Notice, SwitchRow, TextField } from "../../../../components/ui";
 import { CARGO_CATEGORIES } from "../../../../utils/Cargo";
-import { formatThousands } from "../../../../utils/Formatters";
+import { formatNumber, formatThousands } from "../../../../utils/Formatters";
 import { RequestDraftState } from "../hooks/useRequestDraft";
 import { shortAddress } from "../RequestDraft";
 import { SectionLabel, StepHeader, SummaryRow } from "../components/StepParts";
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 // Paso 2: qué es la carga, cuánto pesa, cuántos artículos y si necesita ayuda para cargarla y descargarla
 export default function CargoStep({ state }: { state: RequestDraftState }) {
     const { t } = useTranslation();
+    const isPesos = !state.currency || state.currency === 'COP';
     const { draft, update, errors, step, goTo, routeSummary } = state;
     const routeText = `${shortAddress(draft.origin?.address)} → ${shortAddress(draft.destination?.address)}${routeSummary ? ` · ${routeSummary.distanceText}` : ''}`;
 
@@ -40,10 +41,11 @@ export default function CargoStep({ state }: { state: RequestDraftState }) {
             <Counter label={t('cargoStep.articulos')} hint={t('cargoStep.unMotorEs1Una')} value={draft.packages} min={1} max={500} onChange={(packages) => update({ packages })} />
             <TextField
                 label={t('cargoStep.valorAproximadoDeLaCarga')}
-                placeholder="1.500.000"
-                prefix="$"
-                // Se guardan solo los dígitos; en pantalla, con punto de miles
-                value={formatThousands(draft.declaredValue)}
+                // En la moneda del país de la recogida. En pesos, como siempre: "$" y punto de miles
+                placeholder={isPesos ? "1.500.000" : formatNumber(2000, 0)}
+                prefix={isPesos ? "$" : state.currency}
+                // Se guardan solo los dígitos; en pantalla, con el separador de miles
+                value={isPesos || !draft.declaredValue ? formatThousands(draft.declaredValue) : formatNumber(Number(draft.declaredValue), 0)}
                 onChangeText={(declaredValue) => update({ declaredValue: declaredValue.replace(/\D/g, '') })}
                 error={errors.declaredValue}
                 keyboardType="number-pad"

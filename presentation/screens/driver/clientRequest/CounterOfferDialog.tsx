@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { ConfirmDialog, PriceStepper } from "../../../components/ui";
-import { formatCOP } from "../../../utils/Formatters";
+import { formatMoney } from "../../../utils/Formatters";
+import { currencyRules } from "../../../utils/Countries";
 import { useTranslation } from 'react-i18next';
-
-const FARE_STEP = 1000;
-const MIN_FARE = 5000;
 
 interface Props {
     visible: boolean;
     clientFare: number;
-    // Si ya ofertó, se arranca desde su oferta; si no, mil pesos por encima de lo que ofrece el cliente
+    // Moneda del flete (la del país donde se recoge)
+    currency?: string;
+    // Si ya ofertó, se arranca desde su oferta; si no, un paso por encima de lo que ofrece el cliente (en pesos, mil)
     myOffer: number | null;
     sending: boolean;
     onSend: (fare: number) => void;
@@ -17,25 +17,26 @@ interface Props {
 }
 
 // El conductor propone su precio con − y +; el cliente lo ve como una oferta más
-export default function CounterOfferDialog({ visible, clientFare, myOffer, sending, onSend, onClose }: Props) {
+export default function CounterOfferDialog({ visible, clientFare, currency, myOffer, sending, onSend, onClose }: Props) {
     const { t } = useTranslation();
-    const [fare, setFare] = useState(myOffer ?? clientFare + FARE_STEP);
+    const rules = currencyRules(currency);
+    const [fare, setFare] = useState(myOffer ?? clientFare + rules.fare_step);
 
     useEffect(() => {
-        if (visible) setFare(myOffer ?? clientFare + FARE_STEP);
+        if (visible) setFare(myOffer ?? clientFare + rules.fare_step);
     }, [visible]);
 
     return (
         <ConfirmDialog
             visible={visible}
             title={t('counterOfferDialog.tuPrecioParaEsteFlete')}
-            message={t('counterOfferDialog.elClienteOfrece', { amount: formatCOP(clientFare) })}
-            confirmLabel={t('counterOfferDialog.ofertar', { amount: formatCOP(fare) })}
+            message={t('counterOfferDialog.elClienteOfrece', { amount: formatMoney(clientFare, currency) })}
+            confirmLabel={t('counterOfferDialog.ofertar', { amount: formatMoney(fare, currency) })}
             loading={sending}
             onConfirm={() => onSend(fare)}
             onCancel={onClose}
         >
-            <PriceStepper value={fare} step={FARE_STEP} min={MIN_FARE} onChange={setFare} />
+            <PriceStepper value={fare} currency={currency} min={rules.min_fare} max={rules.max_fare} onChange={setFare} />
         </ConfirmDialog>
     );
 }

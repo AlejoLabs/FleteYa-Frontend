@@ -10,6 +10,8 @@ export interface DriverCarInfo{
     model_year?: number | null;
     is_covered?: boolean;
     license_category?: string | null;
+    // País del conductor (solo en su propio vehículo): decide el formato de la placa y el nombre de los documentos
+    country_code?: string;
     // Capacidad real si es más grande que el típico de su tipo; null = la típica
     capacity_kg?: number | null;
     capacity_m3?: number | null;

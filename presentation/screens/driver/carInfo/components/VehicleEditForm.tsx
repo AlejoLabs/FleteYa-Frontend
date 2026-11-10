@@ -4,12 +4,15 @@ import { VEHICLES } from "../../../../utils/Cargo";
 import { spacing } from "../../../../theme";
 import { VehicleForm, VehicleFormErrors } from "../DriverCarInfoViewModel";
 import { useTranslation } from 'react-i18next';
+import { vehicleRules } from "../../../../utils/VehicleRules";
 
 interface Props {
     form: VehicleForm;
     errors: VehicleFormErrors;
     // "Lo normal en furgón es hasta 4.500 kg y 20 m³."
     typicalCapacity: string;
+    // País del conductor: en Colombia la placa es ABC123; en otros países, libre
+    countryCode?: string | null;
     saving: boolean;
     onChange: (changes: Partial<VehicleForm>) => void;
     onSave: () => void;
@@ -17,7 +20,8 @@ interface Props {
 }
 
 // Cambiar de vehículo o corregir sus datos; si es más grande que el típico, su capacidad real
-export default function VehicleEditForm({ form, errors, typicalCapacity, saving, onChange, onSave, onCancel }: Props) {
+export default function VehicleEditForm({ form, errors, typicalCapacity, countryCode, saving, onChange, onSave, onCancel }: Props) {
+    const rules = vehicleRules(countryCode);
     const { t } = useTranslation();
     return (
         <View style={styles.form}>
@@ -34,7 +38,7 @@ export default function VehicleEditForm({ form, errors, typicalCapacity, saving,
             <TextField label={t('vehicleEditForm.color')} placeholder={t('vehicleEditForm.blanco')} value={form.color} onChangeText={(color) => onChange({ color })} error={errors.color} />
             <View style={styles.row}>
                 <View style={styles.flex}>
-                    <TextField label={t('vehicleEditForm.placa')} placeholder="ABC123" value={form.plate} onChangeText={(plate) => onChange({ plate })} error={errors.plate} autoCapitalize="characters" maxLength={7} />
+                    <TextField label={t('vehicleEditForm.placa')} placeholder={rules.platePlaceholder} value={form.plate} onChangeText={(plate) => onChange({ plate })} error={errors.plate} autoCapitalize="characters" maxLength={rules.plateMaxLength} />
                 </View>
                 <View style={styles.flex}>
                     <TextField label={t('vehicleEditForm.anoDelModelo')} placeholder="2019" value={form.modelYear} onChangeText={(modelYear) => onChange({ modelYear })} error={errors.modelYear} keyboardType="number-pad" maxLength={4} />

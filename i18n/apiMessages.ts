@@ -9,8 +9,14 @@ const resolveParams = (params?: Params): Params | undefined => {
         [name, typeof value === 'string' && value.startsWith('@') ? t(value.slice(1)) : value]));
 }
 
-const translateKey = (section: 'errors' | 'messages', key: string, params?: Params): string | null => {
+// Datos que la app sabe escribir mejor que el backend, en su idioma: por ejemplo la lista de países donde opera
+// FleteYa, que el backend manda en español (la registra useCountriesLoader cuando llegan los países)
+const localParams: Record<string, () => Params> = {};
+export const setLocalErrorParams = (key: string, params: () => Params) => { localParams[key] = params; };
+
+const translateKey = (section: 'errors' | 'messages', key: string, received?: Params): string | null => {
     const path = `${section}.${key}`;
+    const params = localParams[key] ? { ...received, ...localParams[key]() } : received;
     // Con count el texto puede estar en sus formas de plural (clave_one, clave_other)
     return i18n.exists(path) || i18n.exists(`${path}_other`) ? t(path, resolveParams(params) ?? {}) : null;
 }

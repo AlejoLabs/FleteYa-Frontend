@@ -3,6 +3,7 @@ import { LatLng } from "react-native-maps";
 import { decode } from "@googlemaps/polyline-codec";
 import { TimeAndDistanceValues } from "../../../../../domain/models/TimeAndDistanceValues";
 import { ErrorResponse } from "../../../../../domain/models/ErrorResponse";
+import { CountryAtPoint } from "../../../../../domain/models/Country";
 import { ClientSearchMapViewModel } from "../ClientSearchMapViewModel";
 import { formatKm } from "../../../../utils/Formatters";
 import { DraftErrors, EMPTY_DRAFT, PlacePoint, RequestDraft, REQUEST_STEPS, hasSize, sizeM3, suggestedVehicleFor, weightKg } from "../RequestDraft";
@@ -21,10 +22,17 @@ export function useRequestDraft(viewModel: ClientSearchMapViewModel) {
     const [route, setRoute] = useState<LatLng[]>([]);
     const [routeSummary, setRouteSummary] = useState<RouteSummary | null>(null);
     const [pricing, setPricing] = useState<TimeAndDistanceValues | null>(null);
+    // País de la recogida, calculado por el backend con las coordenadas: decide la moneda, en qué país se buscan
+    // las direcciones y si FleteYa opera ahí
+    const [pickupCountry, setPickupCountry] = useState<CountryAtPoint | null>(null);
     const pricingRequestId = useRef(0);
     const geocodeRequestId = useRef(0);
+    const countryRequestId = useRef(0);
 
     const recommendedFare = viewModel.recommendedFare(pricing ?? undefined);
+    // La moneda del flete: la de la cotización o, mientras llega, la del país de la recogida
+    const currency = pricing?.country?.currency ?? (pickupCountry?.supported ? pickupCountry.currency : undefined);
+    const searchCountry = pickupCountry?.supported ? pickupCountry.code : null;
     const suggestedVehicle = suggestedVehicleFor(draft);
 
     // Cambiar un dato quita su error: el aviso solo vuelve si se intenta seguir otra vez
@@ -55,6 +63,28 @@ export function useRequestDraft(viewModel: ClientSearchMapViewModel) {
             if (leg) setRouteSummary({ distanceText: formatKm(leg.distance.value / 1000), durationText: leg.duration.text });
         });
     }, [draft.origin, draft.destination]);
+
+    useEffect(() => {
+        const origin = draft.origin;
+        if (!origin) {
+            setPickupCountry(null);
+            return;
+        }
+        const requestId = ++countryRequestId.current;
+        viewModel.getCountryAt(origin.lat, origin.lng).then((response) => {
+            if (requestId !== countryRequestId.current) return;
+            // Si no se pudo preguntar (sin internet), se deja seguir: el backend lo vuelve a revisar al publicar
+            setPickupCountry('supported' in response ? response : null);
+        });
+    }, [draft.origin]);
+
+    // Si la recogida pasa a otro país, el precio que había quedó en otra moneda: se borra y vuelve a salir el sugerido
+    const lastCurrency = useRef<string | undefined>(undefined);
+    useEffect(() => {
+        if (!currency) return;
+        if (lastCurrency.current && lastCurrency.current !== currency) update({ fare: 0 });
+        lastCurrency.current = currency;
+    }, [currency]);
 
     // El precio sugerido depende de la ruta, el peso, el tamaño y el vehículo; una respuesta vieja que llegue tarde no pisa la última
     const pricedVehicle = draft.vehicleType ?? suggestedVehicle;
@@ -103,7 +133,7 @@ export function useRequestDraft(viewModel: ClientSearchMapViewModel) {
 
     // Marca los errores del paso actual y dice si se puede seguir
     const validate = () => {
-        const problems = viewModel.validateStep(step, draft);
+        const problems = viewModel.validateStep(step, draft, pickupCountry);
         setErrors(problems);
         return Object.keys(problems).length === 0;
     }
@@ -132,7 +162,7 @@ export function useRequestDraft(viewModel: ClientSearchMapViewModel) {
 
     return {
         draft, update, errors, step, validate, next, back, goTo, reset,
-        route, routeSummary, pricing, recommendedFare, suggestedVehicle,
+        route, routeSummary, pricing, recommendedFare, suggestedVehicle, pickupCountry, currency, searchCountry,
         setOriginFromMap, placeFromId,
     };
 }

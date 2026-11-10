@@ -3,6 +3,7 @@ import { DriverDocument } from "../../domain/models/DriverDocument";
 import { AppText, StatusPill, StatusTone } from "./ui";
 import { colors, spacing } from "../theme";
 import { t, currentLocale } from '../../i18n';
+import { docNameKey } from '../utils/VehicleRules';
 
 const TONES: Record<DriverDocument['status'], StatusTone> = {
     OK: 'success',
@@ -22,14 +23,15 @@ const formatExpiry = (doc: DriverDocument) => {
     return doc.status === 'EXPIRED' ? t('documentsStatus.vencioEl', { date }) : t('documentsStatus.venceEl', { date });
 }
 
-// Documentos del conductor con su vencimiento y su estado, uno por fila
-export default function DocumentsStatus({ documents }: { documents: DriverDocument[] }) {
+// Documentos del conductor con su vencimiento y su estado, uno por fila. countryCode: el país del conductor
+// (en Colombia se llaman SOAT y técnico-mecánica; en otros, seguro obligatorio y revisión técnica)
+export default function DocumentsStatus({ documents, countryCode }: { documents: DriverDocument[]; countryCode?: string | null }) {
     return (
         <View>
             {documents.map((doc, index) => (
                 <View key={doc.key} style={[styles.row, index > 0 && styles.divider]}>
                     <View style={styles.texts}>
-                        <AppText variant="bodyStrong">{t(`docs.${doc.key}`)}</AppText>
+                        <AppText variant="bodyStrong">{t(`docs.${docNameKey(doc.key, countryCode)}`)}</AppText>
                         <AppText variant="small" color="textMuted">{formatExpiry(doc)}</AppText>
                     </View>
                     <StatusPill label={documentStatusLabel(doc)} tone={TONES[doc.status]} />

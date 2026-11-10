@@ -15,6 +15,8 @@ interface Props {
     onClose: () => void;
     // place_id de Google; la pantalla pide los detalles y las coordenadas
     onSelect: (placeId: string) => void;
+    // País donde buscar (el de la recogida); null = en todo el mundo
+    country?: string | null;
 }
 
 // Se busca cuando el cliente deja de escribir un momento, no con cada letra
@@ -23,7 +25,7 @@ const MIN_LENGTH = 3;
 
 // Buscador de direcciones a pantalla completa, para el origen o el destino.
 // Es una capa y no un Modal: un Modal abre otra ventana y taparía los avisos de la app
-export default function PlaceSearchOverlay({ viewModel, title, placeholder, onClose, onSelect }: Props) {
+export default function PlaceSearchOverlay({ viewModel, title, placeholder, onClose, onSelect, country }: Props) {
     const { t } = useTranslation();
     // El teclado se cierra antes de quitar la capa: si el campo desaparece con el teclado abierto,
     // Android no avisa que se cerró y la hoja de abajo se queda subida
@@ -57,7 +59,7 @@ export default function PlaceSearchOverlay({ viewModel, title, placeholder, onCl
         const id = ++requestId.current;
         setLoading(true);
         const timer = setTimeout(async () => {
-            const predictions = await viewModel.searchPlaces(text);
+            const predictions = await viewModel.searchPlaces(text, country);
             // Una respuesta vieja que llegue tarde no pisa la de lo último que se escribió
             if (id !== requestId.current) return;
             setLoading(false);
@@ -65,7 +67,7 @@ export default function PlaceSearchOverlay({ viewModel, title, placeholder, onCl
             setResults(predictions ?? []);
         }, SEARCH_DELAY_MS);
         return () => clearTimeout(timer);
-    }, [text]);
+    }, [text, country]);
 
     const searched = text.trim().length >= MIN_LENGTH && !loading;
 

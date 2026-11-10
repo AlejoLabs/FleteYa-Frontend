@@ -6,7 +6,7 @@ import { Photo } from "../../../../domain/models/Photo";
 import { Amount, AppText, Button, Card, Notice, PersonRow, useToast } from "../../../components/ui";
 import CargoInfo from "../../../components/CargoInfo";
 import PhotoStrip from "../../../components/PhotoStrip";
-import { formatCOP, formatErrorMessage } from "../../../utils/Formatters";
+import { formatErrorMessage, formatMoney } from "../../../utils/Formatters";
 import { spacing } from "../../../theme";
 import TripPlaces from "../../trip/components/TripPlaces";
 import { DriverClientRequestViewModel } from "./DriverClientRequestViewModel";
@@ -28,6 +28,8 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
     const { showToast } = useToast();
     const clientFare = request.fare_offered;
     const myOffer = request.my_offer ?? null;
+    // Todos los montos del flete van en su moneda
+    const currency = request.currency;
     const cargoPhotos = request.cargo_photos ?? 0;
     const [isOfferVisible, setIsOfferVisible] = useState(false);
     const [isSending, setIsSending] = useState(false);
@@ -51,7 +53,7 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
         setIsSending(false);
         if ('id_client_request' in response) {
             setIsOfferVisible(false);
-            showToast(t('driverClientRequestItem.ofertaDeEnviada', { amount: formatCOP(fare) }), 'success');
+            showToast(t('driverClientRequestItem.ofertaDeEnviada', { amount: formatMoney(fare, currency) }), 'success');
             onChanged();
         } else {
             showToast(formatErrorMessage(response.message), 'error');
@@ -72,7 +74,7 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
         <Card>
             <View style={styles.top}>
                 <View>
-                    <Amount value={clientFare} size="lg" />
+                    <Amount value={clientFare} currency={currency} size="lg" />
                     <AppText variant="small" color="textMuted">{viewModel.paymentText(request)}</AppText>
                 </View>
                 <AppText variant="small" color="textMuted" align="right" style={styles.distance}>
@@ -81,7 +83,7 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
             </View>
 
             {myOffer !== null &&
-                <Notice tone="success" message={t('driverClientRequestItem.tuOfertaEsperandoAlCliente', { amount: formatCOP(myOffer) })} />}
+                <Notice tone="success" message={t('driverClientRequestItem.tuOfertaEsperandoAlCliente', { amount: formatMoney(myOffer, currency) })} />}
 
             <TripPlaces pickup={request.pickup_description} destination={request.destination_description} pickupDone={false} />
             <CargoInfo request={request} offerHint />
@@ -106,7 +108,7 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
             />
 
             <View style={styles.actions}>
-                <Button title={t('driverClientRequestItem.aceptarPor', { amount: formatCOP(clientFare) })} loading={isSending && !isOfferVisible} onPress={() => sendOffer(clientFare)} />
+                <Button title={t('driverClientRequestItem.aceptarPor', { amount: formatMoney(clientFare, currency) })} loading={isSending && !isOfferVisible} onPress={() => sendOffer(clientFare)} />
                 <View style={styles.row}>
                     <View style={styles.flex}>
                         <Button title={myOffer !== null ? t('driverClientRequestItem.cambiarOferta') : t('driverClientRequestItem.contraofertar')} variant="secondary" onPress={() => setIsOfferVisible(true)} />
@@ -120,6 +122,7 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
             <CounterOfferDialog
                 visible={isOfferVisible}
                 clientFare={clientFare}
+                currency={currency}
                 myOffer={myOffer}
                 sending={isSending}
                 onSend={sendOffer}

@@ -4,8 +4,8 @@ import { DriverCarInfoUseCases } from "../../../../domain/useCases/driverCarInfo
 import { PhotoUseCases } from "../../../../domain/useCases/photo/PhotoUseCases";
 import { CAPACITY_LIMITS, VEHICLES, vehicleLabel } from "../../../utils/Cargo";
 import { formatDayMonthYear, parseDayMonthYear, formatNumber } from '../../../utils/Formatters';
-import { HEAVY_CATEGORIES } from "../../auth/driverVehicle/DriverVehicleRegisterViewModel";
 import { t, lowerInSentence } from '../../../../i18n';
+import { allowsTruck, normalizePlate, plateError } from "../../../utils/VehicleRules";
 
 // Cambiar de vehículo o corregir sus datos. Con biggerThanUsual el conductor declara su capacidad real
 export interface VehicleForm {
@@ -32,8 +32,6 @@ export interface DocumentsForm {
 
 export type DocumentsFormErrors = Partial<Record<keyof DocumentsForm, string>>;
 
-const PLATE_REGEX = /^[A-Z]{3}\d{3}$/;
-const normalizePlate = (plate: string) => plate.toUpperCase().replace(/[\s-]/g, '');
 const toNumber = (value: string) => Number(value.replace(',', '.'));
 
 // Una fecha válida y que no haya pasado
@@ -113,15 +111,17 @@ export class DriverCarInfoViewModel {
         return t('driverCarInfo.loNormalEnEsHasta', { label: lowerInSentence(t(vehicle.label)), maxWeightKg: formatNumber(vehicle.maxWeightKg), maxVolumeM3: vehicle.maxVolumeM3 });
     }
 
-    validateVehicle(form: VehicleForm, licenseCategory?: string | null): VehicleFormErrors {
+    // countryCode: el país del conductor; decide el formato de la placa y si el camión pide una licencia especial
+    validateVehicle(form: VehicleForm, licenseCategory?: string | null, countryCode?: string | null): VehicleFormErrors {
         const errors: VehicleFormErrors = {};
         const limits = CAPACITY_LIMITS[form.vehicleType];
-        if (form.vehicleType === 'CAMION' && !HEAVY_CATEGORIES.includes(licenseCategory ?? '')) {
+        if (form.vehicleType === 'CAMION' && !allowsTruck(licenseCategory, countryCode)) {
             errors.vehicleType = t('driverCarInfo.paraCamionNecesitasLicenciaB2');
         }
         if (form.brand.trim().length < 2) errors.brand = t('driverCarInfo.escribeLaMarcaYLa');
         if (form.color.trim().length < 2) errors.color = t('driverCarInfo.escribeElColor');
-        if (!PLATE_REGEX.test(normalizePlate(form.plate))) errors.plate = t('driverCarInfo.t3LetrasY3Numeros');
+        const plate = plateError(form.plate, countryCode, t('driverCarInfo.t3LetrasY3Numeros'));
+        if (plate) errors.plate = plate;
         const year = Number(form.modelYear);
         if (!/^\d{4}$/.test(form.modelYear.trim()) || year < 1980 || year > new Date().getFullYear() + 1) errors.modelYear = t('driverCarInfo.porEjemplo2019');
         if (form.biggerThanUsual) {
@@ -149,10 +149,10 @@ export class DriverCarInfoViewModel {
         });
     }
 
-    validateDocuments(form: DocumentsForm, vehicleType?: VehicleType): DocumentsFormErrors {
+    validateDocuments(form: DocumentsForm, vehicleType?: VehicleType, countryCode?: string | null): DocumentsFormErrors {
         const errors: DocumentsFormErrors = {};
         if (!form.licenseCategory) errors.licenseCategory = t('driverCarInfo.eligeLaCategoriaDeTu');
-        else if (vehicleType === 'CAMION' && !HEAVY_CATEGORIES.includes(form.licenseCategory)) errors.licenseCategory = t('driverCarInfo.paraCamionNecesitasLicenciaB22');
+        else if (vehicleType === 'CAMION' && !allowsTruck(form.licenseCategory, countryCode)) errors.licenseCategory = t('driverCarInfo.paraCamionNecesitasLicenciaB22');
         const license = futureDateError(form.licenseExpires);
         if (license) errors.licenseExpires = license;
         const soat = futureDateError(form.soatExpires);

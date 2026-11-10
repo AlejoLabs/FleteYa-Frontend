@@ -1,16 +1,27 @@
 import { t, currentLocale } from '../../i18n';
+import { currencyRules, roundMoney } from './Countries';
 // Un número con el separador de miles y de decimales del idioma que se está usando
 export const formatNumber = (value: number, maxDecimals = 2, minDecimals = 0): string =>
   value.toLocaleString(currentLocale(), { minimumFractionDigits: minDecimals, maximumFractionDigits: maxDecimals });
 
-export const formatCOP = (value?: number | null): string => {
+// Un monto en la moneda del flete con el formato del idioma de la app: "$ 25.000" (español, COP), "25 €" (francés, EUR),
+// "COP 25,000" (inglés, COP). Los montos enteros van sin ",00"; los demás con los decimales de su moneda.
+// Sin moneda (datos de antes de la Fase 9b) es en pesos colombianos
+export const formatMoney = (value?: number | null, currency?: string | null): string => {
   const amount = typeof value === 'number' && !isNaN(value) ? value : 0;
-  return amount.toLocaleString('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
+  const code = currency ?? 'COP';
+  const rounded = roundMoney(amount, code);
+  const decimals = Number.isInteger(rounded) ? 0 : currencyRules(code).decimals;
+  try {
+    return rounded.toLocaleString(currentLocale(), {
+      style: 'currency',
+      currency: code,
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+  } catch {
+    return `${formatNumber(rounded, decimals, decimals)} ${code}`;
+  }
 }
 
 // Solo los dígitos, con punto de miles, para un campo de pesos mientras se escribe ("1500000" → "1.500.000")

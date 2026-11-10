@@ -10,7 +10,7 @@ export class SearchPlacesUseCase {
         this.googlePlaceRepository = googlePlaceRepository;
     }
 
-    async execute(input: string): Promise<PlaceAutocomplete | null> {
-        return await this.googlePlaceRepository.searchPlaces(input);
+    async execute(input: string, country?: string | null): Promise<PlaceAutocomplete | null> {
+        return await this.googlePlaceRepository.searchPlaces(input, country);
     }
 }

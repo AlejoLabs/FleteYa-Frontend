@@ -1,6 +1,8 @@
 import { CargoCategory, ClientRequest, PaymentMethod, VehicleType } from "../../../../domain/models/ClientRequest";
 import { suggestVehicle, vehicleRank } from "../../../utils/Cargo";
 import { t, tk } from '../../../../i18n';
+import { CountryAtPoint } from "../../../../domain/models/Country";
+import { supportedCountriesText } from "../../../utils/Countries";
 
 // Solicitud que el cliente arma en cuatro pasos sobre el mapa, antes de publicarla
 export interface PlacePoint {
@@ -86,12 +88,10 @@ export const EMPTY_DRAFT: RequestDraft = {
 
 export const REQUEST_STEPS = [tk('requestDraft.ruta'), tk('requestDraft.carga'), tk('requestDraft.medidas'), tk('requestDraft.precio')];
 export const MAX_CARGO_PHOTOS = 4;
-// Los precios se redondean a cientos y se suben o bajan de a mil
-export const FARE_STEP = 1000;
-
 export type DraftField = keyof RequestDraft;
 export type DraftErrors = Partial<Record<DraftField, string>>;
 
+// Celular colombiano: 10 dígitos empezando por 3. En los demás países, el formato que manda el backend
 const PHONE_REGEX = /^3\d{9}$/;
 
 const toNumber = (value: string) => Number(value.replace(',', '.'));
@@ -111,11 +111,19 @@ export const sizeM3 = (draft: RequestDraft) =>
 
 export const weightKg = (draft: RequestDraft) => toNumber(draft.weightKg);
 
-// Errores del paso; vacío si se puede seguir
-export const validateStep = (step: number, draft: RequestDraft): DraftErrors => {
+// Errores del paso; vacío si se puede seguir. pickupCountry: el país de la recogida según el backend (null si
+// todavía no se sabe): decide el formato de los celulares de contacto y si FleteYa opera ahí
+export const validateStep = (step: number, draft: RequestDraft, pickupCountry?: CountryAtPoint | null): DraftErrors => {
     const errors: DraftErrors = {};
+    const country = pickupCountry?.supported ? pickupCountry : null;
+    const phonePattern = !country || country.code === 'CO' ? PHONE_REGEX : new RegExp(country.phone_pattern);
+    const phoneError = !country || country.code === 'CO'
+        ? t('requestDraft.celularDe10DigitosQue')
+        : t('common.celularNoValido', { example: country.phone_example });
     if (step === 0) {
         if (!draft.origin) errors.origin = t('requestDraft.mueveElMapaHastaEl');
+        // En un país sin FleteYa no se puede pedir el flete; la lista de países va en el idioma de la app
+        else if (pickupCountry && !pickupCountry.supported) errors.origin = t('errors.COUNTRY_NOT_SUPPORTED', { countries: supportedCountriesText() });
         if (!draft.destination) errors.destination = t('requestDraft.eligeADondeVaLa');
     }
     if (step === 1) {
@@ -138,9 +146,9 @@ export const validateStep = (step: number, draft: RequestDraft): DraftErrors => 
     if (step === 3) {
         if (draft.fare <= 0) errors.fare = t('requestDraft.ponleUnPrecioATu');
         if (draft.otherSender && !draft.senderName.trim()) errors.senderName = t('requestDraft.faltaElNombre');
-        if (draft.otherSender && !PHONE_REGEX.test(draft.senderPhone)) errors.senderPhone = t('requestDraft.celularDe10DigitosQue');
+        if (draft.otherSender && !phonePattern.test(draft.senderPhone)) errors.senderPhone = phoneError;
         if (draft.otherReceiver && !draft.receiverName.trim()) errors.receiverName = t('requestDraft.faltaElNombre');
-        if (draft.otherReceiver && !PHONE_REGEX.test(draft.receiverPhone)) errors.receiverPhone = t('requestDraft.celularDe10DigitosQue');
+        if (draft.otherReceiver && !phonePattern.test(draft.receiverPhone)) errors.receiverPhone = phoneError;
         if (!draft.noProhibitedItems) errors.noProhibitedItems = t('requestDraft.confirmaloParaPoderPublicarEl');
     }
     return errors;

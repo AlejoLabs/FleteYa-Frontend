@@ -26,7 +26,8 @@
     "articulos_one": "{{count}} artículo",
     "articulos_other": "{{count}} artículos",
     "kg": "{{value}} kg",
-    "pesos": "{{value}} pesos"
+    "pesos": "{{value}} pesos",
+    "celularNoValido": "Ese celular no es válido. Ejemplo: {{example}}"
   },
   "cargoInfo": {
     "soloTransporteTuSubesY": "Solo transporte: tú subes y recibes la carga.",
@@ -109,7 +110,9 @@
   "priceStepper": {
     "bajarPesos": "Bajar {{step}} pesos",
     "escribirElPrecio": "Escribir el precio",
-    "subirPesos": "Subir {{step}} pesos"
+    "subirPesos": "Subir {{step}} pesos",
+    "bajar": "Bajar {{amount}}",
+    "subir": "Subir {{amount}}"
   },
   "state": {
     "todaviaNoHayNadaAqui": "Todavía no hay nada aquí",
@@ -366,7 +369,8 @@
     "sugeridoConAyuda": "Sugerido {{amount}}{{distance}}, solo por el transporte. Súbelo si quieres que incluya la ayuda para cargar y descargar.",
     "sugeridoSoloTransporte": "Sugerido {{amount}}{{distance}}. Cubre solo el transporte de la carga.",
     "porDistancia": " por {{km}}",
-    "tocaElPrecio": "Toca el precio para escribirlo."
+    "tocaElPrecio": "Toca el precio para escribirlo.",
+    "enMoneda": "En {{currency}}. Puedes usar centavos, por ejemplo 25,50."
   },
   "routeStep": {
     "aDondeLlevamosLaCarga": "¿A dónde llevamos la carga?",
@@ -763,7 +767,8 @@
     "todaviaNoVemosElPago": "Todavía no vemos el pago. Si ya pagaste, espera un momento",
     "noPudimosAbrirLaPagina": "No pudimos abrir la página de pago",
     "comisionFleteYa": "comisión FleteYa",
-    "comisionFleteYaPorcentaje": "comisión FleteYa ({{percent}} %)"
+    "comisionFleteYaPorcentaje": "comisión FleteYa ({{percent}} %)",
+    "pagaPorLaApp": "Paga {{amount}} por la app. Se abre la página de pago y luego vuelves aquí."
   },
   "tripRating": {
     "mal": "Mal",
@@ -1025,7 +1030,15 @@
     "RATING_RANGE": "{{field}} debe estar entre 1 y 5",
     "DOC_DATE_INVALID": "La fecha de vencimiento de {{document}} no es válida",
     "DOC_EXPIRED": "{{document}} está vencido",
-    "NETWORK_ERROR": "No pudimos conectarnos con FleteYa. Revisa tu internet e intenta de nuevo."
+    "NETWORK_ERROR": "No pudimos conectarnos con FleteYa. Revisa tu internet e intenta de nuevo.",
+    "FARE_INVALID": "{{field}} no es un valor válido",
+    "PHONE_DIGITS": "{{field}} debe tener solo números",
+    "PHONE_FORMAT": "{{field}} no es un celular válido. Ejemplo: {{example}}",
+    "PLATE_INVALID": "La placa debe tener de 2 a 10 letras o números",
+    "COUNTRY_INVALID": "El país no es válido",
+    "COUNTRY_NOT_SUPPORTED": "FleteYa todavía no está disponible en tu país. Por ahora operamos en: {{countries}}",
+    "DOC_EXPIRED_INSURANCE": "Tu seguro obligatorio está vencido. Actualízalo en Mi vehículo para seguir recibiendo fletes",
+    "DOC_EXPIRED_INSPECTION": "Tu revisión técnica está vencida. Actualízala en Mi vehículo para seguir recibiendo fletes"
   },
   "messages": {
     "FORGOT_PASSWORD_SENT": "Si el correo está registrado, te enviamos un código para restablecer la contraseña",
@@ -1050,15 +1063,28 @@
     "driver_rating": "La calificación del conductor",
     "license": "La licencia",
     "soat": "El SOAT",
-    "techno": "La revisión técnico-mecánica"
+    "techno": "La revisión técnico-mecánica",
+    "offer": "La oferta"
   },
   "docs": {
     "LICENSE": "Licencia de conducción",
     "SOAT": "SOAT",
-    "TECHNO": "Revisión técnico-mecánica"
+    "TECHNO": "Revisión técnico-mecánica",
+    "INSURANCE": "Seguro obligatorio",
+    "INSPECTION": "Revisión técnica"
   },
   "profileLanguage": {
     "idioma": "Idioma",
     "elegirIdioma": "Elige el idioma de la app. También lo usamos en las notificaciones y los correos que te enviamos."
+  },
+  "phoneField": {
+    "cambiarIndicativo": "Indicativo de {{country}}. Toca para cambiar el país",
+    "eligeTuPais": "Elige tu país"
+  },
+  "vehicleRules": {
+    "placaNoValida": "Escribe la placa con letras y números, sin espacios",
+    "seguroVenceEl": "El seguro obligatorio vence el",
+    "revisionTecnicaVenceEl": "La revisión técnica vence el",
+    "numeroDelRegistro": "Número del registro del vehículo"
   }
 }

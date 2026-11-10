@@ -1,4 +1,7 @@
 import { AuthService } from "../data/sources/remote/services/AuthService";
+import { CountryService } from "../data/sources/remote/services/CountryService";
+import { CountryRepositoryImpl } from "../data/repository/CountryRepositoryImpl";
+import { CountryUseCases } from "../domain/useCases/country/CountryUseCases";
 import { AuthRespositoryImpl } from "../data/repository/AuthRepositoryImpl";
 import { LocalStorage } from "../data/sources/local/LocalStorage";
 import { AuthUseCases } from "../domain/useCases/auth/AuthUseCases";
@@ -199,6 +202,10 @@ const confirmDeliveryUseCase = new ConfirmDeliveryUseCase({ clientRequestReposit
 const getMyActiveTripsUseCase = new GetMyActiveTripsUseCase({ clientRequestRepository });
 const clientRequestUseCases = new ClientRequestUseCases({ getTimeAndDistanceUseCase, getNearbyTripRequestUseCase, getClientRequestByIdUseCase, createClientRequestUseCase, updateDriverAssignedUseCase, updateStatusUseCase, updateDriverRatingUseCase, updateClientRatingUseCase, getByClientAssignedUseCase, getByDriverAssignedUseCase, raiseFareUseCase, cancelClientRequestUseCase, dismissClientRequestUseCase, getMyActiveTripsUseCase, deliverClientRequestUseCase, confirmDeliveryUseCase });
 const upcomingTripsViewModel = new UpcomingTripsViewModel({ clientRequestUseCases });
+// Países y monedas de FleteYa (registro, buscador y precios)
+const countryService = new CountryService();
+const countryRepository = new CountryRepositoryImpl({ countryService });
+const countryUseCases = new CountryUseCases({ countryRepository });
 // Pago del flete al entregar la carga: lo usan las pantallas de los dos roles
 const paymentService = new PaymentService();
 const paymentRepository = new PaymentRepositoryImpl({ paymentService });
@@ -236,7 +243,7 @@ const createDriverTripOfferUseCase = new CreateDriverTripOfferUseCase({ driverTr
 const getDriverTripOfferUseCase = new GetDriverTripOfferUseCase({ driverTripOfferRepository });
 const changeDriverTripOfferStatusUseCase = new ChangeDriverTripOfferStatusUseCase({ driverTripOfferRepository });
 const driverTripOfferUseCases = new DriverTripOfferUseCases({ createDriverTripOfferUseCase, getDriverTripOfferUseCase, changeDriverTripOfferStatusUseCase });
-const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverTripOfferUseCases, driverCarInfoUseCases, photoUseCases });
+const clientSearchMapViewModel = new ClientSearchMapViewModel({ googlePlaceUseCases, clientRequestUseCases, socketService, driverTripOfferUseCases, driverCarInfoUseCases, photoUseCases, countryUseCases });
 const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, driverCarInfoUseCases, photoUseCases, tripMessageUseCases });
 const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, photoUseCases, tripMessageUseCases });
 const tripChatViewModel = new TripChatViewModel({ tripMessageUseCases, socketService });
@@ -316,6 +323,7 @@ type ContainerDeps = {
     tripPaymentViewModel: TripPaymentViewModel;
     tripChatViewModel: TripChatViewModel;
     incidentReportViewModel: IncidentReportViewModel;
+    countryUseCases: CountryUseCases;
 };
 
 const container = {
@@ -387,7 +395,8 @@ const container = {
             upcomingTripsViewModel,
             tripPaymentViewModel,
             tripChatViewModel,
-            incidentReportViewModel
+            incidentReportViewModel,
+            countryUseCases
         };
         return deps[name];
     }
