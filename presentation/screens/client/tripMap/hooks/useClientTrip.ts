@@ -69,6 +69,17 @@ export function useClientTrip(viewModel: ClientTripMapViewModel, idClientRequest
         if ('brand' in car) setCarInfo(car);
     }
 
+    // Después de un corte de red se vuelven a leer el estado y las fotos: los avisos de ese rato no llegaron
+    const refreshAfterReconnect = async () => {
+        loadPhotos();
+        const response = await viewModel.getClientRequestById(idClientRequest);
+        if (!('id' in response)) return;
+        requestRef.current = response;
+        setRequest(response);
+        setStatus(response.status);
+        setDeliveryLocked(Boolean(response.delivery_locked));
+    }
+
     useEffect(() => {
         viewModel.initSocket();
         load();
@@ -84,6 +95,7 @@ export function useClientTrip(viewModel: ClientTripMapViewModel, idClientRequest
                 setDeliveryLocked(true);
                 showToast(t('clientTrip.elConductorNoPudoCerrar'), 'info');
             }),
+            viewModel.listenerReconnect(refreshAfterReconnect),
         );
         return () => {
             listeners.current.forEach((off) => off());
