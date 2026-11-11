@@ -1,4 +1,4 @@
-import { Country, CountryAtPoint } from "../../domain/models/Country";
+import { Country, CountryAtPoint, ExchangeRates } from "../../domain/models/Country";
 import { ErrorResponse } from "../../domain/models/ErrorResponse";
 import { CountryRepository } from "../../domain/repository/CountryRepository";
 import { CountryService } from "../sources/remote/services/CountryService";
@@ -22,5 +22,9 @@ export class CountryRepositoryImpl implements CountryRepository {
 
     async getCountryAt(lat: number, lng: number): Promise<CountryAtPoint | ErrorResponse> {
         return await this.countryService.getCountryAt(lat, lng);
+    }
+
+    async getExchangeRates(): Promise<ExchangeRates | ErrorResponse> {
+        return await this.countryService.getExchangeRates();
     }
 }

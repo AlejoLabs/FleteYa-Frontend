@@ -1,4 +1,4 @@
-import { Country, CurrencyRules } from '../../domain/models/Country';
+import { Country, CurrencyRules, ExchangeRates } from '../../domain/models/Country';
 import { getLocales } from 'expo-localization';
 import { currentLanguage, t } from '../../i18n';
 
@@ -9,12 +9,34 @@ import { currentLanguage, t } from '../../i18n';
 const COP_RULES: CurrencyRules = { code: 'COP', decimals: 0, fare_step: 1000, min_fare: 5000, max_fare: 10000000 };
 
 let countries: Country[] = [];
+let exchangeRates: ExchangeRates | null = null;
+// País de la cuenta que tiene la sesión abierta: su moneda es en la que se muestra el precio de referencia
+let homeCountry: string | null = null;
+// Cambia con cada dato nuevo (países, tasas, país de la cuenta): así las pantallas abiertas se vuelven a pintar
+let version = 0;
 const listeners = new Set<() => void>();
+const notify = () => {
+    version += 1;
+    listeners.forEach((listener) => listener());
+}
 
 export const setKnownCountries = (list: Country[]) => {
     countries = list;
-    listeners.forEach((listener) => listener());
+    notify();
 }
+
+export const setExchangeRates = (rates: ExchangeRates) => {
+    exchangeRates = rates;
+    notify();
+}
+
+export const setHomeCountry = (code?: string | null) => {
+    if ((code ?? null) === homeCountry) return;
+    homeCountry = code ?? null;
+    notify();
+}
+
+export const countriesVersion = () => version;
 
 // Para que una pantalla abierta se actualice cuando la lista llega (useKnownCountries)
 export const subscribeCountries = (listener: () => void) => {
@@ -71,6 +93,18 @@ export const accountPhoneError = (phone: string, countryCode: string | undefined
     const country = countryByCode(countryCode);
     if (!country || country.code === 'CO') return /^\d{10}$/.test(digits) ? undefined : colombiaMessage;
     return new RegExp(country.phone_pattern).test(digits) ? undefined : t('common.celularNoValido', { example: country.phone_example });
+}
+
+// "≈ US$27": el monto convertido a la moneda de la persona cuando el flete es en otra. null si es la misma moneda,
+// si no se sabe el país de la cuenta o si falta alguna tasa (entonces no se muestra nada; nunca se inventa)
+export const referenceAmount = (value: number, currency?: string | null): { amount: number; currency: string } | null => {
+    const from = currency ?? 'COP';
+    const to = countryByCode(homeCountry)?.currency;
+    if (!to || to === from || !exchangeRates) return null;
+    const source = exchangeRates.rates[from]?.units_per_usd;
+    const target = exchangeRates.rates[to]?.units_per_usd;
+    if (!source || !target) return null;
+    return { amount: (value / source) * target, currency: to };
 }
 
 // Lista de los países donde operamos, con los nombres en el idioma de la app ("Colombia, Mexique, ...")

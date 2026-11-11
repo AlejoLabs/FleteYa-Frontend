@@ -22,6 +22,21 @@ export interface Country {
 // En qué país está un punto (GET /countries/at/:lat/:lng). supported false: FleteYa no opera ahí
 export type CountryAtPoint = ({ supported: true } & Country) | { supported: false };
 
+// Tasas de cambio de referencia (GET /exchange-rates, base USD). Solo para mostrar "≈ US$27": nunca para cobrar
+export interface ExchangeRate {
+    // Unidades de la moneda por 1 dólar
+    units_per_usd: number;
+    source:        string;
+    rate_date:     string;
+    // La fuente no respondió y es la última tasa guardada
+    stale:         boolean;
+}
+
+export interface ExchangeRates {
+    base:  'USD';
+    rates: Record<string, ExchangeRate>;
+}
+
 // Reglas de una moneda para el precio de un flete
 export interface CurrencyRules {
     code:      string;

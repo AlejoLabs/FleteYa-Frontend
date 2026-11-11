@@ -46,7 +46,7 @@ export default function ClientTripSheet({ request, status, title, hint, vehicleT
                 right={
                     <View style={styles.fare}>
                         <AppText variant="caption" color="textMuted">{t('clientTripSheet.acordado')}</AppText>
-                        <Amount value={getTripFare(request)} currency={request.currency} />
+                        <Amount value={getTripFare(request)} currency={request.currency} reference />
                     </View>
                 }
             />

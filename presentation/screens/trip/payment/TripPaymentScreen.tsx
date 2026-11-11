@@ -94,7 +94,7 @@ export function TripPaymentScreen({ navigation, route }: Props) {
                         />
                         <OptionCard
                             title={t('tripPayment.porLaApp')}
-                            description={payment.online_gateway ? t('tripPayment.nequiTarjetaOPse') : t('tripPayment.noDisponibleEnEsteMomento')}
+                            description={payment.online_gateway ? (!payment.currency || payment.currency === 'COP' ? t('tripPayment.nequiTarjetaOPse') : t('tripPayment.conTarjeta')) : t('tripPayment.noDisponibleEnEsteMomento')}
                             icon="phone-portrait-outline"
                             selected={payment.payment_method === 'WOMPI'}
                             disabled={busy !== null || !payment.online_gateway}

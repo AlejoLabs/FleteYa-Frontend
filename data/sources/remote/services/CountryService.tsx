@@ -1,6 +1,6 @@
 import { ApiRequestHandler } from "../api/ApiRequestHandler";
 import { defaultErrorResponse, ErrorResponse } from "../../../../domain/models/ErrorResponse";
-import { Country, CountryAtPoint } from "../../../../domain/models/Country";
+import { Country, CountryAtPoint, ExchangeRates } from "../../../../domain/models/Country";
 
 // Países de FleteYa. La lista no pide sesión (la usa el registro); el país de un punto sí
 export class CountryService {
@@ -17,6 +17,16 @@ export class CountryService {
     async getCountries(): Promise<Country[] | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.get<Country[]>('/countries');
+            return response.data;
+        } catch (error: any) {
+            return this.toErrorResponse(error);
+        }
+    }
+
+    // Pide sesión: se consulta después de entrar
+    async getExchangeRates(): Promise<ExchangeRates | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.get<ExchangeRates>('/exchange-rates');
             return response.data;
         } catch (error: any) {
             return this.toErrorResponse(error);

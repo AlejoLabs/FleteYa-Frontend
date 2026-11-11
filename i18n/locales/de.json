@@ -101,7 +101,9 @@
   },
   "money": {
     "resumenDelPago": "Zahlungsübersicht",
-    "total": "Gesamt"
+    "total": "Gesamt",
+    "aproximado": "≈ {{amount}}",
+    "aproximadamente": "Ungefähr {{amount}}"
   },
   "personRow": {
     "nuevo": "Neu",
@@ -370,7 +372,8 @@
     "sugeridoSoloTransporte": "Vorschlag {{amount}}{{distance}}. Deckt nur den Transport der Fracht.",
     "porDistancia": " für {{km}}",
     "tocaElPrecio": "Tippe auf den Preis, um ihn einzugeben.",
-    "enMoneda": "In {{currency}}. Du kannst Cent verwenden, z. B. 25,50."
+    "enMoneda": "In {{currency}}. Du kannst Cent verwenden, z. B. 25,50.",
+    "tarjetaCuandoEntrega": "Mit Karte, bei der Lieferung"
   },
   "routeStep": {
     "aDondeLlevamosLaCarga": "Wohin bringen wir die Fracht?",
@@ -768,7 +771,8 @@
     "noPudimosAbrirLaPagina": "Wir konnten die Zahlungsseite nicht öffnen",
     "comisionFleteYa": "FleteYa-Provision",
     "comisionFleteYaPorcentaje": "FleteYa-Provision ({{percent}} %)",
-    "pagaPorLaApp": "Zahle {{amount}} in der App. Die Zahlungsseite öffnet sich und danach kommst du hierher zurück."
+    "pagaPorLaApp": "Zahle {{amount}} in der App. Die Zahlungsseite öffnet sich und danach kommst du hierher zurück.",
+    "conTarjeta": "Mit Karte"
   },
   "tripRating": {
     "mal": "Schlecht",

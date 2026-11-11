@@ -5,6 +5,8 @@ import AppText from "./AppText";
 import Card from "./Card";
 import { useTranslation } from 'react-i18next';
 import { t } from '../../../i18n';
+import { referenceAmount } from "../../utils/Countries";
+import { useCountriesVersion } from "../../hooks/useCountries";
 
 interface AmountProps {
     value: number;
@@ -12,6 +14,8 @@ interface AmountProps {
     currency?: string | null;
     size?: 'md' | 'lg';
     color?: 'text' | 'cargo' | 'textOnDark' | 'success';
+    // Debajo, el monto aproximado en la moneda de la persona si el flete es en otra ("≈ US$ 27")
+    reference?: boolean;
 }
 
 // Lo que lee el lector de pantalla: en pesos, "25000 pesos" como siempre; en otra moneda, el monto con su moneda
@@ -19,10 +23,30 @@ export const amountLabel = (value: number, currency?: string | null) =>
     !currency || currency === 'COP' ? t('common.pesos', { value }) : formatMoney(value, currency);
 
 // Un precio en la moneda del flete con la tipografía de placa: ofertas, valor acordado, ganancias
-export function Amount({ value, currency, size = 'md', color = 'text' }: AmountProps) {
-    return (
+export function Amount({ value, currency, size = 'md', color = 'text', reference = false }: AmountProps) {
+    const amount = (
         <AppText variant={size === 'lg' ? 'priceLarge' : 'price'} color={color}accessibilityLabel={amountLabel(value, currency)}>
             {formatMoney(value, currency)}
+        </AppText>
+    );
+    if (!reference) return amount;
+    return (
+        <View>
+            {amount}
+            <ReferenceAmount value={value} currency={currency} onDark={color === 'textOnDark' || color === 'cargo'} />
+        </View>
+    );
+}
+
+// "≈ US$ 27": tipo de cambio de referencia del backend (Banco Central Europeo y TRM). Si falta la tasa, no aparece
+export function ReferenceAmount({ value, currency, onDark = false }: { value: number; currency?: string | null; onDark?: boolean }) {
+    useCountriesVersion();
+    const reference = referenceAmount(value, currency);
+    if (!reference) return null;
+    const text = formatMoney(reference.amount, reference.currency);
+    return (
+        <AppText variant="caption" color={onDark ? 'textOnDarkMuted' : 'textMuted'} accessibilityLabel={t('money.aproximadamente', { amount: text })}>
+            {t('money.aproximado', { amount: text })}
         </AppText>
     );
 }
@@ -73,7 +97,7 @@ export function ReceiptCard({ title = t('money.resumenDelPago'), lines, totalLab
             <View style={styles.divider} />
             <View style={styles.row}>
                 <AppText variant="bodyStrong" style={styles.label}>{totalLabel}</AppText>
-                <Amount value={total} currency={currency} />
+                <Amount value={total} currency={currency} reference />
             </View>
             {footnote && <AppText variant="caption" color="textMuted">{footnote}</AppText>}
         </Card>

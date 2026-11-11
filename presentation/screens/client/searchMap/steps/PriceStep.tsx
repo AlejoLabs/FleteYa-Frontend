@@ -85,7 +85,7 @@ export default function PriceStep({ state }: Props) {
                 />
                 <OptionCard
                     title={t('priceStep.porLaApp')}
-                    description={t('priceStep.nequiTarjetaOPseCuando')}
+                    description={isPesos ? t('priceStep.nequiTarjetaOPseCuando') : t('priceStep.tarjetaCuandoEntrega')}
                     icon="phone-portrait-outline"
                     selected={draft.paymentMethod === 'WOMPI'}
                     onPress={() => update({ paymentMethod: 'WOMPI' })}

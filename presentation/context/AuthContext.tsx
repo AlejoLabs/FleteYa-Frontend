@@ -10,6 +10,7 @@ import { currentLanguage, setLanguage, resetToDeviceLanguage } from "../../i18n"
 import { toSupportedLanguage } from "../../i18n/languages";
 import { useTranslation } from 'react-i18next';
 import { t } from '../../i18n';
+import { setHomeCountry } from "../utils/Countries";
 
 export interface AuthContextProps {
 
@@ -24,6 +25,12 @@ export const AuthContext = createContext ( {} as AuthContextProps );
 export const AuthProvider = ({children, authUseCases, socketService, userUseCases}: any) => {
     const { t } = useTranslation();
     const  [authResponse, setAuthResponse] = useState<AuthResponse | null>(null);
+
+    // La moneda del país de la cuenta es en la que se muestra el precio de referencia ("≈ US$27"). Una sesión guardada
+    // antes de la Fase 9b no trae el país: esas cuentas son todas de Colombia
+    useEffect(() => {
+        setHomeCountry(authResponse ? (authResponse.user.country_code ?? 'CO') : null);
+    }, [authResponse, authResponse?.user.country_code]);
     const { showToast } = useToast();
     // Varias peticiones pueden fallar a la vez con el token vencido: la sesión se cierra una sola vez
     const expiring = useRef(false);

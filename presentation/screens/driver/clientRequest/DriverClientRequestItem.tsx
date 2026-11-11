@@ -74,7 +74,7 @@ export function DriverClientRequestItem({ clientRequestResponse: request, viewMo
         <Card>
             <View style={styles.top}>
                 <View>
-                    <Amount value={clientFare} currency={currency} size="lg" />
+                    <Amount value={clientFare} currency={currency} size="lg" reference />
                     <AppText variant="small" color="textMuted">{viewModel.paymentText(request)}</AppText>
                 </View>
                 <AppText variant="small" color="textMuted" align="right" style={styles.distance}>

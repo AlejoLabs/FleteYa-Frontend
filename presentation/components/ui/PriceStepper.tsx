@@ -33,7 +33,7 @@ export default function PriceStepper({ value, onChange, currency, step, min = 0,
         <View style={styles.container} accessibilityRole="adjustable" accessibilityValue={{ text: amountLabel(value, currency) }}>
             <StepButton icon="remove" label={isPesos ? t('priceStepper.bajarPesos', { step: delta }) : t('priceStepper.bajar', { amount: formatMoney(delta, currency) })} disabled={!canDecrease} onPress={() => onChange(move(value - delta))} />
             <Pressable onPress={onPressValue} disabled={!onPressValue} style={styles.value} accessibilityLabel={t('priceStepper.escribirElPrecio')}>
-                <Amount value={value} currency={currency} size="lg" />
+                <Amount value={value} currency={currency} size="lg" reference />
             </Pressable>
             <StepButton icon="add" label={isPesos ? t('priceStepper.subirPesos', { step: delta }) : t('priceStepper.subir', { amount: formatMoney(delta, currency) })} disabled={!canIncrease} onPress={() => onChange(move(value + delta))} />
         </View>

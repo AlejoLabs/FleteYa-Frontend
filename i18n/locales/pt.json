@@ -101,7 +101,9 @@
   },
   "money": {
     "resumenDelPago": "Resumo do pagamento",
-    "total": "Total"
+    "total": "Total",
+    "aproximado": "≈ {{amount}}",
+    "aproximadamente": "Aproximadamente {{amount}}"
   },
   "personRow": {
     "nuevo": "Novo",
@@ -370,7 +372,8 @@
     "sugeridoSoloTransporte": "Sugerido {{amount}}{{distance}}. Cobre apenas o transporte da carga.",
     "porDistancia": " por {{km}}",
     "tocaElPrecio": "Toque no preço para digitá-lo.",
-    "enMoneda": "Em {{currency}}. Você pode usar centavos, por exemplo 25,50."
+    "enMoneda": "Em {{currency}}. Você pode usar centavos, por exemplo 25,50.",
+    "tarjetaCuandoEntrega": "Com cartão, quando a carga for entregue"
   },
   "routeStep": {
     "aDondeLlevamosLaCarga": "Para onde levamos a carga?",
@@ -768,7 +771,8 @@
     "noPudimosAbrirLaPagina": "Não conseguimos abrir a página de pagamento",
     "comisionFleteYa": "comissão FleteYa",
     "comisionFleteYaPorcentaje": "comissão FleteYa ({{percent}} %)",
-    "pagaPorLaApp": "Pague {{amount}} pelo app. A página de pagamento abre e depois você volta aqui."
+    "pagaPorLaApp": "Pague {{amount}} pelo app. A página de pagamento abre e depois você volta aqui.",
+    "conTarjeta": "Com cartão"
   },
   "tripRating": {
     "mal": "Ruim",
