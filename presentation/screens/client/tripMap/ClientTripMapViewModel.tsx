@@ -92,6 +92,11 @@ export class ClientTripMapViewModel {
         this.socketService.connect();
     }
 
+    // La conexión volvió después de un corte
+    listenerReconnect(callback: () => void) {
+        return this.socketService.onReconnect(callback);
+    }
+
     async getClientRequestById(idClientRequest: number) {
         return await this.clientRequestUseCases.getClientRequestById.execute(idClientRequest);
     }
