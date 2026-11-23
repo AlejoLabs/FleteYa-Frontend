@@ -1114,10 +1114,10 @@
   },
   "receipt": {
     "types": {
-      "FACTURA_ELECTRONICA": "Elektronische Rechnung",
+      "FACTURA_ELECTRONICA": "Factura electrónica",
       "NFSE": "NFS-e",
-      "RECEIPT": "Quittung",
-      "FACTURE": "Rechnung",
+      "RECEIPT": "Receipt",
+      "FACTURE": "Facture",
       "RECHNUNG": "Rechnung",
       "GENERIC": "Zahlungsbeleg"
     },

@@ -1114,11 +1114,11 @@
   },
   "receipt": {
     "types": {
-      "FACTURA_ELECTRONICA": "Fatura eletrônica",
+      "FACTURA_ELECTRONICA": "Factura electrónica",
       "NFSE": "NFS-e",
-      "RECEIPT": "Recibo",
-      "FACTURE": "Fatura",
-      "RECHNUNG": "Fatura",
+      "RECEIPT": "Receipt",
+      "FACTURE": "Facture",
+      "RECHNUNG": "Rechnung",
       "GENERIC": "Comprovante de pagamento"
     },
     "comprobante": "Comprovante",
