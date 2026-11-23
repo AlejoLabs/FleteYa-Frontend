@@ -5,4 +5,6 @@ export type TripSharedParamList = {
     IncidentReportScreen: { idClientRequest: number };
     // Al entregar la carga: el cliente paga y el conductor cobra, antes de calificar
     TripPaymentScreen: { idClientRequest: number };
+    // Comprobante del flete pagado. afterPayment: se abrió justo después de pagar y desde ahí se pasa a calificar
+    ReceiptScreen: { idClientRequest: number; afterPayment?: boolean };
 }

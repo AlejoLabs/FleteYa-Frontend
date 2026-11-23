@@ -7,6 +7,7 @@ import { DriverTripRatingScreen } from "../screens/driver/tripRating/DriverTripR
 import { TripChatScreen } from "../screens/trip/chat/TripChatScreen";
 import { IncidentReportScreen } from "../screens/trip/incident/IncidentReportScreen";
 import { TripPaymentScreen } from "../screens/trip/payment/TripPaymentScreen";
+import { ReceiptScreen } from "../screens/trip/receipt/ReceiptScreen";
 import { TripSharedParamList } from "./TripSharedParamList";
 
 export type DriverMapStackParamList = {
@@ -67,6 +68,14 @@ export const DriverMapStackNavigator = () => {
                 }}
                 name="TripPaymentScreen"
                 component={TripPaymentScreen}
+            />
+
+            <Stack.Screen
+                options={{
+                    headerShown: false,
+                }}
+                name="ReceiptScreen"
+                component={ReceiptScreen}
             />
 
 

@@ -4,6 +4,7 @@ import { ChangePaymentMethodUseCase } from "./ChangePaymentMethodUseCase";
 import { StartOnlinePaymentUseCase } from "./StartOnlinePaymentUseCase";
 import { VerifyOnlinePaymentUseCase } from "./VerifyOnlinePaymentUseCase";
 import { ConfirmCashPaymentUseCase } from "./ConfirmCashPaymentUseCase";
+import { SetTipUseCase } from "./SetTipUseCase";
 
 export class PaymentUseCases {
     getPayment: GetTripPaymentUseCase;
@@ -11,6 +12,7 @@ export class PaymentUseCases {
     startOnline: StartOnlinePaymentUseCase;
     verifyOnline: VerifyOnlinePaymentUseCase;
     confirmCash: ConfirmCashPaymentUseCase;
+    setTip: SetTipUseCase;
 
     constructor({ paymentRepository }: { paymentRepository: PaymentRepository }){
         this.getPayment = new GetTripPaymentUseCase({ paymentRepository });
@@ -18,5 +20,6 @@ export class PaymentUseCases {
         this.startOnline = new StartOnlinePaymentUseCase({ paymentRepository });
         this.verifyOnline = new VerifyOnlinePaymentUseCase({ paymentRepository });
         this.confirmCash = new ConfirmCashPaymentUseCase({ paymentRepository });
+        this.setTip = new SetTipUseCase({ paymentRepository });
     }
 }

@@ -101,6 +101,10 @@ import { PaymentService } from "../data/sources/remote/services/PaymentService";
 import { PaymentRepositoryImpl } from "../data/repository/PaymentRepositoryImpl";
 import { PaymentUseCases } from "../domain/useCases/payment/PaymentUseCases";
 import { TripPaymentViewModel } from "../presentation/screens/trip/payment/TripPaymentViewModel";
+import { ReceiptService } from "../data/sources/remote/services/ReceiptService";
+import { ReceiptRepositoryImpl } from "../data/repository/ReceiptRepositoryImpl";
+import { ReceiptUseCases } from "../domain/useCases/receipt/ReceiptUseCases";
+import { ReceiptViewModel } from "../presentation/screens/trip/receipt/ReceiptViewModel";
 import { TripMessageService } from "../data/sources/remote/services/TripMessageService";
 import { TripMessageRepositoryImpl } from "../data/repository/TripMessageRepositoryImpl";
 import { GetTripMessagesUseCase } from "../domain/useCases/tripMessage/GetTripMessagesUseCase";
@@ -210,6 +214,10 @@ const countryUseCases = new CountryUseCases({ countryRepository });
 const paymentService = new PaymentService();
 const paymentRepository = new PaymentRepositoryImpl({ paymentService });
 const paymentUseCases = new PaymentUseCases({ paymentRepository });
+// Comprobante del flete pagado
+const receiptService = new ReceiptService();
+const receiptRepository = new ReceiptRepositoryImpl({ receiptService });
+const receiptUseCases = new ReceiptUseCases({ receiptRepository });
 const socketService = new SocketService({} as any);
 const driverPositionService = new DriverPositionService();
 const driverPositionRepository = new DriverPositionRepositoryImpl({ driverPositionService });
@@ -248,6 +256,7 @@ const clientTripMapViewModel = new ClientTripMapViewModel({ clientRequestUseCase
 const driverTripMapViewModel = new DriverTripMapViewModel({ clientRequestUseCases, socketService, googlePlaceUseCases, photoUseCases, tripMessageUseCases });
 const tripChatViewModel = new TripChatViewModel({ tripMessageUseCases, socketService });
 const tripPaymentViewModel = new TripPaymentViewModel({ clientRequestUseCases, paymentUseCases, socketService });
+const receiptViewModel = new ReceiptViewModel({ receiptUseCases, clientRequestUseCases });
 const driverTripRatingViewModel = new DriverTripRatingViewModel({ clientRequestUseCases });
 const clientTripRatingViewModel = new ClientTripRatingViewModel({ clientRequestUseCases });
 const clientTripHistoryViewModel = new ClientTripHistoryViewModel({ clientRequestUseCases });
@@ -321,6 +330,7 @@ type ContainerDeps = {
     driverTripOfferUseCases: DriverTripOfferUseCases;
     upcomingTripsViewModel: UpcomingTripsViewModel;
     tripPaymentViewModel: TripPaymentViewModel;
+    receiptViewModel: ReceiptViewModel;
     tripChatViewModel: TripChatViewModel;
     incidentReportViewModel: IncidentReportViewModel;
     countryUseCases: CountryUseCases;
@@ -394,6 +404,7 @@ const container = {
             driverTripOfferUseCases,
             upcomingTripsViewModel,
             tripPaymentViewModel,
+            receiptViewModel,
             tripChatViewModel,
             incidentReportViewModel,
             countryUseCases

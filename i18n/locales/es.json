@@ -700,7 +700,10 @@
     "teQuedoFleteComision": "Te quedó: flete {{amount}} − comisión {{amount2}}",
     "pendienteDePago": "Pendiente de pago",
     "leDisteEstrellas": "Le diste {{myStars}} estrellas",
-    "sinCalificar": "Sin calificar"
+    "sinCalificar": "Sin calificar",
+    "incluyePropina": "Incluye propina de {{amount}}",
+    "teQuedoFleteComisionPropina": "Te quedó: flete {{amount}} − comisión {{amount2}} + propina {{tip}}",
+    "verComprobante": "Ver comprobante"
   },
   "incidentReport": {
     "fotoDelProblema": "Foto del problema",
@@ -772,7 +775,20 @@
     "comisionFleteYa": "comisión FleteYa",
     "comisionFleteYaPorcentaje": "comisión FleteYa ({{percent}} %)",
     "pagaPorLaApp": "Paga {{amount}} por la app. Se abre la página de pago y luego vuelves aquí.",
-    "conTarjeta": "Con tarjeta"
+    "conTarjeta": "Con tarjeta",
+    "propina": "Propina",
+    "propinaParaTi": "Propina para ti",
+    "propinaParaElConductor": "Propina para el conductor",
+    "vaCompletaParaElConductor": "Es opcional y va completa para el conductor: FleteYa no cobra comisión sobre la propina.",
+    "sinPropina": "Sin propina",
+    "porcentajeConMonto": "{{percent}} % · {{amount}}",
+    "montoDeLaPropina": "Monto de la propina",
+    "propinaMaxima": "Máximo {{max}}",
+    "escribeUnMontoValido": "Escribe un monto válido",
+    "aplicar": "Aplicar",
+    "verComprobante": "Ver comprobante",
+    "pagoReembolsado": "Pago reembolsado",
+    "teDevolvimosElPago": "Te devolvimos {{amount}} el {{date}}. Este pago no tiene comisión."
   },
   "tripRating": {
     "mal": "Mal",
@@ -922,6 +938,10 @@
     "PHOTO_NOT_FOUND": "La foto no existe",
     "PAY_AFTER_DELIVERY": "El flete se paga cuando el conductor entrega la carga",
     "TRIP_ALREADY_PAID": "Este flete ya está pagado",
+    "TIP_INVALID": "La propina no es válida",
+    "TIP_NOT_ALLOWED": "En este país no se recibe propina",
+    "TIP_TOO_HIGH": "La propina no puede ser mayor que el valor del flete",
+    "RECEIPT_NOT_AVAILABLE": "El comprobante estará disponible cuando el flete esté pagado",
     "TRIP_NOT_ACTIVE": "Este flete ya no está activo",
     "ONLINE_PAYMENTS_UNAVAILABLE": "Los pagos por la app no están disponibles en este momento. Paga en efectivo al conductor",
     "CLIENT_CHOSE_ONLINE_PAYMENT": "El cliente eligió pagar por la app. Si te paga en efectivo, pídele que lo cambie en su app",
@@ -1024,7 +1044,6 @@
     "TOO_MANY_FILES": "Adjuntaste más fotos de las permitidas",
     "UPLOAD_FAILED": "No se pudo subir el archivo",
     "INTERNAL_ERROR": "Algo salió mal en el servidor. Intenta de nuevo",
-
     "MALFORMED_REQUEST": "La solicitud no tiene un formato válido",
     "LANGUAGE_INVALID": "El idioma no es válido",
     "FARE_MIN": "{{field}} debe ser de al menos {{min}}",
@@ -1092,5 +1111,32 @@
     "seguroVenceEl": "El seguro obligatorio vence el",
     "revisionTecnicaVenceEl": "La revisión técnica vence el",
     "numeroDelRegistro": "Número del registro del vehículo"
+  },
+  "receipt": {
+    "types": {
+      "FACTURA_ELECTRONICA": "Factura electrónica",
+      "NFSE": "NFS-e",
+      "RECEIPT": "Receipt",
+      "FACTURE": "Facture",
+      "RECHNUNG": "Rechnung",
+      "GENERIC": "Comprobante de pago"
+    },
+    "comprobante": "Comprobante",
+    "numero": "N.º {{number}}",
+    "recorrido": "Recorrido",
+    "conductorNombre": "Conductor: {{name}}",
+    "clienteNombre": "Cliente: {{name}}",
+    "detalle": "Detalle del pago",
+    "total": "Total pagado",
+    "transporteDeLaCarga": "Transporte de la carga",
+    "propina": "Propina para el conductor",
+    "comisionFleteYaIncluida": "Incluye comisión de FleteYa ({{percent}} %)",
+    "impuestoSobreLaComision": "Incluye {{name}} sobre la comisión ({{percent}} %)",
+    "pagadoEnEfectivo": "Pagado en efectivo",
+    "pagadoPorLaApp": "Pagado por la app",
+    "noPudimosCargarElComprobante": "No pudimos cargar el comprobante.",
+    "cargandoElComprobante": "Cargando el comprobante…",
+    "elImpuestoSeCalculaSobre": "El impuesto se calcula sobre la comisión de FleteYa, que ya está incluida en el valor del flete. Lo asume la plataforma: no se suma a lo que pagas.",
+    "calificarA": "Calificar a {{name}}"
   }
 }

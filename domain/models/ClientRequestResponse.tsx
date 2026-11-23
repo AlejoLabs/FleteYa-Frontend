@@ -58,6 +58,8 @@ export interface ClientRequestResponse {
     payment_method?:         PaymentMethod;
     commission?:             number | null;
     commission_rate?:        number | null;
+    // Propina que el cliente le dio al conductor (100 % para él)
+    tip?:                    number;
     paid_at?:                string | null;
     declared_value?:         number | null;
 }

@@ -33,6 +33,15 @@ export class PaymentService {
         }
     }
 
+    async setTip(idClientRequest: number, tip: number): Promise<TripPayment | ErrorResponse> {
+        try {
+            const response = await ApiRequestHandler.put<TripPayment>(`/client-requests/${idClientRequest}/payment/tip`, { tip });
+            return response.data;
+        } catch (error: any) {
+            return this.toErrorResponse(error);
+        }
+    }
+
     async startOnline(idClientRequest: number): Promise<OnlinePaymentStart | ErrorResponse> {
         try {
             const response = await ApiRequestHandler.post<OnlinePaymentStart>(`/client-requests/${idClientRequest}/payment/online`);

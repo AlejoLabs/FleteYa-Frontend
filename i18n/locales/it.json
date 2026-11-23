@@ -700,7 +700,10 @@
     "teQuedoFleteComision": "Ti resta: trasporto {{amount}} − commissione {{amount2}}",
     "pendienteDePago": "Pagamento in sospeso",
     "leDisteEstrellas": "Hai dato {{myStars}} stelle",
-    "sinCalificar": "Non valutato"
+    "sinCalificar": "Non valutato",
+    "incluyePropina": "Include una mancia di {{amount}}",
+    "teQuedoFleteComisionPropina": "Ti resta: trasporto {{amount}} − commissione {{amount2}} + mancia {{tip}}",
+    "verComprobante": "Vedi la ricevuta"
   },
   "incidentReport": {
     "fotoDelProblema": "Foto del problema",
@@ -772,7 +775,20 @@
     "comisionFleteYa": "commissione FleteYa",
     "comisionFleteYaPorcentaje": "commissione FleteYa ({{percent}} %)",
     "pagaPorLaApp": "Paga {{amount}} nell'app. Si apre la pagina di pagamento e poi torni qui.",
-    "conTarjeta": "Con carta"
+    "conTarjeta": "Con carta",
+    "propina": "Mancia",
+    "propinaParaTi": "Mancia per te",
+    "propinaParaElConductor": "Mancia per l'autista",
+    "vaCompletaParaElConductor": "È facoltativa e va interamente all'autista: FleteYa non trattiene commissioni sulla mancia.",
+    "sinPropina": "Nessuna mancia",
+    "porcentajeConMonto": "{{percent}}% · {{amount}}",
+    "montoDeLaPropina": "Importo della mancia",
+    "propinaMaxima": "Massimo {{max}}",
+    "escribeUnMontoValido": "Inserisci un importo valido",
+    "aplicar": "Applica",
+    "verComprobante": "Vedi la ricevuta",
+    "pagoReembolsado": "Pagamento rimborsato",
+    "teDevolvimosElPago": "Ti abbiamo rimborsato {{amount}} il {{date}}. Su questo pagamento non si applica alcuna commissione."
   },
   "tripRating": {
     "mal": "Male",
@@ -926,6 +942,10 @@
     "PHOTO_NOT_FOUND": "La foto non esiste",
     "PAY_AFTER_DELIVERY": "Il trasporto si paga quando l'autista consegna il carico",
     "TRIP_ALREADY_PAID": "Questo trasporto è già pagato",
+    "TIP_INVALID": "La mancia non è valida",
+    "TIP_NOT_ALLOWED": "In questo paese non si accettano mance",
+    "TIP_TOO_HIGH": "La mancia non può superare il prezzo del trasporto",
+    "RECEIPT_NOT_AVAILABLE": "La ricevuta sarà disponibile quando il trasporto sarà pagato",
     "TRIP_NOT_ACTIVE": "Questo trasporto non è più attivo",
     "ONLINE_PAYMENTS_UNAVAILABLE": "I pagamenti tramite l'app non sono disponibili al momento. Paga l'autista in contanti",
     "CLIENT_CHOSE_ONLINE_PAYMENT": "Il cliente ha scelto di pagare tramite l'app. Se ti paga in contanti, chiedigli di cambiarlo nella sua app",
@@ -1028,7 +1048,6 @@
     "TOO_MANY_FILES": "Hai allegato più foto di quelle consentite",
     "UPLOAD_FAILED": "Non è stato possibile caricare il file",
     "INTERNAL_ERROR": "Qualcosa è andato storto sul server. Riprova",
-
     "MALFORMED_REQUEST": "La richiesta non ha un formato valido",
     "LANGUAGE_INVALID": "La lingua non è valida",
     "FARE_MIN": "{{field}} deve essere di almeno {{min}}",
@@ -1092,5 +1111,32 @@
     "seguroVenceEl": "L'assicurazione obbligatoria scade il",
     "revisionTecnicaVenceEl": "La revisione tecnica scade il",
     "numeroDelRegistro": "Numero di immatricolazione del veicolo"
+  },
+  "receipt": {
+    "types": {
+      "FACTURA_ELECTRONICA": "Factura electrónica",
+      "NFSE": "NFS-e",
+      "RECEIPT": "Receipt",
+      "FACTURE": "Facture",
+      "RECHNUNG": "Rechnung",
+      "GENERIC": "Ricevuta di pagamento"
+    },
+    "comprobante": "Ricevuta",
+    "numero": "N. {{number}}",
+    "recorrido": "Percorso",
+    "conductorNombre": "Autista: {{name}}",
+    "clienteNombre": "Cliente: {{name}}",
+    "detalle": "Dettaglio del pagamento",
+    "total": "Totale pagato",
+    "transporteDeLaCarga": "Trasporto del carico",
+    "propina": "Mancia per l'autista",
+    "comisionFleteYaIncluida": "Include commissione FleteYa ({{percent}}%)",
+    "impuestoSobreLaComision": "Include {{name}} sulla commissione ({{percent}}%)",
+    "pagadoEnEfectivo": "Pagato in contanti",
+    "pagadoPorLaApp": "Pagato tramite l'app",
+    "noPudimosCargarElComprobante": "Non siamo riusciti a caricare la ricevuta.",
+    "cargandoElComprobante": "Caricamento della ricevuta…",
+    "elImpuestoSeCalculaSobre": "L'imposta è calcolata sulla commissione di FleteYa, già inclusa nel prezzo del trasporto. La piattaforma se ne fa carico: non si aggiunge a ciò che paghi.",
+    "calificarA": "Valuta {{name}}"
   }
 }

@@ -700,7 +700,10 @@
     "teQuedoFleteComision": "Você ficou com: frete {{amount}} − comissão {{amount2}}",
     "pendienteDePago": "Pagamento pendente",
     "leDisteEstrellas": "Você deu {{myStars}} estrelas",
-    "sinCalificar": "Sem avaliação"
+    "sinCalificar": "Sem avaliação",
+    "incluyePropina": "Inclui gorjeta de {{amount}}",
+    "teQuedoFleteComisionPropina": "Ficou com você: frete {{amount}} − comissão {{amount2}} + gorjeta {{tip}}",
+    "verComprobante": "Ver comprovante"
   },
   "incidentReport": {
     "fotoDelProblema": "Foto do problema",
@@ -772,7 +775,20 @@
     "comisionFleteYa": "comissão FleteYa",
     "comisionFleteYaPorcentaje": "comissão FleteYa ({{percent}} %)",
     "pagaPorLaApp": "Pague {{amount}} pelo app. A página de pagamento abre e depois você volta aqui.",
-    "conTarjeta": "Com cartão"
+    "conTarjeta": "Com cartão",
+    "propina": "Gorjeta",
+    "propinaParaTi": "Gorjeta para você",
+    "propinaParaElConductor": "Gorjeta para o motorista",
+    "vaCompletaParaElConductor": "É opcional e vai inteira para o motorista: a FleteYa não cobra comissão sobre a gorjeta.",
+    "sinPropina": "Sem gorjeta",
+    "porcentajeConMonto": "{{percent}}% · {{amount}}",
+    "montoDeLaPropina": "Valor da gorjeta",
+    "propinaMaxima": "Máximo {{max}}",
+    "escribeUnMontoValido": "Digite um valor válido",
+    "aplicar": "Aplicar",
+    "verComprobante": "Ver comprovante",
+    "pagoReembolsado": "Pagamento reembolsado",
+    "teDevolvimosElPago": "Devolvemos {{amount}} em {{date}}. Este pagamento não tem comissão."
   },
   "tripRating": {
     "mal": "Ruim",
@@ -926,6 +942,10 @@
     "PHOTO_NOT_FOUND": "A foto não existe",
     "PAY_AFTER_DELIVERY": "O frete é pago quando o motorista entrega a carga",
     "TRIP_ALREADY_PAID": "Este frete já está pago",
+    "TIP_INVALID": "A gorjeta não é válida",
+    "TIP_NOT_ALLOWED": "Neste país não se aceita gorjeta",
+    "TIP_TOO_HIGH": "A gorjeta não pode ser maior que o valor do frete",
+    "RECEIPT_NOT_AVAILABLE": "O comprovante estará disponível quando o frete for pago",
     "TRIP_NOT_ACTIVE": "Este frete não está mais ativo",
     "ONLINE_PAYMENTS_UNAVAILABLE": "Os pagamentos pelo app não estão disponíveis no momento. Pague em dinheiro ao motorista",
     "CLIENT_CHOSE_ONLINE_PAYMENT": "O cliente escolheu pagar pelo app. Se ele pagar em dinheiro, peça que mude isso no app dele",
@@ -1028,7 +1048,6 @@
     "TOO_MANY_FILES": "Você anexou mais fotos do que o permitido",
     "UPLOAD_FAILED": "Não foi possível enviar o arquivo",
     "INTERNAL_ERROR": "Algo deu errado no servidor. Tente novamente",
-
     "MALFORMED_REQUEST": "A solicitação não tem um formato válido",
     "LANGUAGE_INVALID": "O idioma não é válido",
     "FARE_MIN": "{{field}} deve ser de pelo menos {{min}}",
@@ -1092,5 +1111,32 @@
     "seguroVenceEl": "O seguro obrigatório vence em",
     "revisionTecnicaVenceEl": "A inspeção técnica vence em",
     "numeroDelRegistro": "Número do registro do veículo"
+  },
+  "receipt": {
+    "types": {
+      "FACTURA_ELECTRONICA": "Factura electrónica",
+      "NFSE": "NFS-e",
+      "RECEIPT": "Receipt",
+      "FACTURE": "Facture",
+      "RECHNUNG": "Rechnung",
+      "GENERIC": "Comprovante de pagamento"
+    },
+    "comprobante": "Comprovante",
+    "numero": "N.º {{number}}",
+    "recorrido": "Trajeto",
+    "conductorNombre": "Motorista: {{name}}",
+    "clienteNombre": "Cliente: {{name}}",
+    "detalle": "Detalhe do pagamento",
+    "total": "Total pago",
+    "transporteDeLaCarga": "Transporte da carga",
+    "propina": "Gorjeta para o motorista",
+    "comisionFleteYaIncluida": "Inclui comissão da FleteYa ({{percent}}%)",
+    "impuestoSobreLaComision": "Inclui {{name}} sobre a comissão ({{percent}}%)",
+    "pagadoEnEfectivo": "Pago em dinheiro",
+    "pagadoPorLaApp": "Pago pelo app",
+    "noPudimosCargarElComprobante": "Não conseguimos carregar o comprovante.",
+    "cargandoElComprobante": "Carregando o comprovante…",
+    "elImpuestoSeCalculaSobre": "O imposto é calculado sobre a comissão da FleteYa, que já está incluída no valor do frete. A plataforma assume esse custo: ele não é somado ao que você paga.",
+    "calificarA": "Avaliar {{name}}"
   }
 }
