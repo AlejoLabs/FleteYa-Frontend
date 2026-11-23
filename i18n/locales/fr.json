@@ -700,7 +700,10 @@
     "teQuedoFleteComision": "Il vous reste : fret {{amount}} − commission {{amount2}}",
     "pendienteDePago": "Paiement en attente",
     "leDisteEstrellas": "Vous avez donné {{myStars}} étoiles",
-    "sinCalificar": "Pas noté"
+    "sinCalificar": "Pas noté",
+    "incluyePropina": "Dont {{amount}} de pourboire",
+    "teQuedoFleteComisionPropina": "Il vous reste : fret {{amount}} − commission {{amount2}} + pourboire {{tip}}",
+    "verComprobante": "Voir le justificatif"
   },
   "incidentReport": {
     "fotoDelProblema": "Photo du problème",
@@ -772,7 +775,20 @@
     "comisionFleteYa": "commission FleteYa",
     "comisionFleteYaPorcentaje": "commission FleteYa ({{percent}} %)",
     "pagaPorLaApp": "Payez {{amount}} dans l'application. La page de paiement s'ouvre, puis vous revenez ici.",
-    "conTarjeta": "Par carte"
+    "conTarjeta": "Par carte",
+    "propina": "Pourboire",
+    "propinaParaTi": "Pourboire pour vous",
+    "propinaParaElConductor": "Pourboire pour le chauffeur",
+    "vaCompletaParaElConductor": "C'est facultatif et le chauffeur le reçoit en entier : FleteYa ne prélève aucune commission sur le pourboire.",
+    "sinPropina": "Sans pourboire",
+    "porcentajeConMonto": "{{percent}} % · {{amount}}",
+    "montoDeLaPropina": "Montant du pourboire",
+    "propinaMaxima": "Maximum {{max}}",
+    "escribeUnMontoValido": "Saisissez un montant valide",
+    "aplicar": "Appliquer",
+    "verComprobante": "Voir le justificatif",
+    "pagoReembolsado": "Paiement remboursé",
+    "teDevolvimosElPago": "Nous vous avons remboursé {{amount}} le {{date}}. Aucune commission ne s'applique à ce paiement."
   },
   "tripRating": {
     "mal": "Mauvais",
@@ -926,6 +942,10 @@
     "PHOTO_NOT_FOUND": "La photo n'existe pas",
     "PAY_AFTER_DELIVERY": "Le fret se paie quand le chauffeur livre la marchandise",
     "TRIP_ALREADY_PAID": "Ce fret est déjà payé",
+    "TIP_INVALID": "Le pourboire n'est pas valide",
+    "TIP_NOT_ALLOWED": "Les pourboires ne sont pas acceptés dans ce pays",
+    "TIP_TOO_HIGH": "Le pourboire ne peut pas dépasser le prix du fret",
+    "RECEIPT_NOT_AVAILABLE": "Le justificatif sera disponible une fois le fret payé",
     "TRIP_NOT_ACTIVE": "Ce fret n'est plus actif",
     "ONLINE_PAYMENTS_UNAVAILABLE": "Les paiements par l'application ne sont pas disponibles pour le moment. Payez le chauffeur en espèces",
     "CLIENT_CHOSE_ONLINE_PAYMENT": "Le client a choisi de payer par l'application. S'il vous paie en espèces, demandez-lui de le modifier dans son application",
@@ -1028,7 +1048,6 @@
     "TOO_MANY_FILES": "Vous avez joint plus de photos que le nombre autorisé",
     "UPLOAD_FAILED": "Le fichier n'a pas pu être téléversé",
     "INTERNAL_ERROR": "Une erreur s'est produite sur le serveur. Réessayez",
-
     "MALFORMED_REQUEST": "La requête n'a pas un format valide",
     "LANGUAGE_INVALID": "La langue n'est pas valide",
     "FARE_MIN": "{{field}} doit être d'au moins {{min}}",
@@ -1092,5 +1111,32 @@
     "seguroVenceEl": "L'assurance obligatoire expire le",
     "revisionTecnicaVenceEl": "Le contrôle technique expire le",
     "numeroDelRegistro": "Numéro d'immatriculation du véhicule"
+  },
+  "receipt": {
+    "types": {
+      "FACTURA_ELECTRONICA": "Facture électronique",
+      "NFSE": "NFS-e",
+      "RECEIPT": "Reçu",
+      "FACTURE": "Facture",
+      "RECHNUNG": "Facture",
+      "GENERIC": "Justificatif de paiement"
+    },
+    "comprobante": "Justificatif",
+    "numero": "N° {{number}}",
+    "recorrido": "Trajet",
+    "conductorNombre": "Chauffeur : {{name}}",
+    "clienteNombre": "Client : {{name}}",
+    "detalle": "Détail du paiement",
+    "total": "Total payé",
+    "transporteDeLaCarga": "Transport de la marchandise",
+    "propina": "Pourboire pour le chauffeur",
+    "comisionFleteYaIncluida": "Dont commission FleteYa ({{percent}} %)",
+    "impuestoSobreLaComision": "Dont {{name}} sur la commission ({{percent}} %)",
+    "pagadoEnEfectivo": "Payé en espèces",
+    "pagadoPorLaApp": "Payé via l'application",
+    "noPudimosCargarElComprobante": "Impossible de charger le justificatif.",
+    "cargandoElComprobante": "Chargement du justificatif…",
+    "elImpuestoSeCalculaSobre": "La taxe est calculée sur la commission de FleteYa, déjà comprise dans le prix du fret. La plateforme la prend en charge : elle ne s'ajoute pas à ce que vous payez.",
+    "calificarA": "Noter {{name}}"
   }
 }

@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { ClientRequestResponse } from "../../../../domain/models/ClientRequestResponse";
 import { ErrorResponse } from "../../../../domain/models/ErrorResponse";
-import { Amount, AppText, Card, PersonRow, StateView, StatusPill } from "../../../components/ui";
+import { Amount, AppText, Button, Card, PersonRow, StateView, StatusPill } from "../../../components/ui";
 import { formatMoney, formatTripDate, getTripFare, formatNumber } from '../../../utils/Formatters';
 import { colors, spacing } from "../../../theme";
 import TripPlaces from "../components/TripPlaces";
@@ -80,14 +80,23 @@ export default function TripHistoryList({ role, load }: Props) {
 const tripAmounts = (trip: ClientRequestResponse, role: Role) => {
     const fare = getTripFare(trip);
     const method = trip.payment_method === 'WOMPI' ? t('tripHistoryList.pagadoPorLaApp') : t('tripHistoryList.enEfectivo');
+    if (role === 'CLIENT') {
+        // Lo que pagó: valor acordado + propina
+        return { amount: fare + (trip.tip ?? 0), breakdown: trip.tip ? t('tripHistoryList.incluyePropina', { amount: formatMoney(trip.tip, trip.currency) }) : null, method };
+    }
     if (role === 'DRIVER' && trip.commission) {
-        return { amount: fare - trip.commission, breakdown: t('tripHistoryList.teQuedoFleteComision', { amount: formatMoney(fare, trip.currency), amount2: formatMoney(trip.commission, trip.currency) }), method };
+        const tip = trip.tip ?? 0;
+        const breakdown = tip > 0
+            ? t('tripHistoryList.teQuedoFleteComisionPropina', { amount: formatMoney(fare, trip.currency), amount2: formatMoney(trip.commission, trip.currency), tip: formatMoney(tip, trip.currency) })
+            : t('tripHistoryList.teQuedoFleteComision', { amount: formatMoney(fare, trip.currency), amount2: formatMoney(trip.commission, trip.currency) });
+        return { amount: fare - trip.commission + tip, breakdown, method };
     }
     return { amount: fare, breakdown: null, method };
 }
 
 function TripHistoryCard({ trip, role }: { trip: ClientRequestResponse; role: Role }) {
     const { t } = useTranslation();
+    const navigation = useNavigation<any>();
     const other = role === 'CLIENT' ? trip.driver : trip.client;
     const { amount, breakdown, method } = tripAmounts(trip, role);
     const paid = Boolean(trip.paid_at);
@@ -117,6 +126,14 @@ function TripHistoryCard({ trip, role }: { trip: ClientRequestResponse; role: Ro
                     </View>
                     : <AppText variant="caption" color="textMuted">{t('tripHistoryList.sinCalificar')}</AppText>}
             />
+            {paid &&
+                <Button
+                    title={t('tripHistoryList.verComprobante')}
+                    variant="secondary"
+                    size="sm"
+                    icon="receipt-outline"
+                    onPress={() => navigation.navigate(role === 'CLIENT' ? 'ClientMapStackNavigator' : 'DriverMapStackNavigator', { screen: 'ReceiptScreen', params: { idClientRequest: trip.id } })}
+                />}
         </Card>
     );
 }

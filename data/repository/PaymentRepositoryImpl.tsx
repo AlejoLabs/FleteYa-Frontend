@@ -18,6 +18,9 @@ export class PaymentRepositoryImpl implements PaymentRepository {
     async changeMethod(idClientRequest: number, method: PaymentMethod): Promise<TripPayment | ErrorResponse> {
         return await this.paymentService.changeMethod(idClientRequest, method);
     }
+    async setTip(idClientRequest: number, tip: number): Promise<TripPayment | ErrorResponse> {
+        return await this.paymentService.setTip(idClientRequest, tip);
+    }
     async startOnline(idClientRequest: number): Promise<OnlinePaymentStart | ErrorResponse> {
         return await this.paymentService.startOnline(idClientRequest);
     }

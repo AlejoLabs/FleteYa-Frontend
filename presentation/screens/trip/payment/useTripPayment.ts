@@ -12,7 +12,7 @@ import { t } from '../../../../i18n';
 // Mientras espera un pago por la app, el conductor pregunta cada tanto (el cliente pregunta al volver del checkout)
 const VERIFY_EVERY_MS = 6000;
 
-type Busy = 'method' | 'online' | 'verify' | 'cash' | null;
+type Busy = 'method' | 'tip' | 'online' | 'verify' | 'cash' | null;
 
 // Estado del pago: carga el flete y el pago, abre el checkout, verifica al volver y escucha cuando el otro paga o cambia de método
 export function useTripPayment(viewModel: TripPaymentViewModel, idClientRequest: number, isClient: (request: ClientRequestResponse) => boolean) {
@@ -102,6 +102,20 @@ export function useTripPayment(viewModel: TripPaymentViewModel, idClientRequest:
         else showError(response);
     }
 
+    // Guarda la propina en el backend: el total que ve el cliente (y el cobro) sale de lo que responde
+    const setTip = async (tip: number) => {
+        if (!payment || payment.tip === tip || busy) return false;
+        setBusy('tip');
+        const response = await viewModel.setTip(idClientRequest, tip);
+        setBusy(null);
+        if ('id_client_request' in response) {
+            setPayment(response);
+            return true;
+        }
+        showError(response);
+        return false;
+    }
+
     const payOnline = async () => {
         setBusy('online');
         const response = await viewModel.startOnline(idClientRequest);
@@ -131,5 +145,5 @@ export function useTripPayment(viewModel: TripPaymentViewModel, idClientRequest:
         return false;
     }
 
-    return { request, payment, loadFailed, reload: load, busy, paidNow, changeMethod, payOnline, verify, confirmCash };
+    return { request, payment, loadFailed, reload: load, busy, paidNow, changeMethod, setTip, payOnline, verify, confirmCash };
 }

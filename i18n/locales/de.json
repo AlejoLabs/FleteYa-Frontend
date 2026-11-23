@@ -700,7 +700,10 @@
     "teQuedoFleteComision": "Du behältst: Fracht {{amount}} − Provision {{amount2}}",
     "pendienteDePago": "Zahlung ausstehend",
     "leDisteEstrellas": "Du hast {{myStars}} Sterne gegeben",
-    "sinCalificar": "Nicht bewertet"
+    "sinCalificar": "Nicht bewertet",
+    "incluyePropina": "Inklusive {{amount}} Trinkgeld",
+    "teQuedoFleteComisionPropina": "Sie behalten: Fracht {{amount}} − Provision {{amount2}} + Trinkgeld {{tip}}",
+    "verComprobante": "Beleg ansehen"
   },
   "incidentReport": {
     "fotoDelProblema": "Foto des Problems",
@@ -772,7 +775,20 @@
     "comisionFleteYa": "FleteYa-Provision",
     "comisionFleteYaPorcentaje": "FleteYa-Provision ({{percent}} %)",
     "pagaPorLaApp": "Zahle {{amount}} in der App. Die Zahlungsseite öffnet sich und danach kommst du hierher zurück.",
-    "conTarjeta": "Mit Karte"
+    "conTarjeta": "Mit Karte",
+    "propina": "Trinkgeld",
+    "propinaParaTi": "Trinkgeld für Sie",
+    "propinaParaElConductor": "Trinkgeld für den Fahrer",
+    "vaCompletaParaElConductor": "Sie ist freiwillig und geht vollständig an den Fahrer: FleteYa erhebt keine Provision auf das Trinkgeld.",
+    "sinPropina": "Kein Trinkgeld",
+    "porcentajeConMonto": "{{percent}} % · {{amount}}",
+    "montoDeLaPropina": "Trinkgeldbetrag",
+    "propinaMaxima": "Höchstens {{max}}",
+    "escribeUnMontoValido": "Geben Sie einen gültigen Betrag ein",
+    "aplicar": "Übernehmen",
+    "verComprobante": "Beleg ansehen",
+    "pagoReembolsado": "Zahlung erstattet",
+    "teDevolvimosElPago": "Wir haben Ihnen {{amount}} am {{date}} erstattet. Auf diese Zahlung fällt keine Provision an."
   },
   "tripRating": {
     "mal": "Schlecht",
@@ -926,6 +942,10 @@
     "PHOTO_NOT_FOUND": "Das Foto existiert nicht",
     "PAY_AFTER_DELIVERY": "Die Fracht wird bezahlt, wenn der Fahrer sie liefert",
     "TRIP_ALREADY_PAID": "Diese Fracht ist bereits bezahlt",
+    "TIP_INVALID": "Das Trinkgeld ist ungültig",
+    "TIP_NOT_ALLOWED": "In diesem Land wird kein Trinkgeld angenommen",
+    "TIP_TOO_HIGH": "Das Trinkgeld darf den Frachtpreis nicht übersteigen",
+    "RECEIPT_NOT_AVAILABLE": "Der Beleg ist verfügbar, sobald die Fracht bezahlt ist",
     "TRIP_NOT_ACTIVE": "Diese Fracht ist nicht mehr aktiv",
     "ONLINE_PAYMENTS_UNAVAILABLE": "Zahlungen über die App sind im Moment nicht verfügbar. Zahle den Fahrer bar",
     "CLIENT_CHOSE_ONLINE_PAYMENT": "Der Kunde hat sich für die Zahlung über die App entschieden. Wenn er dich bar bezahlt, bitte ihn, das in seiner App zu ändern",
@@ -1028,7 +1048,6 @@
     "TOO_MANY_FILES": "Du hast mehr Fotos angehängt als erlaubt",
     "UPLOAD_FAILED": "Die Datei konnte nicht hochgeladen werden",
     "INTERNAL_ERROR": "Auf dem Server ist etwas schiefgelaufen. Versuche es erneut",
-
     "MALFORMED_REQUEST": "Die Anfrage hat kein gültiges Format",
     "LANGUAGE_INVALID": "Die Sprache ist ungültig",
     "FARE_MIN": "{{field}} muss mindestens {{min}} betragen",
@@ -1092,5 +1111,32 @@
     "seguroVenceEl": "Die Pflichtversicherung läuft ab am",
     "revisionTecnicaVenceEl": "Die technische Prüfung läuft ab am",
     "numeroDelRegistro": "Fahrzeug-Zulassungsnummer"
+  },
+  "receipt": {
+    "types": {
+      "FACTURA_ELECTRONICA": "Elektronische Rechnung",
+      "NFSE": "NFS-e",
+      "RECEIPT": "Quittung",
+      "FACTURE": "Rechnung",
+      "RECHNUNG": "Rechnung",
+      "GENERIC": "Zahlungsbeleg"
+    },
+    "comprobante": "Beleg",
+    "numero": "Nr. {{number}}",
+    "recorrido": "Strecke",
+    "conductorNombre": "Fahrer: {{name}}",
+    "clienteNombre": "Kunde: {{name}}",
+    "detalle": "Zahlungsdetails",
+    "total": "Gesamt bezahlt",
+    "transporteDeLaCarga": "Transport der Ladung",
+    "propina": "Trinkgeld für den Fahrer",
+    "comisionFleteYaIncluida": "Inklusive FleteYa-Provision ({{percent}} %)",
+    "impuestoSobreLaComision": "Inklusive {{name}} auf die Provision ({{percent}} %)",
+    "pagadoEnEfectivo": "Bar bezahlt",
+    "pagadoPorLaApp": "Über die App bezahlt",
+    "noPudimosCargarElComprobante": "Der Beleg konnte nicht geladen werden.",
+    "cargandoElComprobante": "Beleg wird geladen…",
+    "elImpuestoSeCalculaSobre": "Die Steuer wird auf die Provision von FleteYa berechnet, die bereits im Frachtpreis enthalten ist. Die Plattform trägt sie: Sie wird nicht zu Ihrem Preis addiert.",
+    "calificarA": "{{name}} bewerten"
   }
 }

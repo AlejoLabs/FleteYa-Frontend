@@ -700,7 +700,10 @@
     "teQuedoFleteComision": "You keep: shipment {{amount}} − commission {{amount2}}",
     "pendienteDePago": "Payment pending",
     "leDisteEstrellas": "You gave {{myStars}} stars",
-    "sinCalificar": "Not rated"
+    "sinCalificar": "Not rated",
+    "incluyePropina": "Includes a {{amount}} tip",
+    "teQuedoFleteComisionPropina": "You kept: shipment {{amount}} − commission {{amount2}} + tip {{tip}}",
+    "verComprobante": "View receipt"
   },
   "incidentReport": {
     "fotoDelProblema": "Photo of the problem",
@@ -772,7 +775,20 @@
     "comisionFleteYa": "FleteYa commission",
     "comisionFleteYaPorcentaje": "FleteYa commission ({{percent}} %)",
     "pagaPorLaApp": "Pay {{amount}} in the app. The payment page opens and then you come back here.",
-    "conTarjeta": "By card"
+    "conTarjeta": "By card",
+    "propina": "Tip",
+    "propinaParaTi": "Tip for you",
+    "propinaParaElConductor": "Tip for the driver",
+    "vaCompletaParaElConductor": "It is optional and goes entirely to the driver: FleteYa takes no commission on the tip.",
+    "sinPropina": "No tip",
+    "porcentajeConMonto": "{{percent}}% · {{amount}}",
+    "montoDeLaPropina": "Tip amount",
+    "propinaMaxima": "Maximum {{max}}",
+    "escribeUnMontoValido": "Enter a valid amount",
+    "aplicar": "Apply",
+    "verComprobante": "View receipt",
+    "pagoReembolsado": "Payment refunded",
+    "teDevolvimosElPago": "We refunded {{amount}} on {{date}}. No commission applies to this payment."
   },
   "tripRating": {
     "mal": "Poor",
@@ -926,6 +942,10 @@
     "PHOTO_NOT_FOUND": "The photo does not exist",
     "PAY_AFTER_DELIVERY": "The shipment is paid when the driver delivers the cargo",
     "TRIP_ALREADY_PAID": "This shipment is already paid",
+    "TIP_INVALID": "The tip is not valid",
+    "TIP_NOT_ALLOWED": "Tips are not accepted in this country",
+    "TIP_TOO_HIGH": "The tip cannot be higher than the shipment price",
+    "RECEIPT_NOT_AVAILABLE": "The receipt will be available once the shipment is paid",
     "TRIP_NOT_ACTIVE": "This shipment is no longer active",
     "ONLINE_PAYMENTS_UNAVAILABLE": "Payments in the app are not available right now. Pay the driver in cash",
     "CLIENT_CHOSE_ONLINE_PAYMENT": "The customer chose to pay in the app. If they pay you in cash, ask them to change it in their app",
@@ -1028,7 +1048,6 @@
     "TOO_MANY_FILES": "You attached more photos than allowed",
     "UPLOAD_FAILED": "The file could not be uploaded",
     "INTERNAL_ERROR": "Something went wrong on the server. Try again",
-
     "MALFORMED_REQUEST": "The request is not in a valid format",
     "LANGUAGE_INVALID": "The language is not valid",
     "FARE_MIN": "{{field}} must be at least {{min}}",
@@ -1092,5 +1111,32 @@
     "seguroVenceEl": "Mandatory insurance expires on",
     "revisionTecnicaVenceEl": "Vehicle inspection expires on",
     "numeroDelRegistro": "Vehicle registration number"
+  },
+  "receipt": {
+    "types": {
+      "FACTURA_ELECTRONICA": "Electronic invoice",
+      "NFSE": "NFS-e",
+      "RECEIPT": "Receipt",
+      "FACTURE": "Invoice",
+      "RECHNUNG": "Invoice",
+      "GENERIC": "Payment receipt"
+    },
+    "comprobante": "Receipt",
+    "numero": "No. {{number}}",
+    "recorrido": "Route",
+    "conductorNombre": "Driver: {{name}}",
+    "clienteNombre": "Customer: {{name}}",
+    "detalle": "Payment details",
+    "total": "Total paid",
+    "transporteDeLaCarga": "Cargo transport",
+    "propina": "Tip for the driver",
+    "comisionFleteYaIncluida": "Includes FleteYa commission ({{percent}}%)",
+    "impuestoSobreLaComision": "Includes {{name}} on the commission ({{percent}}%)",
+    "pagadoEnEfectivo": "Paid in cash",
+    "pagadoPorLaApp": "Paid through the app",
+    "noPudimosCargarElComprobante": "We couldn't load the receipt.",
+    "cargandoElComprobante": "Loading the receipt…",
+    "elImpuestoSeCalculaSobre": "The tax is calculated on FleteYa's commission, which is already included in the shipment price. The platform covers it: it is not added to what you pay.",
+    "calificarA": "Rate {{name}}"
   }
 }
