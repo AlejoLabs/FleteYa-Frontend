@@ -24,10 +24,18 @@ El backend está en [FleteYa-Backend](https://github.com/AlejoLabs/FleteYa-Backe
 - Chat del viaje, sin compartir el número de celular.
 - Notificaciones push, historial y próximos fletes.
 - Perfil, cambio de contraseña y entrar con Google.
+- Seis idiomas y 24 países en 8 monedas (ver [Idiomas y monedas](#idiomas-y-monedas)).
 
 ## Tecnologías
 
-React Native 0.83 con Expo 55 (compilación nativa, no Expo Go), TypeScript, React Navigation, react-native-maps con Google Maps, Socket.IO, Axios, Awilix para la inyección de dependencias, expo-notifications con Firebase Cloud Messaging y Google Sign-In.
+React Native 0.83 con Expo 55 (compilación nativa, no Expo Go), TypeScript, React Navigation, react-native-maps con Google Maps, Socket.IO, Axios, Awilix para la inyección de dependencias, expo-notifications con Firebase Cloud Messaging, Google Sign-In, i18next con expo-localization y la API Intl para los formatos.
+
+## Idiomas y monedas
+
+- **Idiomas:** español, inglés, francés, italiano, portugués y alemán. Los textos están en `i18n/locales/*.json` (más de 900 claves cada uno) y se muestran con i18next. La app arranca en el idioma del teléfono; la persona lo cambia en Perfil → Idioma y queda guardado en su cuenta. Los errores del backend llegan como clave y la app los traduce.
+- **Control de traducciones:** `node scripts/i18n/check.mjs` revisa que los seis idiomas tengan las mismas claves y que no quede texto fijo en español en las pantallas.
+- **Monedas:** la moneda la define el país donde se recoge la carga (lo decide el backend). Los montos se muestran con `formatMoney`, que combina la moneda del flete con el formato del idioma: «$ 25.000», «25,00 €», «R$ 25,90». Debajo de un monto en otra moneda se ve una equivalencia aproximada («≈») en la moneda del país de la persona.
+- **Probar otro país sin VPN:** la moneda depende del GPS, no de la IP. En el emulador, cambia la ubicación con `adb emu geo fix <longitud> <latitud>` y vuelve a abrir la app. Hay coordenadas de prueba en el [README del backend](https://github.com/AlejoLabs/FleteYa-Backend#datos-de-prueba).
 
 ## Arquitectura
 
@@ -82,7 +90,7 @@ Todas están explicadas en [`.env.example`](.env.example).
 
 | Variable | Para qué sirve |
 |---|---|
-| `EXPO_PUBLIC_API_BASE_URL` | Dirección del backend. Desde un emulador o un celular, usa la IP de tu PC en la red Wi-Fi |
+| `EXPO_PUBLIC_API_BASE_URL` | Dirección del backend. Por cable USB: `http://localhost:3000` y en cada dispositivo `adb reverse tcp:3000 tcp:3000` (no hace falta la misma red Wi-Fi). Por Wi-Fi: la IP de tu PC en la red |
 | `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` | Mapa, rutas y búsqueda de direcciones |
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Entrar con Google |
 
@@ -98,6 +106,11 @@ Las variables `EXPO_PUBLIC_` quedan dentro de la app instalada, así que cualqui
 ## Nombre del paquete
 
 La app se llama FleteYa, pero el paquete de Android sigue siendo `com.anonymous.InDriverReactNative`, porque Firebase y el inicio de sesión con Google están registrados con ese nombre. Se cambiará al preparar la versión para publicar, junto con un registro nuevo en Firebase y Google Cloud.
+
+## Datos de prueba
+
+- Cuentas: crea un cliente y un conductor desde la app y aprueba al conductor en el panel web del backend (`/admin`). Para usar dos cuentas a la vez, abre la app en el emulador y en un celular, o en dos emuladores.
+- Pagos y ubicaciones de prueba: ver el [README del backend](https://github.com/AlejoLabs/FleteYa-Backend#datos-de-prueba).
 
 ## Probar un pago
 
